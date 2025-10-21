@@ -47,7 +47,7 @@ Portal **E-Layanan DKISP** mendigitalisasi berbagai layanan TIK bagi Perangkat D
     Pengelolaan dan publikasi data—sinkronisasi dengan portal data terbuka/internal, termasuk metadata dan lisensi penggunaan.
 
 13. **SPLP**  
-    (Sarana/Prasarana Layanan Publik) Permohonan sarana telekomunikasi/penunjang gelaran acara (mis. perangkat, koneksi, dan dukungan teknis).
+    Sistem Penghubung Layanan Pemerintah. Informasi dan Persyaratan layanan agar aplikasi perangkat daerah dapat terintegrasi melalui Portal SPLP.
 
 14. **SPBE**  
     Menu referensi/administrasi SPBE: evaluasi mandiri, indikator, pemetaan layanan, dan dokumen pendukung kebijakan SPBE daerah.
