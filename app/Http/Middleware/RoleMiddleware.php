@@ -11,10 +11,19 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, ...$roles)
     {
         if (!Auth::check()) {
-            return redirect('/login');
+            return redirect()->route('login');
         }
 
-        if (!in_array(Auth::user()->role, $roles)) {
+        // Terima "role:admin,admin-vidcon" ATAU "role:admin","admin-vidcon"
+        $allowed = [];
+        foreach ($roles as $r) {
+            foreach (explode(',', $r) as $p) {
+                $p = trim($p);
+                if ($p !== '') $allowed[] = $p;
+            }
+        }
+
+        if (!in_array(Auth::user()->role, $allowed, true)) {
             abort(403);
         }
 

@@ -14,10 +14,12 @@ class Request extends Model
         'service',
         'file',
         'status',
+        'ticket_number',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+    
 }

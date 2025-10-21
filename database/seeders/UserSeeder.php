@@ -10,15 +10,14 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        // Loop buat 10 user dummy
-        for ($i = 1; $i <= 10; $i++) {
             User::create([
-                'name' => 'User Dummy ' . $i,
-                'username' => 'userdummy' . $i, // username unik
-                'email' => 'userdummy' . $i . '@kaltaraprov.go.id',
-                'password' => Hash::make('password'), // password semua = 'password'
+                'name' => 'Bayu Adi Hartanto ',
+                'nik' => '647101', 
+                'phone' => '08122346', 
+                'email' => 'skivanoc@gmail.com',
+                'password' => Hash::make('BayuAdi1208!'),
                 'role' => 'user',
             ]);
-        }
+        
     }
 }

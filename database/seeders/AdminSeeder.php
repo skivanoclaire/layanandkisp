@@ -12,7 +12,8 @@ class AdminSeeder extends Seeder
     {
         User::create([
             'name' => 'Super Admin',
-            'username' => 'admin', // kalau mau pakai username login
+            'nik'=> '1001',
+            'phone'=> '1001',
             'email' => 'admin@kaltaraprov.go.id', // kalau tetap email
             'password' => Hash::make('Kaltara2024!@#'), // password = password
             'role' => 'admin',

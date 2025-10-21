@@ -31,13 +31,15 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'nik' => ['required', 'string', 'max:20', 'unique:users,nik'],
+            'nik' => ['required', 'digits:16', 'unique:users,nik'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'g-recaptcha-response' => ['required', 'captcha'],
         ], [
-            'nik.unique' => 'NIK/NIP sudah terdaftar.',
+            'nik.unique' => 'NIK sudah terdaftar.',
+            'nik.required' => 'NIK wajib diisi.',
+            'nik.digits'   => 'NIK harus tepat 16 digit angka.',
             'phone.unique' => 'Nomor HP sudah terdaftar.',
             'email.unique' => 'Email sudah terdaftar.',
         ]);

@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+                $middleware->alias([
+            'verified.user' => \App\Http\Middleware\EnsureUserIsVerified::class,
+        ]);
+        
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

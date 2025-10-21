@@ -1,91 +1,92 @@
 @extends('layouts.user')
 
-@section('title', 'Dashboard User')
-
 @section('content')
-    <div class="bg-green-100 p-6 rounded-lg shadow border border-green-200 mb-6">
-        <h2 class="text-2xl font-bold text-green-800 mb-2">Dashboard User</h2>
-        <p>Selamat datang, <span class="font-semibold">{{ Auth::user()->name }}</span>! Di sini Anda dapat
-            mengajukan permohonan layanan.</p>
-    </div>
-    <div class="bg-white shadow rounded-lg p-6">
+    <div class="max-w-7xl mx-auto mt-10">
+        <h1 class="text-3xl font-bold mb-8">Dashboard Pengguna</h1>
 
-        <!-- Form Upload Permohonan -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow mb-8">
-            <h2 class="text-xl font-semibold mb-4">Ajukan Permohonan Baru</h2>
-            <form action="{{ route('user.submit') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-                @csrf
-                <div>
-                    <label for="service" class="block font-medium">Jenis Layanan</label>
-                    <select name="service" id="service" class="w-full border p-2 rounded" required>
-                        <option value="">-- Pilih Layanan --</option>
-                        <option value="Rekomendasi">Rekomendasi TIK</option>
-                        <option value="Subdomain">Subdomain</option>
-                        <option value="Hosting">Hosting</option>
-                        <option value="Email">Email</option>
-                        <option value="Cloud Storage">Cloud Storage</option>
-                        <option value="SPLP">SPLP</option>
-                        <option value="Internet">Jaringan Internet</option>
-                        <option value="VPN">VPN</option>
-                        <option value="Wifi Publik">Wifi Publik</option>
-                        <option value="Videotron">Videotron</option>
-                        <option value="SPLP">SPLP</option>
-                        <option value="Konten">Konten Multimedia</option>
-                        <option value="Helpdesk TIK">Helpdesk TIK</option>
-                        <option value="TTE">TTE</option>
-                        <option value="SMKI">Keamanan Informasi</option>
-                        <option value="Vidcon">Zoom/Youtube Livestream</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="file" class="block font-medium">Upload Surat Permohonan</label>
-                    <input type="file" name="file" id="file" class="w-full border p-2 rounded" required>
-                </div>
-                <div>
-                    <button type="submit" class="inline-flex items-center gap-2
-                                   bg-green-600 hover:bg-green-700         {{-- fallback --}}
-                                   bg-gradient-to-r from-green-500 to-green-600
-                                   text-white font-semibold tracking-wide
-                                   px-6 py-2.5 rounded-lg
-                                   shadow-md hover:shadow-lg
-                                   active:scale-95
-                                   focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2
-                                   transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 stroke-current" fill="none"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                        Kirim Permohonan
-                    </button>
-
-
-                </div>
-            </form>
+        <!-- Kartu Ringkasan -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-green-100 p-4 rounded-lg text-center shadow">
+                <p class="text-sm text-gray-700">Total Permohonan</p>
+                <p class="text-2xl font-bold text-green-800">{{ $total }}</p>
+            </div>
+            <div class="bg-yellow-100 p-4 rounded-lg text-center shadow">
+                <p class="text-sm text-gray-700">Menunggu</p>
+                <p class="text-2xl font-bold text-yellow-800">{{ $waiting }}</p>
+            </div>
+            <div class="bg-blue-100 p-4 rounded-lg text-center shadow">
+                <p class="text-sm text-gray-700">Dalam Proses</p>
+                <p class="text-2xl font-bold text-blue-800">{{ $processing }}</p>
+            </div>
+            <div class="bg-emerald-100 p-4 rounded-lg text-center shadow">
+                <p class="text-sm text-gray-700">Selesai</p>
+                <p class="text-2xl font-bold text-emerald-800">{{ $finished }}</p>
+            </div>
         </div>
 
-        <!-- Tabel Permohonan User -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Permohonan Anda</h2>
-            <table class="min-w-full table-auto">
+        <!-- Grafik Kinerja -->
+        <div class="bg-white p-6 rounded-lg shadow mb-10">
+            <p class="text-lg font-semibold mb-4 text-gray-700">Grafik Permohonan Bulan {{ now()->translatedFormat('F') }}
+            </p>
+            <canvas id="chartStatus" height="100"></canvas>
+        </div>
+
+        @if (session('success'))
+            <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show"
+                class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">Sukses!</strong>
+                <span class="block sm:inline">{{ session('success') }}</span>
+            </div>
+        @endif
+
+        <!-- Tabel Permohonan -->
+        <div class="bg-white shadow p-6 rounded-lg">
+            <table id="requests-table" class="min-w-full table-auto">
                 <thead>
                     <tr>
-                        <th class="px-4 py-2 text-left">Layanan</th>
-                        <th class="px-4 py-2 text-left">Status</th>
-                        <th class="px-4 py-2 text-left">Surat</th>
+                        <th class="px-4 py-2">Nomor Tiket</th>
+                        <th class="px-4 py-2">Layanan</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">Tanggal</th>
+                        <th class="px-4 py-2">Surat</th>
+                        <th class="px-4 py-2">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($requests as $request)
                         <tr class="border-b">
+                            <td class="px-4 py-2">{{ $request->ticket_number }}</td>
                             <td class="px-4 py-2">{{ $request->service }}</td>
-                            <td class="px-4 py-2">{{ $request->status }}</td>
+                            <td class="px-4 py-2">
+                                <span
+                                    class="inline-block px-2 py-1 rounded text-xs
+                                    {{ $request->status == 'Menunggu' ? 'bg-yellow-200 text-yellow-800' : '' }}
+                                    {{ $request->status == 'Dalam Proses' ? 'bg-blue-200 text-blue-800' : '' }}
+                                    {{ $request->status == 'Ditolak' ? 'bg-red-200 text-red-800' : '' }}
+                                    {{ $request->status == 'Selesai' ? 'bg-green-200 text-green-800' : '' }}">
+                                    {{ $request->status }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">{{ $request->created_at->format('d M Y') }}</td>
                             <td class="px-4 py-2">
                                 @if ($request->file)
                                     <a href="{{ asset('storage/' . $request->file) }}" target="_blank"
-                                        class="text-emerald-500 underline">Lihat Surat</a>
+                                        class="text-green-600 underline">Lihat Surat</a>
                                 @else
-                                    <span class="text-gray-400">-</span>
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-4 py-2">
+                                @if ($request->status == 'Menunggu')
+                                    <form method="POST" action="{{ route('user.delete', $request->id) }}"
+                                        onsubmit="return confirm('Yakin ingin menghapus permohonan ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Hapus</button>
+                                    </form>
+                                @else
+                                    -
                                 @endif
                             </td>
                         </tr>
@@ -95,3 +96,57 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.tailwindcss.min.css">
+@endpush
+
+@push('scripts')
+    <!-- jQuery dan DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.tailwindcss.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#requests-table').DataTable();
+        });
+
+        const ctx = document.getElementById('chartStatus').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Menunggu', 'Dalam Proses', 'Ditolak', 'Selesai'],
+                datasets: [{
+                    label: 'Jumlah Permohonan Bulan {{ now()->translatedFormat('F') }}',
+                    data: [
+                        {{ $summary['Menunggu'] ?? 0 }},
+                        {{ $summary['Dalam Proses'] ?? 0 }},
+                        {{ $summary['Ditolak'] ?? 0 }},
+                        {{ $summary['Selesai'] ?? 0 }},
+                    ],
+                    backgroundColor: [
+                        '#facc15', // Menunggu
+                        '#38bdf8', // Dalam Proses
+                        '#ef4444', // Ditolak
+                        '#22c55e', // Selesai
+                    ],
+                    borderRadius: 6,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+@endpush

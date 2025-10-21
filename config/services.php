@@ -40,5 +40,10 @@ return [
     'secret' => env('NOCAPTCHA_SECRET'),
     ],
 
+    'simpeg' => [
+    'base_url' => env('SIMPEG_API_URL'),
+    'api_key'  => env('SIMPEG_API_KEY'),
+    ],
+
 
 ];

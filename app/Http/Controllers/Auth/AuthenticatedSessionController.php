@@ -31,7 +31,14 @@ class AuthenticatedSessionController extends Controller
         $user = auth()->user();
         if ($user->role == 'admin') {
             return redirect('/admin');
-        } else {
+        } 
+        else if ($user->role == 'admin-vidcon') {
+            return redirect('/admin/aset-tik');
+        }       
+        else if ($user->role == 'operator-vidcon') {
+            return redirect('/op/tik/borrow');
+        }          
+        else {
             return redirect('/dashboard');
         }
 

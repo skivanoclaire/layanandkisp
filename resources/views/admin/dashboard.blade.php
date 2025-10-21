@@ -4,7 +4,6 @@
 
 
 @section('content')
-
     <div class="max-w-7xl mx-auto mt-10">
         <h1 class="text-3xl font-bold mb-8">Dashboard Admin - Permohonan Layanan</h1>
 
@@ -66,11 +65,13 @@
                                     @csrf
                                     <select name="status" onchange="this.form.submit()" class="border p-1 rounded">
                                         <option {{ $request->status == 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                        <option {{ $request->status == 'Dalam Proses' ? 'selected' : '' }}>Dalam Proses</option>
+                                        <option {{ $request->status == 'Dalam Proses' ? 'selected' : '' }}>Dalam Proses
+                                        </option>
                                         <option {{ $request->status == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
                                         <option {{ $request->status == 'Selesai' ? 'selected' : '' }}>Selesai</option>
                                     </select>
                                 </form>
+
                             </td>
                         </tr>
                     @endforeach
@@ -95,7 +96,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('#requests-table').DataTable();
         });
 
@@ -105,12 +106,12 @@
             data: {
                 labels: ['Menunggu', 'Dalam Proses', 'Ditolak', 'Selesai'],
                 datasets: [{
-                    label: 'Jumlah Permohonan Bulan {{ now()->translatedFormat("F") }}',
+                    label: 'Jumlah Permohonan Bulan {{ now()->translatedFormat('F') }}',
                     data: [
-                                        {{ $summary['Menunggu'] ?? 0 }},
-                                        {{ $summary['Dalam Proses'] ?? 0 }},
-                                        {{ $summary['Ditolak'] ?? 0 }},
-                                        {{ $summary['Selesai'] ?? 0 }},
+                        {{ $summary['Menunggu'] ?? 0 }},
+                        {{ $summary['Dalam Proses'] ?? 0 }},
+                        {{ $summary['Ditolak'] ?? 0 }},
+                        {{ $summary['Selesai'] ?? 0 }},
                     ],
                     backgroundColor: [
                         '#facc15', // Menunggu
@@ -125,10 +126,11 @@
             options: {
                 responsive: true,
                 scales: {
-                    y: { beginAtZero: true }
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
         });
     </script>
-
 @endpush

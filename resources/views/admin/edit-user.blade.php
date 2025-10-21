@@ -6,7 +6,7 @@
     <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow border border-gray-200">
         <h2 class="text-2xl font-bold text-green-700 mb-6">Edit Data Pengguna</h2>
 
-        @if(session('success'))
+        @if (session('success'))
             <div class="mb-4 text-green-600 font-semibold">
                 {{ session('success') }}
             </div>
@@ -39,12 +39,16 @@
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500">
                     <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
                     <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="admin-vidcon" {{ $user->role === 'admin-vidcon' ? 'selected' : '' }}>Admin Vidcon
+                    </option>
+                    <option value="operator-vidcon" {{ $user->role === 'operator-vidcon' ? 'selected' : '' }}>Operator
+                        Vidcon</option>
                 </select>
             </div>
 
             <!-- NIK -->
             <div class="mb-4">
-                <label for="nik" class="block text-sm font-medium text-gray-700">NIK / NIP</label>
+                <label for="nik" class="block text-sm font-medium text-gray-700">NIK</label>
                 <input type="text" name="nik" id="nik" value="{{ old('nik', $user->nik) }}"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500">
             </div>
@@ -70,7 +74,8 @@
 
             <!-- Submit -->
             <div class="flex justify-end">
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-semibold">
+                <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-semibold">
                     Simpan Perubahan
                 </button>
             </div>

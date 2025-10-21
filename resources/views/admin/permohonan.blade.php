@@ -10,6 +10,7 @@
             <thead>
                 <tr class="bg-gray-100">
                     <th class="px-4 py-2 border border-gray-300">Nama User</th>
+                    <th class="px-4 py-2 border border-gray-300">Nomor Tiket</th>
                     <th class="px-4 py-2 border border-gray-300">Layanan</th>
                     <th class="px-4 py-2 border border-gray-300">Status</th>
                     <th class="px-4 py-2 border border-gray-300">Surat</th>
@@ -22,6 +23,7 @@
                 @foreach ($requests as $request)
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2 border border-gray-300">{{ $request->user->name }}</td>
+                        <td class="px-4 py-2 border border-gray-300">{{ $request->ticket_number }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $request->service }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $request->status }}</td>
                         <td class="px-4 py-2 border border-gray-300">
@@ -44,6 +46,12 @@
                                     <option {{ $request->status == 'Selesai' ? 'selected' : '' }}>Selesai</option>
                                 </select>
                             </form>
+                            <form method="POST" action="{{ route('admin.delete-request', $request) }}"
+                                onsubmit="return confirm('Hapus permohonan ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:underline">Hapus</button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach
@@ -59,10 +67,13 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.tailwindcss.min.js"></script>
 
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('#permohonan-table').DataTable({
                 pageLength: 25, // Default 25 entri
-                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]], // Pilihan dropdown
+                lengthMenu: [
+                    [10, 25, 50, 100],
+                    [10, 25, 50, 100]
+                ], // Pilihan dropdown
                 language: {
                     lengthMenu: "Tampilkan _MENU_ entri per halaman",
                     zeroRecords: "Tidak ditemukan data",

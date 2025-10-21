@@ -34,7 +34,7 @@
 
             <!-- NIK / NIP -->
             <div class="mb-4">
-                <label for="nik" class="block text-sm font-medium text-gray-700">NIK / NIP</label>
+                <label for="nik" class="block text-sm font-medium text-gray-700">NIK</label>
                 <input id="nik" type="text" name="nik" value="{{ old('nik', auth()->user()->nik) }}"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
             </div>
