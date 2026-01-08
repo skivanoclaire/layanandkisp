@@ -1,7 +1,7 @@
 # Portal E-Layanan DKISP Kaltara
 
 <p align="center">
-  <img src="public/images/logo.png" alt="Logo DKISP" width="120">
+  <img src="public/kaltara.svg" alt="Logo DKISP" width="120">
 </p>
 
 <p align="center">
@@ -210,7 +210,10 @@ Portal E-Layanan DKISP adalah sistem pelayanan berbasis web yang menyediakan ber
 | Role | Akses |
 |------|-------|
 | **Admin** | Full access, konfigurasi sistem manajemen permohonan, approval, master data |
-
+|------|-------|
+| **Operator-Vidcon** | Kelola Layanan Vidcon |
+| **Operator-Sandi** | Kelola Layanan Sandi |
+| **User** | Akses Permohonan Layanan secara Digital |
 
 ## Kontribusi
 
