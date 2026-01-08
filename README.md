@@ -210,7 +210,6 @@ Portal E-Layanan DKISP adalah sistem pelayanan berbasis web yang menyediakan ber
 | Role | Akses |
 |------|-------|
 | **Admin** | Full access, konfigurasi sistem manajemen permohonan, approval, master data |
-|------|-------|
 | **Operator-Vidcon** | Kelola Layanan Vidcon |
 | **Operator-Sandi** | Kelola Layanan Sandi |
 | **User** | Akses Permohonan Layanan secara Digital |
