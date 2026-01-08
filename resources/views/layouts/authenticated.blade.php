@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>E-Layanan DKISP @yield('title')</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('kaltara.svg') }}">
+    <link rel="alternate icon" href="{{ asset('kaltara.png') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Force Unggah Manual menu to always be visible */
+        .menu-item-unggah-manual {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            position: relative !important;
+        }
+
+        .menu-item-unggah-manual a {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    </style>
+    @stack('styles')
+</head>
+
+<body class="bg-gray-50 text-gray-800 min-h-screen flex overflow-x-hidden max-w-full" x-data="{ sidebarOpen: true }">
+
+    <!-- Overlay untuk mobile -->
+    <div x-show="sidebarOpen" class="fixed inset-0 bg-white bg-opacity-0 z-40 md:hidden" @click="sidebarOpen = false">
+    </div>
+
+    <!-- Sidebar Universal -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        class="bg-green-800 text-white shadow-md h-screen w-64 transform fixed top-0 left-0 z-50 transition-transform duration-300 ease-in-out flex flex-col overflow-hidden">
+        <div class="p-6 flex-shrink-0">
+            <a href="/" class="text-2xl font-bold text-green-300" x-show="sidebarOpen">E-Layanan</a>
+            <a href="/" class="text-2xl font-bold text-green-300" x-show="!sidebarOpen">EL</a>
+        </div>
+
+        <nav class="mt-6 space-y-2 flex-1 overflow-y-auto px-4 pb-6">
+            {{-- Dashboard Admin --}}
+            @if (auth()->user()->hasPermission('admin.dashboard'))
+                <a href="{{ route('admin.dashboard') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.dashboard') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Dashboard Admin
+                </a>
+            @endif
+
+            {{-- Dashboard Pengguna --}}
+            @if (auth()->user()->hasPermission('user.dashboard'))
+                <a href="{{ route('user.dashboard') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('user.dashboard') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Dashboard Pengguna
+                </a>
+            @endif
+
+            {{-- Kelola Permohonan (Accordion untuk Admin) --}}
+            @if (auth()->user()->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE']))
+                @php
+                    $atPermohonan = request()->routeIs('admin.permohonan');
+                    $atEmail = request()->routeIs('admin.email.*') || request()->routeIs('admin.email-password-reset.*');
+                    $atSubdomain = request()->routeIs('admin.subdomain.*');
+                    $atRekomendasi = request()->routeIs('admin.rekomendasi.*');
+                    $atAdminVidcon = request()->routeIs('admin.vidcon.*');
+                    $atAdminInternet = request()->routeIs('admin.internet.*');
+                    $atAdminVpn = request()->routeIs('admin.vpn.*');
+                    $atAdminDatacenter = request()->routeIs('admin.datacenter.*');
+                    $atAdminTte = request()->routeIs('admin.tte.*');
+                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasi || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte;
+                @endphp
+                <div x-data="{ openAdminPermohonan: {{ $openPermohonan ? 'true' : 'false' }} }">
+                    <button @click="openAdminPermohonan = !openAdminPermohonan"
+                        class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openPermohonan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                        <span>Kelola Permohonan</span>
+                        <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openAdminPermohonan }"
+                            fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="openAdminPermohonan" class="ml-4 space-y-1">
+                        @if (auth()->user()->hasPermission('admin.permohonan'))
+                            <a href="{{ route('admin.permohonan') }}"
+                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                          {{ $atPermohonan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Manual - Unggah Surat
+                            </a>
+                        @endif
+
+                        @if (auth()->user()->hasPermission('admin.email'))
+                            @php
+                                $atEmailRequest = request()->routeIs('admin.email.*');
+                                $atEmailPasswordReset = request()->routeIs('admin.email-password-reset.*');
+                                $openEmail = $atEmailRequest || $atEmailPasswordReset;
+                            @endphp
+                            <div x-data="{ openAdminEmail: {{ $openEmail ? 'true' : 'false' }} }">
+                                <button @click="openAdminEmail = !openAdminEmail"
+                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openEmail ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Email</span>
+                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminEmail }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div x-show="openAdminEmail" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('admin.email.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                  {{ $atEmailRequest ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Permohonan
+                                    </a>
+                                    <a href="{{ route('admin.email-password-reset.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                  {{ $atEmailPasswordReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Reset Password
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if (auth()->user()->hasPermission('admin.subdomain.index'))
+                            {{-- Subdomain Submenu (Admin) --}}
+                            @php
+                                $atAdminSubdomainNew = request()->routeIs('admin.subdomain.index') || request()->routeIs('admin.subdomain.show');
+                                $atAdminSubdomainIpChange = request()->routeIs('admin.subdomain.ip-change.*');
+                                $atAdminSubdomainNameChange = request()->routeIs('admin.subdomain.name-change.*');
+                                $openAdminSubdomain = $atAdminSubdomainNew || $atAdminSubdomainIpChange || $atAdminSubdomainNameChange;
+                            @endphp
+                            <div x-data="{ openAdminSubdomain: {{ $openAdminSubdomain ? 'true' : 'false' }} }">
+                                <button @click="openAdminSubdomain = !openAdminSubdomain"
+                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminSubdomain ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Subdomain</span>
+                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminSubdomain }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openAdminSubdomain" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('admin.subdomain.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminSubdomainNew ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Pendaftaran Baru
+                                    </a>
+                                    <a href="{{ route('admin.subdomain.ip-change.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminSubdomainIpChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Perubahan IP
+                                    </a>
+
+                                    <a href="{{ route('admin.subdomain.name-change.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminSubdomainNameChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Perubahan Nama
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if (auth()->user()->hasPermission('admin.rekomendasi.index'))
+                            <a href="{{ route('admin.rekomendasi.index') }}"
+                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                          {{ $atRekomendasi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Rekomendasi Aplikasi
+                            </a>
+                        @endif
+
+                        {{-- Video Conference Admin --}}
+                        @if (auth()->user()->hasRole('Admin'))
+                            <a href="{{ route('admin.vidcon.index') }}"
+                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                          {{ request()->routeIs('admin.vidcon.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Video Conference
+                            </a>
+
+                            {{-- Internet Submenu (Admin) --}}
+                            @php
+                                $atAdminLaporanGangguan = request()->routeIs('admin.internet.laporan-gangguan.*');
+                                $atAdminStarlink = request()->routeIs('admin.internet.starlink.*');
+                                $openAdminInternet = $atAdminLaporanGangguan || $atAdminStarlink;
+                            @endphp
+                            <div x-data="{ openAdminInternet: {{ $openAdminInternet ? 'true' : 'false' }} }">
+                                <button @click="openAdminInternet = !openAdminInternet"
+                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminInternet ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Internet</span>
+                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminInternet }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openAdminInternet" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('admin.internet.laporan-gangguan.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminLaporanGangguan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Laporan Gangguan
+                                    </a>
+                                    <a href="{{ route('admin.internet.starlink.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminStarlink ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Starlink Jelajah
+                                    </a>
+                                </div>
+                            </div>
+
+                            {{-- VPN/Jaringan Privat Submenu (Admin) --}}
+                            @php
+                                $atAdminVpnRegistration = request()->routeIs('admin.vpn.registration.*');
+                                $atAdminVpnReset = request()->routeIs('admin.vpn.reset.*');
+                                $atAdminJipPdns = request()->routeIs('admin.vpn.jip-pdns.*');
+                                $openAdminVpn = $atAdminVpnRegistration || $atAdminVpnReset || $atAdminJipPdns;
+                            @endphp
+                            <div x-data="{ openAdminVpn: {{ $openAdminVpn ? 'true' : 'false' }} }">
+                                <button @click="openAdminVpn = !openAdminVpn"
+                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminVpn ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Jaringan Privat/VPN</span>
+                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminVpn }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openAdminVpn" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('admin.vpn.registration.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminVpnRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Pendaftaran VPN
+                                    </a>
+                                    <a href="{{ route('admin.vpn.reset.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminVpnReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Reset Akun VPN
+                                    </a>
+                                    <a href="{{ route('admin.vpn.jip-pdns.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminJipPdns ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Akses JIP PDNS
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Pusat Data/Komputasi Submenu (Admin) --}}
+                        @if (auth()->user()->hasAnyPermission(['Kelola Kunjungan/Colocation', 'Kelola VPS/VM', 'Kelola Backup', 'Kelola Cloud Storage']))
+                            @php
+                                $atAdminVisitation = request()->routeIs('admin.datacenter.visitation.*');
+                                $atAdminVps = request()->routeIs('admin.datacenter.vps.*');
+                                $atAdminBackup = request()->routeIs('admin.datacenter.backup.*');
+                                $atAdminCloudStorage = request()->routeIs('admin.datacenter.cloud-storage.*');
+                                $openAdminDatacenter = $atAdminVisitation || $atAdminVps || $atAdminBackup || $atAdminCloudStorage;
+                            @endphp
+                            <div x-data="{ openAdminDatacenter: {{ $openAdminDatacenter ? 'true' : 'false' }} }">
+                                <button @click="openAdminDatacenter = !openAdminDatacenter"
+                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminDatacenter ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Pusat Data/Komputasi</span>
+                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminDatacenter }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openAdminDatacenter" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('admin.datacenter.visitation.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminVisitation ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Kunjungan/Colocation
+                                    </a>
+                                    <a href="{{ route('admin.datacenter.vps.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminVps ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        VPS/VM
+                                    </a>
+                                    <a href="{{ route('admin.datacenter.backup.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminBackup ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Backup
+                                    </a>
+                                    <a href="{{ route('admin.datacenter.cloud-storage.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminCloudStorage ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Cloud Storage
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Tanda Tangan Elektronik Submenu (Admin) --}}
+                        @if (auth()->user()->hasAnyPermission(['Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Pembaruan Sertifikat TTE']))
+                            @php
+                                $atAdminTteAssistance = request()->routeIs('admin.tte.assistance.*');
+                                $atAdminTteRegistration = request()->routeIs('admin.tte.registration.*');
+                                $atAdminTtePassphraseReset = request()->routeIs('admin.tte.passphrase-reset.*');
+                                $atAdminTteCertificateUpdate = request()->routeIs('admin.tte.certificate-update.*');
+                                $openAdminTte = $atAdminTteAssistance || $atAdminTteRegistration || $atAdminTtePassphraseReset || $atAdminTteCertificateUpdate;
+                            @endphp
+                            <div x-data="{ openAdminTte: {{ $openAdminTte ? 'true' : 'false' }} }">
+                                <button @click="openAdminTte = !openAdminTte"
+                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminTte ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Tanda Tangan Elektronik</span>
+                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminTte }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openAdminTte" class="ml-4 space-y-1 mt-1">
+                                    @if (auth()->user()->hasPermission('Kelola Bantuan TTE'))
+                                        <a href="{{ route('admin.tte.assistance.index') }}"
+                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                           {{ $atAdminTteAssistance ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Pendampingan TTE
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Kelola Registrasi TTE'))
+                                        <a href="{{ route('admin.tte.registration.index') }}"
+                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                           {{ $atAdminTteRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Pendaftaran Akun TTE
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Kelola Reset Passphrase TTE'))
+                                        <a href="{{ route('admin.tte.passphrase-reset.index') }}"
+                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                           {{ $atAdminTtePassphraseReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Reset Passphrase TTE
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Kelola Pembaruan Sertifikat TTE'))
+                                        <a href="{{ route('admin.tte.certificate-update.index') }}"
+                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                           {{ $atAdminTteCertificateUpdate ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Pembaruan Sertifikat TTE
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+
+
+            {{-- Layanan Digital (Accordion) - Hanya untuk user verified --}}
+            @if (auth()->user()->is_verified && auth()->user()->hasAnyPermission([
+                        'Akses Permohonan Email',
+                        'Akses Reset Password Email',
+                        'Akses Permohonan Subdomain',
+                        'Akses Rekomendasi Aplikasi',
+                        'Akses Video Conference',
+                        'Akses Lapor Gangguan Internet',
+                        'Akses Starlink Jelajah',
+                        'Akses VPN Registration',
+                        'Akses VPN Reset',
+                        'Akses JIP PDNS',
+                        'Akses VPS Request',
+                        'Akses Backup Request',
+                        'Akses Cloud Storage',
+                        'Akses Kunjungan Data Center',
+                        'Akses Bantuan TTE',
+                        'Akses Registrasi TTE',
+                        'Akses Reset Passphrase TTE',
+                        'Akses Pembaruan Sertifikat TTE',
+                        'Akses Konsultasi SPBE AI',
+                    ]))
+                @php
+                    $atEmailDigital = request()->routeIs('user.email.*');
+                    $atEmailPasswordReset = request()->routeIs('user.email-password-reset.*');
+                    $atSubdomainDigital = request()->routeIs('user.subdomain.*');
+                    $atRekomendasiUser = request()->routeIs('user.rekomendasi.*');
+                    $atVidconUser = request()->routeIs('user.vidcon.*');
+                    $atInternetUser = request()->routeIs('user.internet.*');
+                    $atVpnUser = request()->routeIs('user.vpn.*');
+                    $atDatacenterUser = request()->routeIs('user.datacenter.*');
+                    $atKonsultasiSpbeAi = request()->routeIs('user.konsultasi-spbe-ai.*');
+                    $atTteUser = request()->routeIs('user.tte.*');
+                    $openUserPermohonan =
+                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser;
+                @endphp
+                <div x-data="{ openPermohonan: {{ $openUserPermohonan ? 'true' : 'false' }} }">
+                    <button @click="openPermohonan = !openPermohonan"
+                        class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openUserPermohonan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                        <span>Layanan Digital</span>
+                        <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openPermohonan }"
+                            fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="openPermohonan" class="ml-4 space-y-1">
+
+                        @if (auth()->user()->hasAnyPermission(['user.email.index', 'user.email.create', 'user.email.show', 'user.email-password-reset.index', 'user.email-password-reset.create']))
+                            @php
+                                $atEmailRequest = request()->routeIs('user.email.*');
+                                $atEmailPasswordReset = request()->routeIs('user.email-password-reset.*');
+                                $openEmailUser = $atEmailRequest || $atEmailPasswordReset;
+                            @endphp
+                            <div x-data="{ openEmail: {{ $openEmailUser ? 'true' : 'false' }} }">
+                                <button @click="openEmail = !openEmail"
+                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openEmailUser ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Email</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openEmail }"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openEmail" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('user.email.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                  {{ $atEmailRequest ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Permohonan
+                                    </a>
+                                    <a href="{{ route('user.email-password-reset.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                  {{ $atEmailPasswordReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Reset Password
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if (auth()->user()->hasAnyPermission(['user.subdomain.index', 'user.subdomain.create', 'user.subdomain.show', 'user.subdomain.name-change.index', 'user.subdomain.name-change.create', 'user.subdomain.name-change.show']))
+                            @php
+                                $atSubdomainRegistration = request()->routeIs('user.subdomain.*') && !request()->routeIs('user.subdomain.ip-change.*') && !request()->routeIs('user.subdomain.name-change.*');
+                                $atSubdomainIpChange = request()->routeIs('user.subdomain.ip-change.*');
+                                $atSubdomainNameChange = request()->routeIs('user.subdomain.name-change.*');
+                                $openSubdomainUser = $atSubdomainRegistration || $atSubdomainIpChange || $atSubdomainNameChange;
+                            @endphp
+                            <div x-data="{ openSubdomain: {{ $openSubdomainUser ? 'true' : 'false' }} }">
+                                <button @click="openSubdomain = !openSubdomain"
+                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openSubdomainUser ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Subdomain</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{'rotate-180': openSubdomain}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openSubdomain" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('user.subdomain.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                          {{ $atSubdomainRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Pendaftaran Baru
+                                    </a>
+                                    <a href="{{ route('user.subdomain.ip-change.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                          {{ $atSubdomainIpChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Perubahan IP
+                                    </a>
+
+                                    <a href="{{ route('user.subdomain.name-change.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                          {{ $atSubdomainNameChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Perubahan Nama
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if (auth()->user()->hasAnyPermission(['user.rekomendasi.index', 'user.rekomendasi.create']))
+                            <a href="{{ route('user.rekomendasi.aplikasi.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                          {{ $atRekomendasiUser ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Rekomendasi Aplikasi
+                            </a>
+                        @endif
+
+                        {{-- Konsultasi SPBE Berbasis AI --}}
+                        @if (auth()->user()->hasPermission('Akses Konsultasi SPBE AI'))
+                            <a href="{{ route('user.konsultasi-spbe-ai.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ $atKonsultasiSpbeAi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Konsultasi SPBE Berbasis AI
+                            </a>
+                        @endif
+
+                        {{-- Tanda Tangan Elektronik (TTE) Submenu --}}
+                        @if (auth()->user()->hasAnyPermission(['Akses Bantuan TTE', 'Akses Registrasi TTE', 'Akses Reset Passphrase TTE', 'Akses Pembaruan Sertifikat TTE']))
+                            @php
+                                $atTteAssistance = request()->routeIs('user.tte.assistance.*');
+                                $atTteRegistration = request()->routeIs('user.tte.registration.*');
+                                $atTtePassphraseReset = request()->routeIs('user.tte.passphrase-reset.*');
+                                $atTteCertificateUpdate = request()->routeIs('user.tte.certificate-update.*');
+                                $openTte = $atTteAssistance || $atTteRegistration || $atTtePassphraseReset || $atTteCertificateUpdate;
+                            @endphp
+                            <div x-data="{ openTte: {{ $openTte ? 'true' : 'false' }} }">
+                                <button @click="openTte = !openTte"
+                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openTte ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Tanda Tangan Elektronik</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openTte }"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openTte" class="ml-4 space-y-1 mt-1">
+                                    @if (auth()->user()->hasPermission('Akses Bantuan TTE'))
+                                        <a href="{{ route('user.tte.assistance.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atTteAssistance ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Pendampingan Aktivasi dan Penggunaan TTE
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Akses Registrasi TTE'))
+                                        <a href="{{ route('user.tte.registration.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atTteRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Pendaftaran Akun Baru TTE
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Akses Reset Passphrase TTE'))
+                                        <a href="{{ route('user.tte.passphrase-reset.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atTtePassphraseReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Permohonan Reset Passphrase TTE
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Akses Pembaruan Sertifikat TTE'))
+                                        <a href="{{ route('user.tte.certificate-update.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atTteCertificateUpdate ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Pembaruan Sertifikat TTE
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Video Conference --}}
+                        @if (auth()->user()->hasPermission('Akses Video Conference'))
+                            <a href="{{ route('user.vidcon.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ request()->routeIs('user.vidcon.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Video Conference
+                            </a>
+                        @endif
+
+                        {{-- Internet Submenu --}}
+                        @if (auth()->user()->hasAnyPermission(['Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah']))
+                            @php
+                                $atLaporanGangguan = request()->routeIs('user.internet.laporan-gangguan.*');
+                                $atStarlink = request()->routeIs('user.internet.starlink.*');
+                                $openInternet = $atLaporanGangguan || $atStarlink;
+                            @endphp
+                            <div x-data="{ openInternet: {{ $openInternet ? 'true' : 'false' }} }">
+                                <button @click="openInternet = !openInternet"
+                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openInternet ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Internet</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openInternet }"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openInternet" class="ml-4 space-y-1 mt-1">
+                                    @if (auth()->user()->hasPermission('Akses Lapor Gangguan Internet'))
+                                        <a href="{{ route('user.internet.laporan-gangguan.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atLaporanGangguan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Lapor Gangguan
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Akses Starlink Jelajah'))
+                                        <a href="{{ route('user.internet.starlink.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atStarlink ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Starlink Jelajah
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- VPN/Jaringan Privat Submenu --}}
+                        @if (auth()->user()->hasAnyPermission(['Akses Pendaftaran VPN', 'Akses Reset Akun VPN', 'Akses JIP PDNS']))
+                            @php
+                                $atVpnRegistration = request()->routeIs('user.vpn.registration.*');
+                                $atVpnReset = request()->routeIs('user.vpn.reset.*');
+                                $atJipPdns = request()->routeIs('user.vpn.jip-pdns.*');
+                                $openVpn = $atVpnRegistration || $atVpnReset || $atJipPdns;
+                            @endphp
+                            <div x-data="{ openVpn: {{ $openVpn ? 'true' : 'false' }} }">
+                                <button @click="openVpn = !openVpn"
+                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openVpn ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Jaringan Privat/VPN</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openVpn }"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openVpn" class="ml-4 space-y-1 mt-1">
+                                    @if (auth()->user()->hasPermission('Akses Pendaftaran VPN'))
+                                        <a href="{{ route('user.vpn.registration.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atVpnRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Pendaftaran Baru
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Akses Reset Akun VPN'))
+                                        <a href="{{ route('user.vpn.reset.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atVpnReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Reset Akun
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Akses JIP PDNS'))
+                                        <a href="{{ route('user.vpn.jip-pdns.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atJipPdns ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Akses JIP PDNS
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Pusat Data/Komputasi Submenu --}}
+                        @if (auth()->user()->hasAnyPermission(['Akses Kunjungan/Colocation Data Center', 'Akses VPS/VM', 'Akses Backup', 'Akses Cloud Storage']))
+                            @php
+                                $atVisitation = request()->routeIs('user.datacenter.visitation.*');
+                                $atVps = request()->routeIs('user.datacenter.vps.*');
+                                $atBackup = request()->routeIs('user.datacenter.backup.*');
+                                $atCloudStorage = request()->routeIs('user.datacenter.cloud-storage.*');
+                                $openDatacenter = $atVisitation || $atVps || $atBackup || $atCloudStorage;
+                            @endphp
+                            <div x-data="{ openDatacenter: {{ $openDatacenter ? 'true' : 'false' }} }">
+                                <button @click="openDatacenter = !openDatacenter"
+                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openDatacenter ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Pusat Data/Komputasi</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openDatacenter }"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openDatacenter" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('user.datacenter.visitation.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                       {{ $atVisitation ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Kunjungan/Colocation
+                                    </a>
+                                    <a href="{{ route('user.datacenter.vps.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                       {{ $atVps ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        VPS/VM
+                                    </a>
+                                    <a href="{{ route('user.datacenter.backup.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                       {{ $atBackup ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Backup
+                                    </a>
+                                    <a href="{{ route('user.datacenter.cloud-storage.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                       {{ $atCloudStorage ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Cloud Storage
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Permohonan Manual - Unggah Surat (Standalone) - Hanya untuk user verified --}}
+            @if (auth()->user()->is_verified && auth()->user()->hasPermission('user.permohonan'))
+            <div class="menu-item-unggah-manual">
+                <a href="{{ route('user.permohonan') }}"
+                    class="block py-2.5 px-4 rounded hover:bg-green-100 hover:text-green-700
+                      {{ request()->routeIs('user.permohonan') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Permohonan Manual - Unggah Surat
+                </a>
+            </div>
+            @endif
+
+            {{-- Video Konferensi (Accordion) --}}
+            @if (auth()->user()->hasAnyPermission([
+                        'op.tik.borrow.index',
+                        'op.tik.borrow.create',
+                        'admin.tik.assets',
+                        'admin.tik.borrow',
+                        'admin.schedule',
+                        'op.tik.schedule',
+                        'admin.statistic',
+                        'admin.vidcon.data',
+                    ]) || auth()->user()->hasRole('Operator-Vidcon'))
+                @php
+                    $atPeminjamanSaya =
+                        request()->routeIs('op.tik.borrow.index') || request()->routeIs('op.tik.borrow.show');
+                    $atBuatPeminjaman = request()->routeIs('op.tik.borrow.create');
+                    $atInventaris =
+                        request()->routeIs('admin.tik.assets.*') || request()->routeIs('admin.tik.categories.*');
+                    $atLaporanPeminjaman = request()->routeIs('admin.tik.borrow.*');
+                    $atJadwalVidcon = request()->routeIs('op.tik.schedule.*');
+                    $atStatistikVidcon = request()->routeIs('op.tik.statistic.*');
+                    $atKelolaVidcon = request()->routeIs('admin.vidcon-data.*');
+                    $atPelaporanOperator = request()->routeIs('operator.vidcon.*');
+                    $openVidcon =
+                        $atPeminjamanSaya ||
+                        $atBuatPeminjaman ||
+                        $atInventaris ||
+                        $atLaporanPeminjaman ||
+                        $atJadwalVidcon ||
+                        $atStatistikVidcon ||
+                        $atKelolaVidcon ||
+                        $atPelaporanOperator;
+                @endphp
+                <div x-data="{ openVidcon: {{ $openVidcon ? 'true' : 'false' }} }">
+                    <button @click="openVidcon = !openVidcon"
+                        class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                        <span>Video Konferensi</span>
+                        <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openVidcon }"
+                            fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="openVidcon" class="ml-4 space-y-1">
+                        {{-- Peminjaman Saya --}}
+                        @if (auth()->user()->hasPermission('op.tik.borrow.index'))
+                            <a href="{{ route('op.tik.borrow.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atPeminjamanSaya ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Peminjaman Saya
+                            </a>
+                        @endif
+
+                        {{-- Buat Peminjaman --}}
+                        @if (auth()->user()->hasPermission('op.tik.borrow.create'))
+                            <a href="{{ route('op.tik.borrow.create') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atBuatPeminjaman ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Buat Peminjaman
+                            </a>
+                        @endif
+
+                        {{-- Inventaris Digital --}}
+                        @if (auth()->user()->hasPermission('admin.tik.assets'))
+                            <a href="{{ route('admin.tik.assets.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atInventaris ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Inventaris Digital
+                            </a>
+                        @endif
+
+                        {{-- Laporan Peminjaman --}}
+                        @if (auth()->user()->hasPermission('admin.tik.borrow'))
+                            <a href="{{ route('admin.tik.borrow.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atLaporanPeminjaman ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Laporan Peminjaman
+                            </a>
+                        @endif
+
+                        {{-- Jadwal Video Konferensi --}}
+                        @if (auth()->user()->hasAnyPermission(['admin.schedule', 'op.tik.schedule']))
+                            <a href="{{ route('op.tik.schedule.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atJadwalVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Jadwal Video Konferensi
+                            </a>
+                        @endif
+
+                        {{-- Statistik Video Konferensi --}}
+                        @if (auth()->user()->hasPermission('admin.statistic'))
+                            <a href="{{ route('op.tik.statistic.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atStatistikVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Statistik Video Konferensi
+                            </a>
+                        @endif
+
+                        {{-- Pelaporan & Dokumentasi Operator --}}
+                        @if (auth()->user()->hasRole('Operator-Vidcon'))
+                            <a href="{{ route('operator.vidcon.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atPelaporanOperator ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Pelaporan & Dokumentasi
+                            </a>
+                        @endif
+
+                        {{-- Kelola Data Vidcon --}}
+                        @if (auth()->user()->hasPermission('admin.vidcon.data'))
+                            <a href="{{ route('admin.vidcon-data.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atKelolaVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Master Data Vidcon
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Unified Subdomain Management --}}
+            @if (auth()->user()->hasPermission('admin.subdomain'))
+                @php
+                    $pendingCount = \App\Models\SubdomainRequest::where('status', 'menunggu')->count();
+                @endphp
+                <a href="{{ route('admin.unified-subdomain.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.unified-subdomain.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    <div class="flex items-center justify-between">
+                        <span>Kelola Subdomain Terpadu</span>
+                        @if($pendingCount > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                                {{ $pendingCount }}
+                            </span>
+                        @endif
+                    </div>
+                </a>
+            @endif
+
+            {{-- Master Data Subdomain --}}
+            @if (auth()->user()->hasPermission('admin.web-monitor'))
+                <a href="{{ route('admin.web-monitor.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.web-monitor.index') || request()->routeIs('admin.web-monitor.create') || request()->routeIs('admin.web-monitor.show') || request()->routeIs('admin.web-monitor.edit') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Master Data Subdomain
+                </a>
+            @endif
+
+            {{-- Master Data Instansi --}}
+            @if (auth()->user()->hasPermission('admin.unit-kerja'))
+                <a href="{{ route('admin.unit-kerja.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.unit-kerja.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Master Data Instansi
+                </a>
+            @endif
+
+            {{-- Master Data Email --}}
+            @if (auth()->user()->hasRole('Admin'))
+                <a href="{{ route('admin.email-accounts.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.email-accounts.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Master Data Email
+                </a>
+            @endif
+
+            {{-- Master Data IP --}}
+            @if (auth()->user()->hasPermission('admin.web-monitor.check-ip-publik'))
+                <a href="{{ route('admin.web-monitor.check-ip-publik') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.web-monitor.check-ip-publik') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Master Data IP
+                </a>
+            @endif
+
+            {{-- Master Data Aset TIK (Google Sheets Integration) --}}
+            @if(auth()->user()->hasPermission('admin.google-aset-tik'))
+                <a href="{{ route('admin.google-aset-tik.dashboard') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.google-aset-tik.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Master Data Aset TIK
+                </a>
+            @endif
+
+            {{-- User Management --}}
+            @if (auth()->user()->hasPermission('admin.users'))
+                <a href="{{ route('admin.users') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.users*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    User Management
+                </a>
+            @endif
+
+            {{-- Kelola Role --}}
+            @if (auth()->user()->hasPermission('admin.roles.index'))
+                <a href="{{ route('admin.roles.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.roles*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Kelola Role
+                </a>
+            @endif
+
+            {{-- Kelola Kewenangan --}}
+            @if (auth()->user()->hasRole('Admin'))
+                <a href="{{ route('admin.role-permissions') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.role-permissions*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Kelola Kewenangan
+                </a>
+            @endif
+
+            {{-- Cek via SIMPEG --}}
+            @if (auth()->user()->hasPermission('admin.simpeg'))
+                <a href="{{ route('admin.simpeg.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.simpeg.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Cek via SIMPEG
+                </a>
+            @endif
+
+            {{-- Profile Pengguna --}}
+            @if (auth()->user()->hasPermission('user.profile'))
+                <a href="{{ route('profile.edit') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('profile.edit') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Profile Pengguna
+                </a>
+            @endif
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div :class="sidebarOpen ? 'md:ml-64' : 'md:ml-0'" class="flex-1 flex flex-col transition-all duration-300 max-w-full overflow-x-hidden">
+
+        <!-- Navbar -->
+        <header class="bg-green-200 shadow-md p-3 flex justify-between items-center max-w-full">
+            <div class="flex items-center gap-2 min-w-0">
+                <button @click="sidebarOpen = !sidebarOpen"
+                    class="text-2xl focus:outline-none transition-transform duration-300 transform flex-shrink-0"
+                    :class="sidebarOpen ? '' : 'rotate-180'">
+                    ☰
+                </button>
+                <img src="{{ asset('logokaltarafix.png') }}" alt="Logo" class="w-8 h-10 flex-shrink-0 hidden sm:block">
+                <span class="text-base md:text-lg font-semibold text-green-600 truncate">
+                    @yield('header-title', 'E-Layanan')
+                </span>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit"
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold">
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="flex-1 p-3 bg-white shadow-sm rounded-md max-w-full overflow-x-hidden">
+            @yield('content')
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-green-200 text-center text-gray-700 text-sm py-4">
+            &copy; {{ date('Y') }}
+            DKISP Kalimantan Utara - Bidang Aplikasi Informatika.
+            All rights reserved.
+
+            <div class="mt-2 flex items-center justify-center space-x-3 text-xs">
+                <span class="text-gray-600">Dikembangkan oleh : Bayu Adi H.</span>
+
+                <!-- LinkedIn -->
+                <a href="https://www.linkedin.com/in/noclaire/" target="_blank"
+                    class="text-blue-600 hover:text-blue-800" aria-label="LinkedIn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4V8.5zm7.5 0h3.8v2.1h.05c.53-1 1.82-2.05 3.75-2.05 4 0 4.75 2.63 4.75 6v9.45h-4V15.5c0-2.13 0-4.88-3-4.88s-3.48 2.25-3.48 4.73V24h-4V8.5z" />
+                    </svg>
+                </a>
+
+                <!-- GitHub -->
+                <a href="https://github.com/skivanoclaire" target="_blank" class="text-gray-800 hover:text-black"
+                    aria-label="GitHub">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 .5C5.73.5.5 5.73.5 12c0 5.1 3.29 9.41 7.86 10.94.58.11.79-.25.79-.56 0-.27-.01-1.15-.02-2.09-3.2.7-3.88-1.54-3.88-1.54-.53-1.35-1.3-1.7-1.3-1.7-1.06-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.76.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.28 1.19-3.08-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 2.9-.39c.99 0 1.98.13 2.9.39 2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.77.12 3.06.74.8 1.19 1.82 1.19 3.08 0 4.43-2.69 5.41-5.26 5.69.42.37.8 1.1.8 2.22 0 1.6-.02 2.89-.02 3.28 0 .31.21.67.8.56A10.99 10.99 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z" />
+                    </svg>
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    @stack('scripts')
+</body>
+
+</html>

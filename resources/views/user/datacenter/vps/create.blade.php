@@ -1,0 +1,155 @@
+@extends('layouts.authenticated')
+@section('title', '- Ajukan VPS/VM')
+@section('header-title', 'VPS/VM')
+
+@section('content')
+<div class="container mx-auto px-4 max-w-3xl">
+    <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-purple-700">Ajukan Permohonan VPS/VM</h1>
+        <a href="{{ route('user.datacenter.vps.index') }}"
+           class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded font-semibold">
+            ← Kembali
+        </a>
+    </div>
+
+    <!-- Operating Hours Info -->
+    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+        <p class="text-sm text-blue-800">
+            <strong>Jam Layanan:</strong><br>
+            Senin - Kamis: 07.30 - 16.00 WITA<br>
+            Jumat: 07.30 - 16.30 WITA
+        </p>
+    </div>
+
+    @if ($errors->any())
+        <div class="mb-4 rounded border border-red-300 bg-red-50 p-3">
+            <ul class="list-disc list-inside text-sm text-red-800">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('user.datacenter.vps.store') }}" method="POST" class="bg-white rounded-lg shadow-md p-6">
+        @csrf
+
+        <div class="space-y-4">
+            <!-- Data Pemohon -->
+            <div class="pb-3 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800">Data Pemohon</h2>
+            </div>
+
+            <!-- Nama -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Nama <span class="text-red-500">*</span>
+                </label>
+                <input type="text" name="nama" value="{{ old('nama', Auth::user()->name) }}" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+
+            <!-- NIP -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    NIP <span class="text-red-500">*</span>
+                </label>
+                <input type="text" name="nip" value="{{ Auth::user()->nip ?? '' }}"
+                       disabled
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed">
+            </div>
+
+            <!-- Instansi -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Instansi <span class="text-red-500">*</span>
+                </label>
+                <select name="unit_kerja_id" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <option value="">-- Pilih Instansi --</option>
+                    @foreach($unitKerjas as $uk)
+                        <option value="{{ $uk->id }}" {{ old('unit_kerja_id') == $uk->id ? 'selected' : '' }}>
+                            {{ $uk->nama }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Spesifikasi VPS -->
+            <div class="pt-4 pb-3 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800">Spesifikasi VPS/VM</h2>
+            </div>
+
+            <!-- vCPU, Socket, vCPU per Socket -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Total vCPU <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="vcpu" value="{{ old('vcpu') }}" required min="1"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <p class="mt-1 text-xs text-gray-500">Jumlah vCPU yang dibutuhkan</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Jumlah Socket <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="jumlah_socket" value="{{ old('jumlah_socket') }}" required min="1"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <p class="mt-1 text-xs text-gray-500">Jumlah CPU socket</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        vCPU per Socket <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="vcpu_per_socket" value="{{ old('vcpu_per_socket') }}" required min="1"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <p class="mt-1 text-xs text-gray-500">Core per socket</p>
+                </div>
+            </div>
+
+            <!-- RAM & Storage -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        RAM (GB) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="ram_gb" value="{{ old('ram_gb') }}" required min="1"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <p class="mt-1 text-xs text-gray-500">Contoh: 8, 16, 32 GB</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Storage (GB) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="storage_gb" value="{{ old('storage_gb') }}" required min="1"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <p class="mt-1 text-xs text-gray-500">Contoh: 100, 500, 1000 GB</p>
+                </div>
+            </div>
+
+            <!-- Keterangan -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Keterangan <span class="text-red-500">*</span>
+                </label>
+                <textarea name="keterangan" rows="5" required
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          placeholder="Jelaskan tujuan penggunaan VPS/VM, aplikasi yang akan dijalankan, dll...">{{ old('keterangan') }}</textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex gap-2 pt-4">
+                <button type="submit"
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded font-semibold">
+                    Ajukan Permohonan
+                </button>
+                <a href="{{ route('user.datacenter.vps.index') }}"
+                   class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded font-semibold">
+                    Batal
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+@endsection

@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class LaporanGangguan extends Model
+{
+    protected $table = 'laporan_gangguan';
+
+    protected $fillable = [
+        'ticket_no',
+        'user_id',
+        'nama',
+        'nip',
+        'no_hp',
+        'unit_kerja_id',
+        'uraian_permasalahan',
+        'lokasi_koordinat',
+        'lampiran_foto',
+        'status',
+        'processed_by',
+        'admin_notes',
+        'processing_at',
+        'completed_at',
+        'rejected_at',
+    ];
+
+    protected $casts = [
+        'lampiran_foto' => 'array',
+        'processing_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'rejected_at' => 'datetime',
+    ];
+
+    /**
+     * Get the user who created this report
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Get the unit kerja
+     */
+    public function unitKerja()
+    {
+        return $this->belongsTo(UnitKerja::class, 'unit_kerja_id');
+    }
+
+    /**
+     * Get the user who processed this report
+     */
+    public function processedBy()
+    {
+        return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    /**
+     * Boot method to auto-generate ticket number
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (LaporanGangguan $model) {
+            if (empty($model->ticket_no)) {
+                $year = now()->year;
+                $month = now()->format('m');
+
+                $lastTicket = self::whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->orderByDesc('id')
+                    ->first();
+
+                $sequence = $lastTicket ? (int) substr($lastTicket->ticket_no, -4) + 1 : 1;
+                $model->ticket_no = 'LG-' . $year . $month . '-' . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+}
