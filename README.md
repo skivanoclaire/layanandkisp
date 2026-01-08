@@ -1,61 +1,242 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Portal E-Layanan DKISP Kaltara
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="public/images/logo.png" alt="Logo DKISP" width="120">
 </p>
 
-## About Laravel
+<p align="center">
+  Portal layanan digital untuk Dinas Komunikasi, Informatika dan Statistik<br>
+  Provinsi Kalimantan Utara
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  🌐 <a href="https://layanan.diskominfo.kaltaraprov.go.id"><strong>layanan.diskominfo.kaltaraprov.go.id</strong></a>
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tentang Aplikasi
 
-## Learning Laravel
+Portal E-Layanan DKISP adalah sistem pelayanan berbasis web yang menyediakan berbagai layanan digital untuk memudahkan ASN dan masyarakat dalam mengakses layanan Dinas Komunikasi, Informatika dan Statistik Provinsi Kalimantan Utara.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Fitur Layanan Digital
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 📧 Email Dinas
+- Permohonan pembuatan email dinas baru
+- Reset password email
+- Tracking status permohonan
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🌐 Subdomain
+- Pendaftaran subdomain baru (*.kaltaraprov.go.id)
+- Perubahan IP/pointing
+- Perubahan nama subdomain
+- Monitoring status website
 
-## Laravel Sponsors
+### 📋 Rekomendasi Aplikasi
+- Pengajuan rekomendasi aplikasi
+- Analisis risiko keamanan
+- Penilaian kelayakan sistem
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 🤖 Konsultasi SPBE Berbasis AI
+- Konsultasi terkait Sistem Pemerintahan Berbasis Elektronik
+- Panduan implementasi SPBE
 
-### Premium Partners
+### ✍️ Tanda Tangan Elektronik (TTE)
+- Pendampingan aktivasi dan penggunaan TTE
+- Pendaftaran akun baru TTE
+- Permohonan reset passphrase TTE
+- Pembaruan sertifikat TTE
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development/)**
-- **[Active Logic](https://activelogic.com)**
+### 🎥 Video Conference
+- Layanan video konferensi
+- Penjadwalan meeting online
 
-## Contributing
+### 🌍 Internet
+- Lapor gangguan internet
+- Starlink Jelajah
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 🔐 Jaringan Privat/VPN
+- Permohonan akses VPN
+- Konfigurasi jaringan privat
 
-## Code of Conduct
+### 🖥️ Pusat Data/Komputasi
+- Kunjungan/Colocation
+- VPS/VM
+- Backup
+- Cloud Storage
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Fitur Admin
 
-## Security Vulnerabilities
+### Dashboard
+- Statistik permohonan layanan
+- Monitoring subdomain aktif
+- Deteksi website down
+- Grafik pertumbuhan layanan
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Master Data
+- Master Data Subdomain
+- Master Data Instansi
+- Master Data Email
+- Master Data IP
+- Master Data Aset TIK
 
-## License
+### Manajemen
+- User Management
+- Kelola Role
+- Kelola Kewenangan
+- Cek via SIMPEG
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Integrasi Sistem
+
+| Sistem | Fungsi |
+|--------|--------|
+| **SSO Keycloak** | Single Sign-On terintegrasi dengan [sso.kaltaraprov.go.id](https://sso.kaltaraprov.go.id) |
+| **Cloudflare** | Manajemen DNS dan subdomain otomatis |
+| **WHM/cPanel** | Manajemen email dinas otomatis |
+| **SIMPEG** | Verifikasi dan sinkronisasi data ASN |
+| **Google API** | Integrasi data aset TIK |
+
+## Tech Stack
+
+- **Framework:** Laravel
+- **PHP Version:** 8.2+
+- **Database:** MySQL
+- **Frontend:** Blade Template, Bootstrap
+- **Authentication:** SSO Keycloak
+- **DNS Management:** Cloudflare API
+- **Email Management:** WHM/cPanel API
+
+## Persyaratan Sistem
+
+- PHP >= 8.2
+- Composer
+- MySQL >= 5.7
+- Node.js & NPM
+- Web Server (Apache/Nginx)
+
+## Instalasi
+
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/skivanoclaire/layanandkisp.git
+   cd layanandkisp
+   ```
+
+2. **Install dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
+
+3. **Setup environment**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+4. **Konfigurasi database**
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=layanan_dkisp
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+5. **Konfigurasi integrasi** (sesuaikan di `.env`)
+   ```env
+   # SSO Keycloak
+   KEYCLOAK_BASE_URL=https://sso.kaltaraprov.go.id
+   KEYCLOAK_REALM=kaltara
+   KEYCLOAK_CLIENT_ID=
+   KEYCLOAK_CLIENT_SECRET=
+
+   # Cloudflare
+   CLOUDFLARE_API_TOKEN=
+   CLOUDFLARE_ZONE_ID=
+
+   # WHM/cPanel
+   WHM_HOST=
+   WHM_USERNAME=
+   WHM_API_TOKEN=
+
+   # SIMPEG
+   SIMPEG_API_URL=
+   SIMPEG_API_KEY=
+
+   # Google API
+   GOOGLE_API_CREDENTIALS=
+   ```
+
+6. **Jalankan migrasi**
+   ```bash
+   php artisan migrate
+   ```
+
+7. **Build assets**
+   ```bash
+   npm run build
+   ```
+
+8. **Jalankan aplikasi**
+   ```bash
+   php artisan serve
+   ```
+
+## Struktur Direktori
+
+```
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Admin/          # Controller admin
+│   │   │   ├── Operator/       # Controller operator
+│   │   │   └── User/           # Controller user
+│   │   └── Middleware/
+│   ├── Models/
+│   └── Services/
+│       └── SimpegClient.php    # Service integrasi SIMPEG
+├── database/
+│   └── migrations/
+├── resources/
+│   └── views/
+├── routes/
+└── public/
+```
+
+## Role & Akses
+
+| Role | Akses |
+|------|-------|
+| **Admin** | Full access, konfigurasi sistem manajemen permohonan, approval, master data |
+
+
+## Kontribusi
+
+1. Fork repository
+2. Buat branch fitur (`git checkout -b fitur/FiturBaru`)
+3. Commit perubahan (`git commit -m 'Menambah fitur baru'`)
+4. Push ke branch (`git push origin fitur/FiturBaru`)
+5. Buat Pull Request
+
+## Lisensi
+
+© 2026 DKISP Kalimantan Utara - Bidang Aplikasi Informatika. All rights reserved.
+
+## Pengembang
+
+**Bayu Adi H.**
+**Dinas Komunikasi, Informatika dan Statistik**  
+**Provinsi Kalimantan Utara**
+
+LinkedIn : <a href="https://www.linkedin.com/in/noclaire"></a>
+Github : <a href="https://github.com/skivanoclaire"></a>
+
+
+
+---
+
+<p align="center">
+  <i>Melayani dengan Teknologi untuk Kalimantan Utara yang Lebih Baik</i>
+</p>
