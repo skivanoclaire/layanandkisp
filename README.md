@@ -230,8 +230,8 @@ Portal E-Layanan DKISP adalah sistem pelayanan berbasis web yang menyediakan ber
 **Dinas Komunikasi, Informatika dan Statistik**  
 **Provinsi Kalimantan Utara**
 
-LinkedIn : <a href="https://www.linkedin.com/in/noclaire"></a>
-Github : <a href="https://github.com/skivanoclaire"></a>
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/noclaire/)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white)](https://github.com/skivanoclaire)
 
 
 
