@@ -21,6 +21,8 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+Dockerfile
+.yaml
 
 # Google Sheets Service Account credentials
 /storage/app/google/
