@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(cat:*)",
+      "Bash(php -r:*)",
+      "Bash(grep:*)"
     ]
   }
 }

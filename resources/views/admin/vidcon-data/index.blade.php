@@ -80,9 +80,9 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($vidconData as $data)
+                @forelse($vidconData as $index => $data)
                 <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $data->no }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $vidconData->firstItem() + $index }}</td>
                     <td class="px-6 py-4 text-sm">{{ $data->unitKerja->nama ?? '-' }}</td>
                     <td class="px-6 py-4 text-sm">{{ Str::limit($data->judul_kegiatan, 50) }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">

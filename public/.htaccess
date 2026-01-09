@@ -5,6 +5,15 @@
 
     RewriteEngine On
 
+    # PHP settings untuk large data dan timeout
+    php_value upload_max_filesize 256M
+    php_value post_max_size 256M
+    php_value max_execution_time 3600
+    php_value max_input_time 3600
+    php_value memory_limit 512M
+    php_value max_input_vars 10000
+    php_value default_socket_timeout 3600
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

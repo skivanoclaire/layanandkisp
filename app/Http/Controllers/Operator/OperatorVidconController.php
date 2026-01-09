@@ -7,7 +7,8 @@ use App\Models\VidconData;
 use App\Models\VidconDocumentation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class OperatorVidconController extends Controller
 {
@@ -86,23 +87,25 @@ class OperatorVidconController extends Controller
                 // Convert HEIC to JPEG or process with EXIF orientation fix
                 if ($isHeic) {
                     // HEIC image - convert to JPEG
-                    $image = Image::make($photo);
-                    $image->orientate(); // Fix EXIF orientation
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($photo);
+                    $image->orient(); // Fix EXIF orientation
                     $fileName = time() . '_' . $index . '_' . pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME) . '.jpg';
 
                     // Save as JPEG with compression
                     $filePath = 'vidcon_documentations/' . $fileName;
                     $fullPath = storage_path('app/public/' . $filePath);
-                    $image->save($fullPath, 85);
+                    $image->save($fullPath, quality: 85);
                     $filePath = str_replace('\\', '/', $filePath);
                 } else {
                     // Regular images (JPEG, PNG) - process with orientation fix
-                    $image = Image::make($photo);
-                    $image->orientate(); // Fix EXIF orientation for all images
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($photo);
+                    $image->orient(); // Fix EXIF orientation for all images
                     $fileName = time() . '_' . $index . '_' . $photo->getClientOriginalName();
                     $filePath = 'vidcon_documentations/' . $fileName;
                     $fullPath = storage_path('app/public/' . $filePath);
-                    $image->save($fullPath, 90);
+                    $image->save($fullPath, quality: 90);
                     $filePath = str_replace('\\', '/', $filePath);
                 }
 

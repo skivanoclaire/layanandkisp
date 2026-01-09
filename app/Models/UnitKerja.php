@@ -23,6 +23,7 @@ class UnitKerja extends Model
     public const TIPE_INDUK = 'Induk Perangkat Daerah';
     public const TIPE_CABANG = 'Cabang Perangkat Daerah';
     public const TIPE_SEKOLAH = 'Sekolah';
+    public const TIPE_PUSAT = 'Instansi Pusat/Lainnya';
 
     public static function tipeOptions(): array
     {
@@ -30,6 +31,7 @@ class UnitKerja extends Model
             self::TIPE_INDUK,
             self::TIPE_CABANG,
             self::TIPE_SEKOLAH,
+            self::TIPE_PUSAT,
         ];
     }
 

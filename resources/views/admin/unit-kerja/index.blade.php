@@ -53,7 +53,9 @@
                             <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
                                 @if($item->tipe === 'Induk Perangkat Daerah') bg-blue-100 text-blue-800
                                 @elseif($item->tipe === 'Cabang Perangkat Daerah') bg-purple-100 text-purple-800
-                                @else bg-green-100 text-green-800
+                                @elseif($item->tipe === 'Sekolah') bg-green-100 text-green-800
+                                @elseif($item->tipe === 'Instansi Pusat/Lainnya') bg-orange-100 text-orange-800
+                                @else bg-gray-100 text-gray-800
                                 @endif">
                                 {{ $item->tipe }}
                             </span>
@@ -102,6 +104,7 @@
                 <li><span class="font-semibold">Induk Perangkat Daerah:</span> Badan, Dinas, Sekretariat, Inspektorat, Satpol PP, RSUD, Biro</li>
                 <li><span class="font-semibold">Cabang Perangkat Daerah:</span> UPT, UPTD, Cabang Dinas</li>
                 <li><span class="font-semibold">Sekolah:</span> SMA, SMK, SLB</li>
+                <li><span class="font-semibold">Instansi Pusat/Lainnya:</span> Kementerian, Lembaga Pusat, atau instansi lainnya di luar kategori di atas</li>
             </ul>
         </div>
     </div>

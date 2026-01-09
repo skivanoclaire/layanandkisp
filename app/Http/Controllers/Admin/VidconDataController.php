@@ -32,7 +32,7 @@ class VidconDataController extends Controller
             $query->where('platform', 'like', '%' . $request->platform . '%');
         }
 
-        $vidconData = $query->orderBy('no', 'desc')->paginate(20);
+        $vidconData = $query->orderBy('tanggal_mulai', 'desc')->paginate(20);
 
         // Get all unit kerjas for filter dropdown
         $unitKerjas = \App\Models\UnitKerja::orderBy('nama')->get();

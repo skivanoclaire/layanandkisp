@@ -46,6 +46,11 @@ class SsoController extends Controller
             $email = $keycloakUser->getEmail();
             $name = $keycloakUser->getName();
 
+            // Extract NIK and phone from Keycloak user data
+            $rawUser = $keycloakUser->getRaw();
+            $nik = $rawUser['nik'] ?? null;
+            $phone = $rawUser['phone'] ?? $rawUser['mobile'] ?? $rawUser['phone_number'] ?? null;
+
             // Validate required fields
             if (empty($nip) || empty($email)) {
                 Log::error('SSO Login Failed: Missing NIP or Email', [
@@ -64,7 +69,8 @@ class SsoController extends Controller
                 // Create new user from SSO
                 $user = User::create([
                     'nip' => $nip,
-                    'phone' => '-', // Default phone, user can update later
+                    'nik' => $nik,
+                    'phone' => $phone ?? '-', // Use phone from SSO if available, otherwise default
                     'email' => $email,
                     'name' => $name,
                     'password' => bcrypt(Str::random(32)), // Random password for SSO users
@@ -82,15 +88,25 @@ class SsoController extends Controller
 
                 Log::info('New user created via SSO', ['nip' => $nip, 'email' => $email]);
             } else {
-                // Update existing user data from SSO
+                // Build update data - update all fields that SSO provides
                 $updateData = [
                     'name' => $name,
                     'email' => $email,
                 ];
 
-                // If user was found by email but NIP is empty, update NIP
-                if (empty($user->nip)) {
+                // Update NIP if token provides it
+                if ($nip) {
                     $updateData['nip'] = $nip;
+                }
+
+                // Update NIK if token provides it
+                if ($nik) {
+                    $updateData['nik'] = $nik;
+                }
+
+                // Update phone if token provides it
+                if ($phone) {
+                    $updateData['phone'] = $phone;
                 }
 
                 $user->update($updateData);
@@ -163,6 +179,8 @@ class SsoController extends Controller
       $nip = $userClaim->nip ?? $userClaim->username ?? null;
       $email = $userClaim->email ?? null;
       $name = $userClaim->full_name ?? $userClaim->username ?? $nip;
+      $nik = $userClaim->nik ?? null;
+      $phone = $userClaim->phone ?? $userClaim->mobile ?? $userClaim->phone_number ?? null;
 
       if (! $nip || ! $email) {
           return $this->fail($request, 'Data token tidak lengkap (nip/email).', 401);
@@ -173,7 +191,8 @@ class SsoController extends Controller
       if (! $user) {
           $user = User::create([
               'nip' => $nip,
-              'phone' => '-',
+              'nik' => $nik,
+              'phone' => $phone ?? '-',
               'email' => $email,
               'name' => $name,
               'password' => bcrypt(Str::random(32)),
@@ -183,15 +202,28 @@ class SsoController extends Controller
               'verified_by' => 'SSO System',
           ]);
       } else {
-          $user->update([
+          // Build update data - update all fields that SSO provides
+          $updateData = [
               'name' => $name,
               'email' => $email,
-          ]);
-          if (empty($user->nip)) {
-              $user->update([
-                  'nip' => $nip,
-              ]);
+          ];
+
+          // Update NIP if token provides it
+          if ($nip) {
+              $updateData['nip'] = $nip;
           }
+
+          // Update NIK if token provides it
+          if ($nik) {
+              $updateData['nik'] = $nik;
+          }
+
+          // Update phone if token provides it
+          if ($phone) {
+              $updateData['phone'] = $phone;
+          }
+
+          $user->update($updateData);
       }
 
       // Mapping role dari token -> role lokal
