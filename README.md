@@ -19,6 +19,18 @@
 
 Portal E-Layanan DKISP adalah sistem pelayanan berbasis web yang menyediakan berbagai layanan digital untuk memudahkan ASN dan masyarakat dalam mengakses layanan Dinas Komunikasi, Informatika dan Statistik Provinsi Kalimantan Utara.
 
+## Pengembang Awal
+
+Dibangun oleh: Bayu Adi Hartanto, S.Kom. (pengembang awal)
+
+## Hak Cipta & Lisensi
+
+Copyright (c) 2026 Bayu Adi Hartanto.
+
+Aplikasi ini dirilis dengan Lisensi MIT. Anda bebas menggunakan, menyalin, memodifikasi, menggabungkan, menerbitkan, mendistribusikan, mensublisensikan, dan/atau menjual salinan perangkat lunak ini, dengan syarat tetap menyertakan pemberitahuan hak cipta dan teks lisensi ini pada setiap salinan atau bagian substansial dari perangkat lunak.
+
+Lihat file `LICENSE` untuk detail.
+
 ## Fitur Layanan Digital
 
 ### 📧 Email Dinas
