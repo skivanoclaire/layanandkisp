@@ -106,6 +106,9 @@ Lihat file `LICENSE` untuk detail.
 - Kelola Role
 - Kelola Kewenangan
 - Verifikasi Pengguna via SIMPEG
+- RBAC
+- Audit Log
+
 
 ## Integrasi Sistem
 
@@ -114,7 +117,7 @@ Lihat file `LICENSE` untuk detail.
 | **SSO Keycloak** | Single Sign-On terintegrasi dengan [sso.kaltaraprov.go.id](https://sso.kaltaraprov.go.id) |
 | **Cloudflare** | Manajemen DNS dan subdomain otomatis |
 | **WHM/cPanel** | Manajemen email dinas otomatis |
-| **SIMPEG** | Verifikasi dan sinkronisasi data ASN |
+| **API SIMPEG** | Verifikasi dan sinkronisasi data ASN |
 | **Google API** | Integrasi data aset TIK |
 
 ## Tech Stack
@@ -131,7 +134,7 @@ Lihat file `LICENSE` untuk detail.
 
 - PHP >= 8.2
 - Composer
-- MySQL >= 5.7
+- MySQL >= 8.0
 - Node.js & NPM
 - Web Server (Apache/Nginx)
 
@@ -233,7 +236,8 @@ Lihat file `LICENSE` untuk detail.
 | **Admin** | Full access, konfigurasi sistem manajemen permohonan, approval, master data |
 | **Operator-Vidcon** | Kelola Layanan Vidcon |
 | **Operator-Sandi** | Kelola Layanan Sandi |
-| **User** | Akses Permohonan Layanan secara Digital |
+| **User ASN** | Akses Permohonan Layanan secara Digital |
+| **Custom User** |  Custom akses untuk jenis User lainnya yang diinginkan |
 
 ## Kontribusi
 
