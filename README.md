@@ -84,19 +84,28 @@ Lihat file `LICENSE` untuk detail.
 - Monitoring subdomain aktif
 - Deteksi website down
 - Grafik pertumbuhan layanan
+- Pelaporan per layanan
 
 ### Master Data
 - Master Data Subdomain
 - Master Data Instansi
 - Master Data Email
-- Master Data IP
+- Master Data IP Public
 - Master Data Aset TIK
+- Master Data Video Conference (Vidcon)
+   - Inventaris Digital Aset Vidcon
+   - Peminjaman dan Pengembalian Aset Vidcon
+   - Laporan Peminjaman
+   - Jadwal Vidcon
+   - Pembagian Tugas Vidcon Otomatis
+
+
 
 ### Manajemen
 - User Management
 - Kelola Role
 - Kelola Kewenangan
-- Cek via SIMPEG
+- Verifikasi Pengguna via SIMPEG
 
 ## Integrasi Sistem
 
