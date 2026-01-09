@@ -59,6 +59,10 @@ Lihat file `LICENSE` untuk detail.
 - Permohonan reset passphrase TTE
 - Pembaruan sertifikat TTE
 
+### 📃 Aset TIK
+- Akses Data Aset TIK Hardware/Software Seluruh OPD
+- Rekomendasi Aset TIK
+
 ### 🎥 Video Conference
 - Layanan video konferensi
 - Penjadwalan meeting online
