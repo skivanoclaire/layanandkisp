@@ -24,7 +24,7 @@ class UnifiedSubdomainController extends Controller
     public function index(Request $request)
     {
         $filters = [
-            'status' => $request->get('status'),
+            'status_monitoring' => $request->get('status_monitoring'),
             'source' => $request->get('source', 'all'),
             'search' => $request->get('search'),
             'date_from' => $request->get('date_from'),
@@ -147,7 +147,7 @@ class UnifiedSubdomainController extends Controller
     public function exportAll(Request $request)
     {
         $filters = [
-            'status' => $request->get('status'),
+            'status_monitoring' => $request->get('status_monitoring'),
             'source' => $request->get('source', 'all'),
             'search' => $request->get('search'),
         ];

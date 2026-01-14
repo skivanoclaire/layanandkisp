@@ -46,4 +46,22 @@ class UnitKerja extends Model
     {
         return $query->where('tipe', $tipe);
     }
+
+    // Relationships
+
+    /**
+     * Get all users belonging to this unit kerja
+     */
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    /**
+     * Get all jabatan records belonging to this unit kerja
+     */
+    public function jabatans()
+    {
+        return $this->hasMany(Jabatan::class);
+    }
 }

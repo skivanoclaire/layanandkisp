@@ -61,7 +61,7 @@
 
                 <div class="mb-6">
                     <label for="nip" class="block text-sm font-medium text-gray-700 mb-2">
-                        NIP (Nomor Induk Pegawai)
+                        NIP (Nomor Induk Pegawai) <span class="text-red-500">*</span>
                     </label>
                     <input
                         type="text"
@@ -69,17 +69,17 @@
                         name="nip"
                         value="{{ old('nip') }}"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nip') border-red-500 @enderror"
-                        placeholder="Masukkan NIP jika pegawai ASN"
+                        placeholder="Masukkan NIP"
+                        required
                     >
                     @error('nip')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-xs text-gray-500">Opsional - hanya untuk pegawai ASN</p>
                 </div>
 
                 <div class="mb-6">
                     <label for="nik" class="block text-sm font-medium text-gray-700 mb-2">
-                        NIK (Nomor Induk Kependudukan)
+                        NIK (Nomor Induk Kependudukan) <span class="text-red-500">*</span>
                     </label>
                     <input
                         type="text"
@@ -88,7 +88,9 @@
                         value="{{ old('nik') }}"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nik') border-red-500 @enderror"
                         maxlength="16"
+                        pattern="\d{16}"
                         placeholder="16 digit NIK"
+                        required
                     >
                     @error('nik')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
@@ -97,7 +99,7 @@
 
                 <div class="mb-6">
                     <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
-                        No. Telepon
+                        No. Telepon <span class="text-red-500">*</span>
                     </label>
                     <input
                         type="text"
@@ -105,10 +107,33 @@
                         name="phone"
                         value="{{ old('phone') }}"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('phone') border-red-500 @enderror"
+                        required
                     >
                     @error('phone')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <div class="mb-6">
+                    <label for="unit_kerja_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Unit Kerja / Instansi
+                    </label>
+                    <select
+                        id="unit_kerja_id"
+                        name="unit_kerja_id"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('unit_kerja_id') border-red-500 @enderror"
+                    >
+                        <option value="">-- Pilih Unit Kerja --</option>
+                        @foreach($unitKerjas as $uk)
+                            <option value="{{ $uk->id }}" {{ old('unit_kerja_id') == $uk->id ? 'selected' : '' }}>
+                                {{ $uk->nama }} ({{ $uk->tipe }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('unit_kerja_id')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">Opsional - Pilih untuk user yang merupakan pegawai instansi</p>
                 </div>
 
                 <div class="mb-6">
@@ -199,3 +224,16 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const nikInput = document.getElementById('nik');
+
+        // Validate digits only for NIK
+        nikInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    });
+</script>
+@endpush

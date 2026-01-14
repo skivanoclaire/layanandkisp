@@ -346,7 +346,7 @@ class AdminController extends Controller
 
     public function users(HttpRequest $request)
     {
-        $query = User::with('roles');
+        $query = User::with(['roles', 'unitKerja']);
 
         // Search functionality
         if ($request->filled('search')) {
@@ -367,10 +367,16 @@ class AdminController extends Controller
             });
         }
 
+        // Filter by unit_kerja
+        if ($request->filled('unit_kerja_id')) {
+            $query->where('unit_kerja_id', $request->unit_kerja_id);
+        }
+
         $users = $query->latest()->get();
         $roles = \App\Models\Role::all();
+        $unitKerjas = \App\Models\UnitKerja::active()->orderBy('nama')->get();
 
-        return view('admin.users', compact('users', 'roles'));
+        return view('admin.users', compact('users', 'roles', 'unitKerjas'));
     }
 
     public function updateStatus(HttpRequest $request, UserRequest $userRequest)
@@ -396,6 +402,7 @@ class AdminController extends Controller
             'nip'      => ['nullable','string','max:20'],
             'nik'      => ['nullable','string','max:20'],
             'phone'    => ['nullable','string','max:20'],
+            'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
             'password' => ['nullable','string','min:8','confirmed'],
         ]);
 
@@ -405,6 +412,7 @@ class AdminController extends Controller
         $user->nip   = $validated['nip']   ?? null;
         $user->nik   = $validated['nik']   ?? null;
         $user->phone = $validated['phone'] ?? null;
+        $user->unit_kerja_id = $validated['unit_kerja_id'] ?? null;
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
@@ -423,7 +431,8 @@ class AdminController extends Controller
     public function createUser()
     {
         $roles = \App\Models\Role::all();
-        return view('admin.create-user', compact('roles'));
+        $unitKerjas = \App\Models\UnitKerja::active()->orderBy('nama')->get();
+        return view('admin.create-user', compact('roles', 'unitKerjas'));
     }
 
     public function storeUser(HttpRequest $request)
@@ -431,9 +440,10 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'nip'      => ['nullable', 'string', 'max:20'],
-            'nik'      => ['nullable', 'string', 'max:16'],
-            'phone'    => ['nullable', 'string', 'max:20'],
+            'nip'      => ['required', 'string', 'max:20'],
+            'nik'      => ['required', 'string', 'size:16', 'regex:/^\d{16}$/'],
+            'phone'    => ['required', 'string', 'max:20'],
+            'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'roles'    => ['required', 'array', 'min:1'],
             'roles.*'  => ['exists:roles,id'],
@@ -444,9 +454,10 @@ class AdminController extends Controller
         $user = User::create([
             'name'     => $validated['name'],
             'email'    => $validated['email'],
-            'nip'      => $validated['nip'] ?? null,
-            'nik'      => $validated['nik'] ?? null,
-            'phone'    => $validated['phone'] ?? null,
+            'nip'      => $validated['nip'],
+            'nik'      => $validated['nik'],
+            'phone'    => $validated['phone'],
+            'unit_kerja_id' => $validated['unit_kerja_id'] ?? null,
             'password' => Hash::make($validated['password']),
             'role'     => 'User', // Default role for backward compatibility
             'is_verified' => $request->has('is_verified'),
@@ -464,7 +475,8 @@ class AdminController extends Controller
     public function editUser(User $user)
     {
         $roles = \App\Models\Role::all();
-        return view('admin.edit-user', compact('user', 'roles'));
+        $unitKerjas = \App\Models\UnitKerja::active()->orderBy('nama')->get();
+        return view('admin.edit-user', compact('user', 'roles', 'unitKerjas'));
     }
 
     public function destroyUser(User $user)

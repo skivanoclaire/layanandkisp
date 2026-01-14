@@ -77,6 +77,21 @@
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500">
             </div>
 
+            <!-- Unit Kerja -->
+            <div class="mb-4">
+                <label for="unit_kerja_id" class="block text-sm font-medium text-gray-700">Unit Kerja / Instansi</label>
+                <select name="unit_kerja_id" id="unit_kerja_id"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500">
+                    <option value="">-- Pilih Unit Kerja --</option>
+                    @foreach($unitKerjas as $uk)
+                        <option value="{{ $uk->id }}" {{ old('unit_kerja_id', $user->unit_kerja_id) == $uk->id ? 'selected' : '' }}>
+                            {{ $uk->nama }} ({{ $uk->tipe }})
+                        </option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-gray-500">Opsional - Pilih untuk user yang merupakan pegawai instansi</p>
+            </div>
+
             <div class="mt-4">
                 <label class="block font-semibold mb-1">Password Baru</label>
                 <input type="password" name="password" class="form-input w-full border border-gray-300 rounded-md p-2"

@@ -1,0 +1,326 @@
+version: '3.8'
+
+# Docker Compose untuk E-Layanan DKISP Microservices
+# Semua service berjalan dalam satu VM
+
+networks:
+  layanan-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  rabbitmq-data:
+  mysql-auth-data:
+  mysql-email-data:
+  mysql-subdomain-data:
+
+services:
+  # ============================================
+  # API GATEWAY & LOAD BALANCER
+  # ============================================
+  nginx-gateway:
+    image: nginx:alpine
+    container_name: layanan-gateway
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf
+      - ./gateway/ssl:/etc/nginx/ssl
+    networks:
+      - layanan-network
+    depends_on:
+      - auth-service
+      - email-service
+      - subdomain-service
+    restart: unless-stopped
+
+  # ============================================
+  # INFRASTRUCTURE SERVICES
+  # ============================================
+
+  redis:
+    image: redis:7-alpine
+    container_name: layanan-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - layanan-network
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: layanan-rabbitmq
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: secret123
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  # ============================================
+  # AUTH & USER SERVICE
+  # ============================================
+
+  auth-db:
+    image: mysql:8.0
+    container_name: layanan-auth-db
+    environment:
+      MYSQL_DATABASE: auth_db
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: auth_pass
+    volumes:
+      - mysql-auth-data:/var/lib/mysql
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  auth-service:
+    build: ./services/auth-service
+    container_name: layanan-auth-service
+    ports:
+      - "8100:8000"
+    environment:
+      APP_NAME: "Auth Service"
+      APP_ENV: production
+      DB_HOST: auth-db
+      DB_DATABASE: auth_db
+      DB_USERNAME: auth_user
+      DB_PASSWORD: auth_pass
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: rabbitmq
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      - auth-db
+      - redis
+      - rabbitmq
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  # ============================================
+  # EMAIL SERVICE
+  # ============================================
+
+  email-db:
+    image: mysql:8.0
+    container_name: layanan-email-db
+    environment:
+      MYSQL_DATABASE: email_db
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_USER: email_user
+      MYSQL_PASSWORD: email_pass
+    volumes:
+      - mysql-email-data:/var/lib/mysql
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  email-service:
+    build: ./services/email-service
+    container_name: layanan-email-service
+    ports:
+      - "8001:8000"
+    environment:
+      APP_NAME: "Email Service"
+      APP_ENV: production
+      DB_HOST: email-db
+      DB_DATABASE: email_db
+      DB_USERNAME: email_user
+      DB_PASSWORD: email_pass
+      REDIS_HOST: redis
+      # WHM API Configuration
+      WHM_HOST: ${WHM_HOST}
+      WHM_USERNAME: ${WHM_USERNAME}
+      WHM_API_TOKEN: ${WHM_API_TOKEN}
+    depends_on:
+      - email-db
+      - redis
+      - auth-service
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  # ============================================
+  # SUBDOMAIN SERVICE
+  # ============================================
+
+  subdomain-db:
+    image: mysql:8.0
+    container_name: layanan-subdomain-db
+    environment:
+      MYSQL_DATABASE: subdomain_db
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_USER: subdomain_user
+      MYSQL_PASSWORD: subdomain_pass
+    volumes:
+      - mysql-subdomain-data:/var/lib/mysql
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  subdomain-service:
+    build: ./services/subdomain-service
+    container_name: layanan-subdomain-service
+    ports:
+      - "8002:8000"
+    environment:
+      APP_NAME: "Subdomain Service"
+      APP_ENV: production
+      DB_HOST: subdomain-db
+      DB_DATABASE: subdomain_db
+      DB_USERNAME: subdomain_user
+      DB_PASSWORD: subdomain_pass
+      REDIS_HOST: redis
+      # Cloudflare API Configuration
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+      CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID}
+    depends_on:
+      - subdomain-db
+      - redis
+      - auth-service
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  # ============================================
+  # TTE SERVICE
+  # ============================================
+
+  tte-service:
+    build: ./services/tte-service
+    container_name: layanan-tte-service
+    ports:
+      - "8003:8000"
+    environment:
+      APP_NAME: "TTE Service"
+      APP_ENV: production
+      REDIS_HOST: redis
+      AUTH_SERVICE_URL: http://auth-service:8000
+    depends_on:
+      - redis
+      - auth-service
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  # ============================================
+  # VIDCON SERVICE
+  # ============================================
+
+  vidcon-service:
+    build: ./services/vidcon-service
+    container_name: layanan-vidcon-service
+    ports:
+      - "8004:8000"
+    environment:
+      APP_NAME: "VidCon Service"
+      APP_ENV: production
+      REDIS_HOST: redis
+      AUTH_SERVICE_URL: http://auth-service:8000
+    depends_on:
+      - redis
+      - auth-service
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  # ============================================
+  # ASET TIK SERVICE
+  # ============================================
+
+  aset-service:
+    build: ./services/aset-service
+    container_name: layanan-aset-service
+    ports:
+      - "8005:8000"
+    environment:
+      APP_NAME: "Aset TIK Service"
+      APP_ENV: production
+      REDIS_HOST: redis
+      # Google Sheets API
+      GOOGLE_API_CREDENTIALS: ${GOOGLE_API_CREDENTIALS}
+    depends_on:
+      - redis
+      - auth-service
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  # ============================================
+  # NOTIFICATION SERVICE (Shared)
+  # ============================================
+
+  notification-service:
+    build: ./services/notification-service
+    container_name: layanan-notification-service
+    ports:
+      - "8101:8000"
+    environment:
+      APP_NAME: "Notification Service"
+      APP_ENV: production
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+      MAIL_MAILER: smtp
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - layanan-network
+    restart: unless-stopped
+
+  # ============================================
+  # MONITORING & LOGGING (Optional)
+  # ============================================
+
+  # Uncomment jika ingin monitoring
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: layanan-prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+  #   networks:
+  #     - layanan-network
+  #   restart: unless-stopped
+
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: layanan-grafana
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     GF_SECURITY_ADMIN_PASSWORD: admin123
+  #   networks:
+  #     - layanan-network
+  #   restart: unless-stopped
+
+# ============================================
+# RESOURCE LIMITS (Agar tidak overload)
+# ============================================
+# Uncomment dan sesuaikan dengan kapasitas VM Anda
+
+# services:
+#   email-service:
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: '1.0'
+#           memory: 512M
+#         reservations:
+#           cpus: '0.5'
+#           memory: 256M

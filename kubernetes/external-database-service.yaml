@@ -1,0 +1,184 @@
+# ============================================
+# External Database Configuration
+# Kubernetes Service + Endpoints for External MySQL
+# ============================================
+
+---
+# Service untuk Database Eksternal
+# Service ini TIDAK memiliki selector, jadi tidak akan otomatis route ke pods
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-external
+  namespace: layanan-prod
+  labels:
+    app: mysql
+    tier: database
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+      targetPort: 3306
+      protocol: TCP
+      name: mysql
+  # PENTING: Tidak ada selector, karena database di luar cluster
+
+---
+# Endpoints Manual untuk Database Eksternal
+# Mengarahkan Service ke IP database server eksternal
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: mysql-external  # HARUS sama dengan nama Service
+  namespace: layanan-prod
+subsets:
+  - addresses:
+      - ip: 10.0.2.100  # IP database server eksternal
+        # Jika pakai hostname/DNS:
+        # hostname: db-server.example.com
+    ports:
+      - port: 3306
+        protocol: TCP
+        name: mysql
+
+---
+# ConfigMap untuk Database Credentials
+# (Better practice: gunakan Secrets, tapi ini untuk demo)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-config
+  namespace: layanan-prod
+data:
+  # Endpoint database (akan resolve ke IP eksternal via Service)
+  DB_HOST: "mysql-external"
+  DB_PORT: "3306"
+
+  # Database names per service
+  AUTH_DB_NAME: "auth_db"
+  EMAIL_DB_NAME: "email_db"
+  SUBDOMAIN_DB_NAME: "subdomain_db"
+  TTE_DB_NAME: "tte_db"
+  VIDCON_DB_NAME: "vidcon_db"
+
+---
+# Secret untuk Database Passwords
+apiVersion: v1
+kind: Secret
+metadata:
+  name: database-credentials
+  namespace: layanan-prod
+type: Opaque
+stringData:
+  # Credentials per service (encode in base64 for production)
+  AUTH_DB_USER: "auth_user"
+  AUTH_DB_PASSWORD: "auth_secure_pass_123"
+
+  EMAIL_DB_USER: "email_user"
+  EMAIL_DB_PASSWORD: "email_secure_pass_123"
+
+  SUBDOMAIN_DB_USER: "subdomain_user"
+  SUBDOMAIN_DB_PASSWORD: "subdomain_secure_pass_123"
+
+  TTE_DB_USER: "tte_user"
+  TTE_DB_PASSWORD: "tte_secure_pass_123"
+
+  VIDCON_DB_USER: "vidcon_user"
+  VIDCON_DB_PASSWORD: "vidcon_secure_pass_123"
+
+---
+# Contoh Deployment menggunakan External Database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-service
+  namespace: layanan-prod
+spec:
+  replicas: 3  # Auto-scaling by Kubernetes!
+  selector:
+    matchLabels:
+      app: email-service
+  template:
+    metadata:
+      labels:
+        app: email-service
+    spec:
+      containers:
+      - name: email-service
+        image: your-registry/email-service:latest
+        ports:
+        - containerPort: 8000
+
+        # Environment variables dari ConfigMap & Secret
+        env:
+          # Database Host (resolve ke external MySQL via Service)
+          - name: DB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: database-config
+                key: DB_HOST
+
+          - name: DB_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: database-config
+                key: DB_PORT
+
+          - name: DB_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: database-config
+                key: EMAIL_DB_NAME
+
+          # Credentials dari Secret
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: EMAIL_DB_USER
+
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: EMAIL_DB_PASSWORD
+
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+        # Resource limits
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+# Service untuk Email Service (internal K8s)
+apiVersion: v1
+kind: Service
+metadata:
+  name: email-service
+  namespace: layanan-prod
+spec:
+  selector:
+    app: email-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: ClusterIP

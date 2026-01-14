@@ -115,6 +115,21 @@
                             <span class="text-gray-800">{{ $result['golongan'] }}</span>
                         </li>
                         @endif
+                        @if(!empty($result['instansi']))
+                        <li>
+                            <span class="font-medium">Instansi (dari SIMPEG):</span>
+                            <span class="text-gray-800">{{ $result['instansi'] }}</span>
+                            @if(!empty($result['matched_unit_kerja']))
+                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-green-800 bg-green-100 border border-green-200 text-xs font-semibold">
+                                    ✓ Cocok: {{ $result['matched_unit_kerja']->nama }}
+                                </span>
+                            @else
+                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-yellow-800 bg-yellow-100 border border-yellow-200 text-xs font-semibold">
+                                    ⚠ Tidak ditemukan di master
+                                </span>
+                            @endif
+                        </li>
+                        @endif
 
                         <li class="pt-3 border-t border-gray-200">
                             <span class="font-medium">Kecocokan dengan Data Lokal:</span>
@@ -161,6 +176,9 @@
                             @csrf
                             <input type="hidden" name="user_id" value="{{ $result['user']->id }}">
                             <input type="hidden" name="nik" value="{{ $input_nik ?? '' }}">
+                            @if(!empty($result['instansi']))
+                                <input type="hidden" name="instansi_simpeg" value="{{ $result['instansi'] }}">
+                            @endif
 
                             <div class="space-y-2 mb-4">
                                 @if(!empty($result['nip']))
@@ -230,6 +248,49 @@
                                 @endif
                             </div>
 
+                            {{-- Unit Kerja Selection --}}
+                            <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                                <label class="flex items-start gap-2">
+                                    <input type="checkbox" name="fields[]" value="unit_kerja" class="mt-1" id="unit_kerja_checkbox">
+                                    <div class="flex-1">
+                                        <span class="font-medium text-gray-900">Unit Kerja / Instansi</span>
+                                        @if(!empty($result['instansi']))
+                                            <div class="text-sm text-gray-600 mt-1">
+                                                Dari SIMPEG: <strong>{{ $result['instansi'] }}</strong>
+                                            </div>
+                                        @endif
+                                        @if(!empty($result['user']->unitKerja))
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                Saat ini: {{ $result['user']->unitKerja->nama }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </label>
+
+                                <div class="mt-3">
+                                    <label for="unit_kerja_id" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Pilih Unit Kerja
+                                    </label>
+                                    <select name="unit_kerja_id" id="unit_kerja_id"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">-- Pilih Unit Kerja --</option>
+                                        @foreach($unitKerjas as $uk)
+                                            <option value="{{ $uk->id }}"
+                                                    {{ (!empty($result['matched_unit_kerja']) && $result['matched_unit_kerja']->id == $uk->id) ? 'selected' : '' }}>
+                                                {{ $uk->nama }} ({{ $uk->tipe }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        @if(!empty($result['matched_unit_kerja']))
+                                            ✓ Auto-selected berdasarkan data SIMPEG. Anda dapat mengubahnya jika perlu.
+                                        @else
+                                            Pilih unit kerja yang sesuai untuk user ini.
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">
                                 Simpan ke User
                             </button>
@@ -291,3 +352,17 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-check unit_kerja checkbox if there's a matched unit kerja
+        @if(!is_null($result ?? null) && !empty($result['matched_unit_kerja']))
+            const unitKerjaCheckbox = document.getElementById('unit_kerja_checkbox');
+            if (unitKerjaCheckbox) {
+                unitKerjaCheckbox.checked = true;
+            }
+        @endif
+    });
+</script>
+@endpush

@@ -18,6 +18,7 @@ class User extends Authenticatable
         'nik',
         'nip',
         'phone',
+        'unit_kerja_id',
         'is_verified',
         'is_sso_user',
         'verified_at',
@@ -56,6 +57,14 @@ class User extends Authenticatable
     public function jabatan()
     {
         return $this->hasOne(\App\Models\Jabatan::class);
+    }
+
+    /**
+     * Get the unit kerja (work unit/institution) for this user
+     */
+    public function unitKerja()
+    {
+        return $this->belongsTo(\App\Models\UnitKerja::class);
     }
 
     /**

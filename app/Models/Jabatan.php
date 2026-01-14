@@ -25,7 +25,9 @@ class Jabatan extends Model
     protected $fillable = [
         'user_id',
         'nama_jabatan',
-        'unit_kerja',
+        'unit_kerja_id',
+        'unit_kerja',  // Keep old column for now (renamed to unit_kerja_legacy in migration)
+        'unit_kerja_legacy',  // Allow filling legacy column
         'eselon',
         'tmt_jabatan',
         'keterangan',
@@ -46,5 +48,13 @@ class Jabatan extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the unit kerja for this jabatan.
+     */
+    public function unitKerja(): BelongsTo
+    {
+        return $this->belongsTo(UnitKerja::class);
     }
 }

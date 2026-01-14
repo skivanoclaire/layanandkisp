@@ -18,10 +18,13 @@ class SimpegCheckController extends Controller
         $logs = SimpegCheck::with(['user','createdBy'])
             ->latest()->take(10)->get();
 
+        $unitKerjas = \App\Models\UnitKerja::active()->orderBy('nama')->get();
+
         return view('admin.simpeg.index', [
             'logs'   => $logs,
             'result' => null,
             'layout' => 'layouts.app',
+            'unitKerjas' => $unitKerjas,
         ]);
     }
 
@@ -77,6 +80,26 @@ class SimpegCheckController extends Controller
         $eml     = $data['email']    ?? null;
         $jabatan = $data['jabatan']  ?? null;
         $golongan = $data['golongan'] ?? null;
+        $instansi = $data['instansi'] ?? null; // Get instansi from SIMPEG
+
+        // Try to match instansi with UnitKerja
+        $matchedUnitKerja = null;
+        if (!empty($instansi)) {
+            // Try exact match first
+            $matchedUnitKerja = \App\Models\UnitKerja::where('nama', $instansi)->first();
+
+            // If no exact match, try case-insensitive and trimmed match
+            if (!$matchedUnitKerja) {
+                $matchedUnitKerja = \App\Models\UnitKerja::whereRaw('LOWER(TRIM(nama)) = ?', [
+                    mb_strtolower(trim($instansi))
+                ])->first();
+            }
+
+            // If still no match, try partial match (LIKE)
+            if (!$matchedUnitKerja) {
+                $matchedUnitKerja = \App\Models\UnitKerja::where('nama', 'like', '%' . $instansi . '%')->first();
+            }
+        }
 
         // Karena NIK di-encrypt, kita perlu cari user dengan cara decrypt setiap NIK
         $user = User::whereNotNull('nik')->get()->first(function($u) use ($nik) {
@@ -116,6 +139,7 @@ class SimpegCheckController extends Controller
         }
 
         $logs = SimpegCheck::with(['user','createdBy'])->latest()->take(10)->get();
+        $unitKerjas = \App\Models\UnitKerja::active()->orderBy('nama')->get();
 
         return view('admin.simpeg.index', [
             'result' => [
@@ -126,6 +150,8 @@ class SimpegCheckController extends Controller
                 'email'     => $eml,
                 'jabatan'   => $jabatan,
                 'golongan'  => $golongan,
+                'instansi'  => $instansi,
+                'matched_unit_kerja' => $matchedUnitKerja,
                 'user'      => $user,
                 'name_ok'   => $nameMatch,
                 'phone_ok'  => $phoneMatch,
@@ -134,6 +160,7 @@ class SimpegCheckController extends Controller
             'logs'      => $logs,
             'layout'    => 'layouts.app',
             'input_nik' => $nik,
+            'unitKerjas' => $unitKerjas,
         ]);
     }
 
@@ -143,12 +170,14 @@ class SimpegCheckController extends Controller
             'user_id' => ['required', 'exists:users,id'],
             'nik' => ['required', 'string'],
             'fields' => ['required', 'array', 'min:1'],
-            'fields.*' => ['in:nip,name,phone,email,jabatan'],
+            'fields.*' => ['in:nip,name,phone,email,jabatan,unit_kerja'],
             'nip' => ['nullable', 'string', 'max:20'],
             'nama' => ['nullable', 'string', 'max:255'],
             'telepon' => ['nullable', 'string', 'max:20'],
             'email_simpeg' => ['nullable', 'email', 'max:255'],
             'jabatan' => ['nullable', 'string', 'max:255'],
+            'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
+            'instansi_simpeg' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = User::findOrFail($validated['user_id']);
@@ -183,12 +212,31 @@ class SimpegCheckController extends Controller
                     break;
                 case 'jabatan':
                     if (!empty($validated['jabatan'])) {
+                        // Prepare jabatan data
+                        $jabatanData = ['nama_jabatan' => $validated['jabatan']];
+
+                        // Add unit_kerja_id to jabatan if available
+                        if (!empty($validated['unit_kerja_id'])) {
+                            $jabatanData['unit_kerja_id'] = $validated['unit_kerja_id'];
+                        }
+
+                        // Add legacy instansi if available
+                        if (!empty($validated['instansi_simpeg'])) {
+                            $jabatanData['unit_kerja_legacy'] = $validated['instansi_simpeg'];
+                        }
+
                         // Update or create jabatan record in separate table
                         $user->jabatan()->updateOrCreate(
                             ['user_id' => $user->id],
-                            ['nama_jabatan' => $validated['jabatan']]
+                            $jabatanData
                         );
                         $updatedFields[] = 'Jabatan';
+                    }
+                    break;
+                case 'unit_kerja':
+                    if (!empty($validated['unit_kerja_id'])) {
+                        $user->unit_kerja_id = $validated['unit_kerja_id'];
+                        $updatedFields[] = 'Unit Kerja';
                     }
                     break;
             }

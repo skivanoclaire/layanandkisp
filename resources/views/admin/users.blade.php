@@ -22,7 +22,7 @@
 
         {{-- Search and Filter Form --}}
         <form method="GET" action="{{ route('admin.users') }}" class="mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Cari (Nama / NIP / NIK / Email / Telepon)</label>
                     <input
@@ -51,6 +51,22 @@
                     </select>
                 </div>
 
+                <div>
+                    <label for="unit_kerja_id" class="block text-sm font-medium text-gray-700 mb-2">Filter Unit Kerja</label>
+                    <select
+                        id="unit_kerja_id"
+                        name="unit_kerja_id"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                        <option value="">-- Semua Unit Kerja --</option>
+                        @foreach($unitKerjas as $uk)
+                            <option value="{{ $uk->id }}" {{ request('unit_kerja_id') == $uk->id ? 'selected' : '' }}>
+                                {{ $uk->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="flex items-end gap-2">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-lg text-sm font-medium whitespace-nowrap">
                         Filter
@@ -68,6 +84,7 @@
                     <th class="px-4 py-2 text-left border border-gray-300">Nama</th>
                     <th class="px-4 py-2 text-left border border-gray-300">NIP</th>
                     <th class="px-4 py-2 text-left border border-gray-300">NIK</th>
+                    <th class="px-4 py-2 text-left border border-gray-300">Unit Kerja</th>
                     <th class="px-4 py-2 text-left border border-gray-300">No. Telepon</th>
                     <th class="px-4 py-2 text-left border border-gray-300">Email</th>
                     <th class="px-4 py-2 text-left border border-gray-300">Role</th>
@@ -80,6 +97,7 @@
                         <td class="px-4 py-2 border border-gray-300">{{ $user->name }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $user->nip ?? '-' }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $user->nik ?? '-' }}</td>
+                        <td class="px-4 py-2 border border-gray-300">{{ $user->unitKerja->nama ?? '-' }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $user->phone ?? '-' }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $user->email }}</td>
                         <td class="px-4 py-2 border border-gray-300">

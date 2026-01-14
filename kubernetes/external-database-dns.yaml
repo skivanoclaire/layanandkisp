@@ -1,0 +1,43 @@
+# ============================================
+# External Database via DNS/Hostname
+# Menggunakan ExternalName Service
+# ============================================
+
+---
+# ExternalName Service
+# Membuat DNS alias di dalam cluster yang point ke external database
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-external
+  namespace: layanan-prod
+spec:
+  type: ExternalName
+  externalName: db.layanan.internal  # DNS name database server
+  ports:
+    - port: 3306
+
+# Catatan:
+# - db.layanan.internal harus resolvable dari dalam cluster
+# - Bisa gunakan private DNS atau public DNS
+# - Pods akan connect ke "mysql-external:3306"
+#   yang akan resolve ke "db.layanan.internal:3306"
+
+---
+# Alternatif: Gunakan IP address via CoreDNS custom
+# Jika tidak ada DNS, bisa setup custom DNS entry
+
+# File: coredns-custom-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  layanan.server: |
+    db.layanan.internal:53 {
+        hosts {
+            10.0.2.100 db.layanan.internal
+            fallthrough
+        }
+    }

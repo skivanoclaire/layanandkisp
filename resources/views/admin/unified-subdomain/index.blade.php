@@ -91,15 +91,14 @@
                 </select>
             </div>
 
-            <!-- Status Filter -->
+            <!-- Status Monitoring Filter -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status Monitoring</label>
+                <select name="status_monitoring" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Semua Status</option>
-                    <option value="menunggu" {{ ($filters['status'] ?? '') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                    <option value="proses" {{ ($filters['status'] ?? '') == 'proses' ? 'selected' : '' }}>Proses</option>
-                    <option value="selesai" {{ ($filters['status'] ?? '') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                    <option value="ditolak" {{ ($filters['status'] ?? '') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                    <option value="active" {{ ($filters['status_monitoring'] ?? '') == 'active' ? 'selected' : '' }}>Active</option>
+                    <option value="inactive" {{ ($filters['status_monitoring'] ?? '') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                    <option value="no-domain" {{ ($filters['status_monitoring'] ?? '') == 'no-domain' ? 'selected' : '' }}>No Domain</option>
                 </select>
             </div>
 
@@ -152,7 +151,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket/ID</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subdomain</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instansi</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Sistem</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monitoring</th>
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>

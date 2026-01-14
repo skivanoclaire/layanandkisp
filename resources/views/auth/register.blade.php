@@ -13,39 +13,15 @@
             <x-input-error :messages="$errors->get('name')" class="mt-1 text-red-600 text-sm" />
         </div>
 
-        <!-- ID Type Selection -->
-        <div class="mb-4">
-            <x-input-label for="id_type" :value="__('Jenis Identitas')" class="text-lg font-semibold text-gray-700" />
-            <select id="id_type" name="id_type"
-                class="mt-2 w-full text-base p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400"
-                required>
-                <option value="">-- Pilih Jenis Identitas --</option>
-                <option value="nik" {{ old('id_type') == 'nik' ? 'selected' : '' }}>NIK (16 Digit)</option>
-                <option value="nip" {{ old('id_type') == 'nip' ? 'selected' : '' }}>NIP (18 Digit)</option>
-            </select>
-            <x-input-error :messages="$errors->get('id_type')" class="mt-1 text-red-600 text-sm" />
-        </div>
-
         <!-- NIK Field -->
-        <div class="mb-4" id="nik-field" style="display: none;">
+        <div class="mb-4">
             <x-input-label for="nik" :value="__('NIK (16 Digit)')" class="text-lg font-semibold text-gray-700" />
             <x-text-input id="nik"
                 class="mt-2 w-full text-base p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 font-mono"
-                type="text" name="nik" :value="old('nik')" maxlength="16" pattern="\d{16}"
+                type="text" name="nik" :value="old('nik')" required maxlength="16" pattern="\d{16}"
                 placeholder="Contoh: 1234567890123456" />
             <p class="text-xs text-gray-500 mt-1">NIK harus tepat 16 digit angka</p>
             <x-input-error :messages="$errors->get('nik')" class="mt-1 text-red-600 text-sm" />
-        </div>
-
-        <!-- NIP Field -->
-        <div class="mb-4" id="nip-field" style="display: none;">
-            <x-input-label for="nip" :value="__('NIP (18 Digit)')" class="text-lg font-semibold text-gray-700" />
-            <x-text-input id="nip"
-                class="mt-2 w-full text-base p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 font-mono"
-                type="text" name="nip" :value="old('nip')" maxlength="18" pattern="\d{18}"
-                placeholder="Contoh: 123456789012345678" />
-            <p class="text-xs text-gray-500 mt-1">NIP harus tepat 18 digit angka</p>
-            <x-input-error :messages="$errors->get('nip')" class="mt-1 text-red-600 text-sm" />
         </div>
 
         <!-- Nomor HP / WhatsApp -->
@@ -107,47 +83,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const idTypeSelect = document.getElementById('id_type');
-            const nikField = document.getElementById('nik-field');
-            const nipField = document.getElementById('nip-field');
             const nikInput = document.getElementById('nik');
-            const nipInput = document.getElementById('nip');
 
-            function toggleFields() {
-                const selectedType = idTypeSelect.value;
-
-                if (selectedType === 'nik') {
-                    nikField.style.display = 'block';
-                    nipField.style.display = 'none';
-                    nikInput.required = true;
-                    nipInput.required = false;
-                    nipInput.value = '';
-                } else if (selectedType === 'nip') {
-                    nikField.style.display = 'none';
-                    nipField.style.display = 'block';
-                    nikInput.required = false;
-                    nikInput.value = '';
-                    nipInput.required = true;
-                } else {
-                    nikField.style.display = 'none';
-                    nipField.style.display = 'none';
-                    nikInput.required = false;
-                    nipInput.required = false;
-                }
-            }
-
-            // Initial state on page load
-            toggleFields();
-
-            // Update on change
-            idTypeSelect.addEventListener('change', toggleFields);
-
-            // Validate digits only
+            // Validate digits only for NIK
             nikInput.addEventListener('input', function(e) {
-                this.value = this.value.replace(/\D/g, '');
-            });
-
-            nipInput.addEventListener('input', function(e) {
                 this.value = this.value.replace(/\D/g, '');
             });
         });

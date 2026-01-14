@@ -91,6 +91,11 @@ class WebMonitor extends Model
         return $this->belongsTo(ServerLocation::class);
     }
 
+    public function techHistories()
+    {
+        return $this->hasMany(SubdomainTechHistory::class);
+    }
+
     // Status attribute accessor
     public function getIsActiveAttribute(): bool
     {

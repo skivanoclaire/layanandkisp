@@ -50,8 +50,10 @@ class SubdomainAggregatorService
 
         // Get all subdomain requests
         $requests = SubdomainRequest::with(['user', 'webMonitor', 'unitKerja'])
-            ->when(isset($filters['status']), function ($query) use ($filters) {
-                $query->where('status', $filters['status']);
+            ->when(isset($filters['status_monitoring']), function ($query) use ($filters) {
+                $query->whereHas('webMonitor', function ($q) use ($filters) {
+                    $q->where('status', $filters['status_monitoring']);
+                });
             })
             ->when(isset($filters['search']), function ($query) use ($filters) {
                 $query->where(function ($q) use ($filters) {
@@ -97,6 +99,9 @@ class SubdomainAggregatorService
         // Get manual web monitors (not from requests)
         if (!isset($filters['source']) || $filters['source'] === 'manual' || $filters['source'] === 'all') {
             $monitors = WebMonitor::whereNull('subdomain_request_id')
+                ->when(isset($filters['status_monitoring']), function ($query) use ($filters) {
+                    $query->where('status', $filters['status_monitoring']);
+                })
                 ->when(isset($filters['search']), function ($query) use ($filters) {
                     $query->where(function ($q) use ($filters) {
                         $q->where('subdomain', 'like', '%' . $filters['search'] . '%')
@@ -190,6 +195,7 @@ class SubdomainAggregatorService
                 'monitor' => $monitor,
                 'request' => $monitor->subdomainRequest,
                 'has_request' => !is_null($monitor->subdomainRequest),
+                'has_monitor' => true,
             ];
         }
     }
