@@ -433,22 +433,6 @@
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Analisis Kebutuhan</h2>
                 <p class="text-sm text-gray-600 mb-6">Sesuai Permenkomdigi No. 6 Tahun 2025 tentang Pembangunan Aplikasi Khusus</p>
 
-                <!-- Petunjuk Pengisian Step 2 -->
-                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-                    <h3 class="text-base font-semibold text-green-900 mb-2">📋 Petunjuk Pengisian</h3>
-                    <div class="text-sm text-green-800 space-y-2">
-                        <p><strong>Contoh pengisian:</strong></p>
-                        <ul class="list-disc list-inside space-y-1 ml-2">
-                            <li><strong>Dasar Hukum:</strong> "UU No. 5 Tahun 2014 tentang ASN; PP No. 11 Tahun 2017 tentang Manajemen PNS; Permendagri No. 35 Tahun 2021 tentang Sistem Informasi Kepegawaian"</li>
-                            <li><strong>Uraian Permasalahan:</strong> "Pengelolaan data kepegawaian masih manual menggunakan excel, sering terjadi duplikasi data, kesulitan dalam pelaporan berkala, dan proses pengajuan cuti memakan waktu hingga 5 hari kerja"</li>
-                            <li><strong>Pihak Terkait:</strong> "BKD sebagai pengelola, Seluruh SKPD sebagai pengguna, Inspektorat sebagai pengawas, BPK sebagai auditor eksternal"</li>
-                            <li><strong>Ruang Lingkup:</strong> "Mencakup 15 SKPD dengan total 2.500 pegawai, meliputi data pegawai, absensi, cuti, kinerja, dan penggajian"</li>
-                            <li><strong>Analisis Biaya Manfaat:</strong> "Investasi Rp 500 juta, efisiensi waktu 40%, penghematan kertas Rp 50 juta/tahun, ROI tercapai dalam 2 tahun"</li>
-                            <li><strong>Lokasi Implementasi:</strong> "Kantor BKD (server utama), 15 SKPD (klien), dengan akses cloud untuk pegawai"</li>
-                        </ul>
-                    </div>
-                </div>
-
                 <div class="space-y-4">
                     <!-- Dasar Hukum -->
                     <div>
@@ -456,6 +440,11 @@
                             Dasar Hukum
                         </label>
                         <p class="text-xs text-gray-500 mb-2">Peraturan perundang-undangan yang mendasari kebutuhan aplikasi</p>
+
+                        {{-- Petunjuk Pengisian Dasar Hukum --}}
+                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
+                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "UU No. 5 Tahun 2014 tentang ASN; PP No. 11 Tahun 2017 tentang Manajemen PNS; Permendagri No. 35 Tahun 2021 tentang Sistem Informasi Kepegawaian"</p>
+                        </div>
                         <textarea id="dasar_hukum" name="dasar_hukum" rows="4"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('dasar_hukum', $proposal->dasar_hukum) }}</textarea>
                         @error('dasar_hukum')
@@ -469,6 +458,11 @@
                             Uraian Permasalahan
                         </label>
                         <p class="text-xs text-gray-500 mb-2">Deskripsi permasalahan atau kebutuhan yang mendasari pengembangan aplikasi</p>
+
+                        {{-- Petunjuk Pengisian Uraian Permasalahan --}}
+                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
+                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "Pengelolaan data kepegawaian masih manual menggunakan excel, sering terjadi duplikasi data, kesulitan dalam pelaporan berkala, dan proses pengajuan cuti memakan waktu hingga 5 hari kerja"</p>
+                        </div>
                         <textarea id="uraian_permasalahan" name="uraian_permasalahan" rows="4"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('uraian_permasalahan', $proposal->uraian_permasalahan) }}</textarea>
                         @error('uraian_permasalahan')
@@ -482,6 +476,11 @@
                             Pihak Terkait (Stakeholder)
                         </label>
                         <p class="text-xs text-gray-500 mb-2">Unit kerja atau pihak-pihak yang terlibat dalam aplikasi</p>
+
+                        {{-- Petunjuk Pengisian Pihak Terkait --}}
+                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
+                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "BKD sebagai pengelola, Seluruh SKPD sebagai pengguna, Inspektorat sebagai pengawas, BPK sebagai auditor eksternal"</p>
+                        </div>
                         <textarea id="pihak_terkait" name="pihak_terkait" rows="4"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('pihak_terkait', $proposal->pihak_terkait) }}</textarea>
                         @error('pihak_terkait')
@@ -490,6 +489,55 @@
                     </div>
 
                     <!-- Ruang Lingkup -->
+                    {{-- Petunjuk Pengisian Ruang Lingkup --}}
+                    <div class="mb-3">
+                        <button type="button" onclick="toggleGuidance('ruang-lingkup-guidance')"
+                                class="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 focus:outline-none">
+                            <svg id="ruang-lingkup-guidance-icon-plus" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <svg id="ruang-lingkup-guidance-icon-minus" class="w-4 h-4 mr-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                            </svg>
+                            <span id="ruang-lingkup-guidance-text">Lihat Petunjuk untuk Ruang Lingkup</span>
+                        </button>
+
+                        <div id="ruang-lingkup-guidance" class="hidden bg-blue-50 border-l-4 border-blue-500 p-4 mb-3">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <h3 class="text-sm font-semibold text-blue-800 mb-2">📋 Petunjuk Pengisian: Ruang Lingkup</h3>
+                                    <div class="text-sm text-blue-700 space-y-2">
+                                        <p><strong>Fokus:</strong> Batasan dan cakupan dimensi aplikasi (kuantitatif)</p>
+
+                                        <p><strong>Apa yang perlu dijelaskan:</strong></p>
+                                        <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                            <li>Cakupan geografis/organisasi (berapa SKPD/unit kerja terlibat?)</li>
+                                            <li>Jumlah pengguna yang akan menggunakan sistem</li>
+                                            <li>Area fungsional yang dicakup (contoh: kepegawaian, keuangan, layanan publik)</li>
+                                            <li>Batasan: apa yang TIDAK termasuk dalam scope</li>
+                                        </ul>
+
+                                        <div class="bg-white p-3 rounded border border-blue-200 mt-2">
+                                            <p class="font-semibold text-xs mb-1">💡 Contoh Pengisian (SIMPEG Kaltara):</p>
+                                            <p class="text-xs">"Aplikasi mencakup <strong>15 SKPD Pemprov Kaltara dengan 2.500 pegawai ASN</strong>. Meliputi pengelolaan <strong>data pegawai, absensi, cuti, penilaian kinerja, dan penggajian</strong>.
+                                            <br><br>
+                                            <strong>Tidak termasuk:</strong> sistem rekrutmen CPNS (sudah ditangani oleh sistem terpisah), pengelolaan dana pensiun (domain BKN)."</p>
+                                        </div>
+
+                                        <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
+                                            <p class="text-xs"><strong>⚠️ Catatan:</strong> Anda akan diminta mengisi "Uraian Ruang Lingkup" yang lebih detail di bagian Perencanaan nanti. Di sini cukup jelaskan batasan umum dan dimensi scope.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label for="ruang_lingkup" class="block text-sm font-medium text-gray-700 mb-1">
                             Ruang Lingkup
@@ -508,6 +556,11 @@
                             Analisis Biaya dan Manfaat
                         </label>
                         <p class="text-xs text-gray-500 mb-2">Perbandingan biaya investasi dengan manfaat yang akan diperoleh</p>
+
+                        {{-- Petunjuk Pengisian Analisis Biaya Manfaat --}}
+                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
+                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "Investasi Rp 500 juta, efisiensi waktu 40%, penghematan kertas Rp 50 juta/tahun, ROI tercapai dalam 2 tahun"</p>
+                        </div>
                         <textarea id="analisis_biaya_manfaat" name="analisis_biaya_manfaat" rows="4"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('analisis_biaya_manfaat', $proposal->analisis_biaya_manfaat) }}</textarea>
                         @error('analisis_biaya_manfaat')
@@ -520,6 +573,11 @@
                         <label for="lokasi_implementasi" class="block text-sm font-medium text-gray-700 mb-1">
                             Lokasi Implementasi
                         </label>
+
+                        {{-- Petunjuk Pengisian Lokasi Implementasi --}}
+                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
+                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "Kantor BKD (server utama), 15 SKPD (klien), dengan akses cloud untuk pegawai"</p>
+                        </div>
                         <input type="text" id="lokasi_implementasi" name="lokasi_implementasi"
                             value="{{ old('lokasi_implementasi', $proposal->lokasi_implementasi) }}"
                             placeholder="Contoh: Seluruh wilayah Kota XYZ"
@@ -565,6 +623,87 @@
 
                 <div class="space-y-4">
                     <!-- Uraian Ruang Lingkup -->
+                    {{-- Petunjuk Pengisian Uraian Ruang Lingkup --}}
+                    <div class="mb-3">
+                        <button type="button" onclick="toggleGuidance('uraian-ruang-lingkup-guidance')"
+                                class="flex items-center text-green-600 hover:text-green-800 text-sm font-medium mb-2 focus:outline-none">
+                            <svg id="uraian-ruang-lingkup-guidance-icon-plus" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <svg id="uraian-ruang-lingkup-guidance-icon-minus" class="w-4 h-4 mr-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                            </svg>
+                            <span id="uraian-ruang-lingkup-guidance-text">Lihat Petunjuk untuk Perencanaan Ruang Lingkup</span>
+                        </button>
+
+                        <div id="uraian-ruang-lingkup-guidance" class="hidden bg-green-50 border-l-4 border-green-500 p-4 mb-3">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <h3 class="text-sm font-semibold text-green-800 mb-2">📋 Petunjuk Pengisian: Perencanaan Ruang Lingkup</h3>
+                                    <div class="text-sm text-green-700 space-y-2">
+                                        <p><strong>Fokus:</strong> Uraian detail implementasi - apa yang akan dibangun (kualitatif)</p>
+
+                                        <p><strong>Perbedaan dengan "Ruang Lingkup" sebelumnya:</strong></p>
+                                        <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                            <li><strong>"Ruang Lingkup"</strong> = Batasan dimensi (15 SKPD, 2.500 user)</li>
+                                            <li><strong>"Perencanaan Ruang Lingkup"</strong> = Detail modul/fitur yang akan dibangun</li>
+                                        </ul>
+
+                                        <p class="mt-2"><strong>Apa yang perlu dijelaskan:</strong></p>
+                                        <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                            <li>Daftar modul utama dan sub-modul</li>
+                                            <li>Fitur-fitur spesifik dalam setiap modul</li>
+                                            <li>Integrasi dengan sistem lain (jika ada)</li>
+                                            <li>Deliverables per fase development</li>
+                                        </ul>
+
+                                        <div class="bg-white p-3 rounded border border-green-200 mt-2">
+                                            <p class="font-semibold text-xs mb-1">💡 Contoh Pengisian (SIMPEG Kaltara):</p>
+                                            <div class="text-xs space-y-2">
+                                                <p><strong>Sistem akan terdiri dari 5 modul utama:</strong></p>
+                                                <p><strong>1. Modul Master Data Pegawai</strong>
+                                                <br>- CRUD data pegawai (NIP, nama, jabatan, golongan, unit kerja)
+                                                <br>- Import bulk data dari Excel/CSV
+                                                <br>- Validasi otomatis NIP dengan database BKN
+                                                <br>- Generate QR code kartu pegawai</p>
+
+                                                <p><strong>2. Modul Absensi</strong>
+                                                <br>- Integrasi dengan fingerprint reader (3 unit per SKPD)
+                                                <br>- Mobile check-in dengan GPS tracking
+                                                <br>- Laporan kehadiran real-time (harian, bulanan)
+                                                <br>- Alert notifikasi untuk keterlambatan</p>
+
+                                                <p><strong>3. Modul Cuti</strong>
+                                                <br>- Pengajuan cuti online dengan workflow approval
+                                                <br>- Tracking saldo cuti otomatis
+                                                <br>- Notifikasi email/WhatsApp ke atasan</p>
+
+                                                <p><strong>4. Modul Penilaian Kinerja</strong>
+                                                <br>- SKP (Sasaran Kinerja Pegawai) digital
+                                                <br>- Penilaian bulanan dengan rating 1-5
+                                                <br>- Dashboard analitik kinerja per SKPD</p>
+
+                                                <p><strong>5. Modul Penggajian</strong>
+                                                <br>- Generate slip gaji otomatis
+                                                <br>- Integrasi dengan SIPD (sistem keuangan daerah)
+                                                <br>- Perhitungan TPP berdasarkan kehadiran dan kinerja</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
+                                            <p class="text-xs"><strong>💡 Tips:</strong> Jangan hanya copy-paste "Ruang Lingkup" sebelumnya. Di sini jelaskan DETAIL TEKNIS dan FITUR SPESIFIK yang akan dibangun!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label for="uraian_ruang_lingkup" class="block text-sm font-medium text-gray-700 mb-1">
                             Uraian Ruang Lingkup Perencanaan
@@ -633,6 +772,121 @@
                     </div>
 
                     <!-- Kerangka Kerja -->
+                    {{-- Petunjuk Pengisian Kerangka Kerja/Metodologi --}}
+                    <div class="mb-3">
+                        <button type="button" onclick="toggleGuidance('kerangka-kerja-guidance')"
+                                class="flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-medium mb-2 focus:outline-none">
+                            <svg id="kerangka-kerja-guidance-icon-plus" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <svg id="kerangka-kerja-guidance-icon-minus" class="w-4 h-4 mr-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                            </svg>
+                            <span id="kerangka-kerja-guidance-text">Lihat Petunjuk untuk Kerangka Kerja/Metodologi</span>
+                        </button>
+
+                        <div id="kerangka-kerja-guidance" class="hidden bg-indigo-50 border-l-4 border-indigo-500 p-4 mb-3">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg class="h-6 w-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-sm font-semibold text-indigo-800 mb-2">🔄 Petunjuk Pengisian: Kerangka Kerja/Metodologi</h3>
+                                <div class="text-sm text-indigo-700 space-y-2">
+                                    <p><strong>Fokus: BAGAIMANA cara/pendekatan pengembangan aplikasi (metodologi & framework kerja)</strong></p>
+
+                                    <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
+                                        <p class="text-xs"><strong>⚠️ Bedakan dengan kolom lain:</strong></p>
+                                        <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                            <li><strong>"Teknologi yang Diusulkan"</strong> (Step 1) = Tech stack/tools (Laravel, React, PostgreSQL)</li>
+                                            <li><strong>"Kerangka Kerja/Metodologi"</strong> (Step 3 - kolom ini) = Cara/pendekatan pengembangan (Agile, Waterfall)</li>
+                                            <li><strong>"Rencana Aksi"</strong> (Step 3) = Langkah-langkah konkret (siapa, apa, deliverable)</li>
+                                        </ul>
+                                    </div>
+
+                                    <p><strong>Apa yang perlu dijelaskan:</strong></p>
+                                    <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                        <li>Metodologi pengembangan yang dipilih (Agile/Scrum, Waterfall, RAD, dll)</li>
+                                        <li>Alasan pemilihan metodologi tersebut</li>
+                                        <li>Proses/ritual yang akan dijalankan (sprint planning, daily standup, dll)</li>
+                                        <li>Standar/framework yang digunakan (PMBOK, ISO, COBIT, dll)</li>
+                                    </ul>
+
+                                    <div class="bg-white p-3 rounded border border-indigo-200 mt-2">
+                                        <p class="font-semibold text-xs mb-1">💡 Contoh Pengisian (SIMPEG Kaltara):</p>
+                                        <div class="text-xs space-y-2">
+                                            <p><strong>Metodologi Pengembangan: Waterfall</strong></p>
+
+                                            <p><strong>Alasan Pemilihan:</strong>
+                                            <br>- Kebutuhan sudah jelas dan tidak akan banyak berubah
+                                            <br>- Proyek pemerintah membutuhkan dokumentasi lengkap di setiap tahap
+                                            <br>- Cocok untuk tim kecil (3-5 orang) dengan pengalaman terbatas
+                                            <br>- Mudah dipahami oleh stakeholder non-IT (BKD, Diskominfo)</p>
+
+                                            <p><strong>Tahapan Waterfall yang Akan Dijalankan:</strong>
+                                            <br>1. <strong>Analisis Kebutuhan (Requirement Analysis)</strong> - Durasi: 1 bulan
+                                            <br>&nbsp;&nbsp;&nbsp;• Wawancara dengan BKD dan SKPD untuk memahami kebutuhan
+                                            <br>&nbsp;&nbsp;&nbsp;• Buat dokumen Spesifikasi Kebutuhan Sistem (SRS)
+                                            <br>&nbsp;&nbsp;&nbsp;• Dokumentasi harus disetujui stakeholder sebelum lanjut
+                                            <br>
+                                            <br>2. <strong>Desain Sistem (System Design)</strong> - Durasi: 1 bulan
+                                            <br>&nbsp;&nbsp;&nbsp;• Desain arsitektur aplikasi (database, server, user interface)
+                                            <br>&nbsp;&nbsp;&nbsp;• Buat mockup/wireframe tampilan untuk persetujuan user
+                                            <br>&nbsp;&nbsp;&nbsp;• Desain database dan ERD (Entity Relationship Diagram)
+                                            <br>
+                                            <br>3. <strong>Implementasi/Coding</strong> - Durasi: 3 bulan
+                                            <br>&nbsp;&nbsp;&nbsp;• Coding berdasarkan desain yang sudah disetujui
+                                            <br>&nbsp;&nbsp;&nbsp;• Development modul per modul (Master Data → Absensi → Cuti → dll)
+                                            <br>&nbsp;&nbsp;&nbsp;• Dokumentasi kode dan manual teknis
+                                            <br>
+                                            <br>4. <strong>Testing & Verifikasi</strong> - Durasi: 1 bulan
+                                            <br>&nbsp;&nbsp;&nbsp;• Unit testing untuk setiap modul
+                                            <br>&nbsp;&nbsp;&nbsp;• Integration testing antar modul
+                                            <br>&nbsp;&nbsp;&nbsp;• User Acceptance Testing (UAT) dengan BKD dan 2-3 SKPD pilot
+                                            <br>&nbsp;&nbsp;&nbsp;• Perbaikan bug dan error yang ditemukan
+                                            <br>
+                                            <br>5. <strong>Deployment & Maintenance</strong> - Durasi: 1 bulan
+                                            <br>&nbsp;&nbsp;&nbsp;• Instalasi di server production
+                                            <br>&nbsp;&nbsp;&nbsp;• Training user untuk admin dan pegawai
+                                            <br>&nbsp;&nbsp;&nbsp;• Serah terima dokumentasi lengkap ke Diskominfo
+                                            <br>&nbsp;&nbsp;&nbsp;• Support dan maintenance 6 bulan pertama</p>
+
+                                            <p><strong>Tools Sederhana yang Digunakan:</strong>
+                                            <br>- <strong>Dokumentasi:</strong> Microsoft Word/Excel untuk dokumen SRS dan laporan
+                                            <br>- <strong>Komunikasi:</strong> WhatsApp Group untuk koordinasi tim
+                                            <br>- <strong>Meeting:</strong> Rapat rutin setiap akhir bulan untuk update progress
+                                            <br>- <strong>File Sharing:</strong> Google Drive untuk berbagi file dan dokumentasi</p>
+
+                                            <p><strong>Standar Kualitas:</strong>
+                                            <br>- Setiap fase harus menghasilkan dokumen yang ditandatangani stakeholder
+                                            <br>- Testing dilakukan manual oleh tim developer dan user
+                                            <br>- Dokumentasi lengkap (SRS, Manual User, Manual Teknis)
+                                            <br>- Code harus rapi dan mudah dipahami untuk maintenance kedepan</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded border border-indigo-200 mt-2">
+                                        <p class="font-semibold text-xs mb-1">📚 Pilihan Metodologi Umum:</p>
+                                        <div class="text-xs space-y-2">
+                                            <p><strong>1. Agile/Scrum</strong> - Cocok untuk: proyek dengan kebutuhan dinamis, tim kecil, butuh feedback cepat</p>
+                                            <p><strong>2. Waterfall</strong> - Cocok untuk: kebutuhan fix, timeline ketat, dokumentasi formal, proyek government</p>
+                                            <p><strong>3. RAD (Rapid Application Development)</strong> - Cocok untuk: prototype cepat, proof of concept, MVP</p>
+                                            <p><strong>4. DevOps</strong> - Cocok untuk: continuous deployment, automation, monitoring intensive</p>
+                                            <p><strong>5. Hybrid (Agile-Waterfall)</strong> - Cocok untuk: kebutuhan formal dokumentasi + iterative development</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
+                                        <p class="text-xs"><strong>💡 Tips:</strong> Jangan hanya tulis "Menggunakan Agile". Jelaskan DETAIL: sprint berapa lama, ritual apa saja, tools apa yang dipakai, standar apa yang diikuti. Tunjukkan bahwa Anda benar-benar memahami metodologi yang dipilih!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label for="kerangka_kerja" class="block text-sm font-medium text-gray-700 mb-1">
                             Kerangka Kerja/Metodologi
@@ -676,6 +930,78 @@
                     </div>
 
                     <!-- Jadwal Pelaksanaan -->
+                    {{-- Petunjuk Pengisian Jadwal Pelaksanaan --}}
+                    <div class="mb-3">
+                        <button type="button" onclick="toggleGuidance('jadwal-pelaksanaan-guidance')"
+                                class="flex items-center text-purple-600 hover:text-purple-800 text-sm font-medium mb-2 focus:outline-none">
+                            <svg id="jadwal-pelaksanaan-guidance-icon-plus" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <svg id="jadwal-pelaksanaan-guidance-icon-minus" class="w-4 h-4 mr-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                            </svg>
+                            <span id="jadwal-pelaksanaan-guidance-text">Lihat Petunjuk untuk Jadwal Pelaksanaan</span>
+                        </button>
+
+                        <div id="jadwal-pelaksanaan-guidance" class="hidden bg-purple-50 border-l-4 border-purple-500 p-4 mb-3">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg class="h-6 w-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-sm font-semibold text-purple-800 mb-2">⏰ Petunjuk Pengisian: Jadwal Pelaksanaan</h3>
+                                <div class="text-sm text-purple-700 space-y-2">
+                                    <p><strong>Fokus: KAPAN setiap fase dilaksanakan (timeline)</strong></p>
+
+                                    <p><strong>Apa yang perlu dijelaskan:</strong></p>
+                                    <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                        <li>Timeline pengembangan (dalam kuartal/bulan/minggu)</li>
+                                        <li>Durasi setiap fase</li>
+                                        <li>Milestone penting dan deadline</li>
+                                        <li>Target tanggal go-live/deployment</li>
+                                    </ul>
+
+                                    <div class="bg-white p-3 rounded border border-purple-200 mt-2">
+                                        <p class="font-semibold text-xs mb-1">💡 Contoh Pengisian (SIMPEG Kaltara):</p>
+                                        <div class="text-xs space-y-2">
+                                            <p><strong>📅 Q1 2026 (Januari - Maret): Analisis & Desain (2 bulan)</strong>
+                                            <br>- Minggu 1-2: Workshop requirement gathering dengan BKD dan 3 SKPD pilot
+                                            <br>- Minggu 3-6: System design dan pembuatan dokumentasi SRS
+                                            <br>- Minggu 7-8: Desain UI/UX dan approval stakeholder
+                                            <br>- <em>Milestone: Dokumen SRS final approved (28 Februari 2026)</em></p>
+
+                                            <p><strong>📅 Q2-Q3 2026 (April - September): Development & Testing (6 bulan)</strong>
+                                            <br>- Sprint 1-2 (Apr-Mei): Modul Master Data & Autentikasi
+                                            <br>- Sprint 3-4 (Jun-Jul): Modul Absensi & Cuti
+                                            <br>- Sprint 5-6 (Agt-Sep): Modul Kinerja & Penggajian
+                                            <br>- Parallel: Integration testing & security testing
+                                            <br>- <em>Milestone: MVP ready untuk UAT (30 September 2026)</em></p>
+
+                                            <p><strong>📅 Q4 2026 (Oktober - Desember): UAT & Deployment (3 bulan)</strong>
+                                            <br>- Minggu 1-4 (Okt): User Acceptance Testing di 3 SKPD pilot
+                                            <br>- Minggu 5-8 (Nov): Bug fixing & refinement
+                                            <br>- Minggu 9-10 (Des): Training user & admin 15 SKPD
+                                            <br>- Minggu 11-12 (Des): Deployment production & cutover data
+                                            <br>- <em>Milestone: Go-live production (16 Desember 2026)</em></p>
+
+                                            <p><strong>📅 Q1 2027 (Januari - Maret): Stabilisasi & Hypercare (3 bulan)</strong>
+                                            <br>- Support intensif post-launch
+                                            <br>- Monitoring dan quick-fix bug critical
+                                            <br>- Evaluasi performa sistem</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
+                                        <p class="text-xs"><strong>⚠️ Bedakan dengan "Rencana Aksi":</strong> Jadwal Pelaksanaan fokus pada TIMELINE (kapan), sedangkan Rencana Aksi fokus pada LANGKAH KONKRET (apa yang dilakukan).</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label for="jadwal_pelaksanaan" class="block text-sm font-medium text-gray-700 mb-1">
                             Jadwal Pelaksanaan
@@ -689,6 +1015,89 @@
                     </div>
 
                     <!-- Rencana Aksi -->
+                    {{-- Petunjuk Pengisian Rencana Aksi --}}
+                    <div class="mb-3">
+                        <button type="button" onclick="toggleGuidance('rencana-aksi-guidance')"
+                                class="flex items-center text-orange-600 hover:text-orange-800 text-sm font-medium mb-2 focus:outline-none">
+                            <svg id="rencana-aksi-guidance-icon-plus" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <svg id="rencana-aksi-guidance-icon-minus" class="w-4 h-4 mr-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                            </svg>
+                            <span id="rencana-aksi-guidance-text">Lihat Petunjuk untuk Rencana Aksi</span>
+                        </button>
+
+                        <div id="rencana-aksi-guidance" class="hidden bg-orange-50 border-l-4 border-orange-500 p-4 mb-3">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg class="h-6 w-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-sm font-semibold text-orange-800 mb-2">✅ Petunjuk Pengisian: Rencana Aksi</h3>
+                                <div class="text-sm text-orange-700 space-y-2">
+                                    <p><strong>Fokus: APA langkah konkret yang akan dilakukan (action items)</strong></p>
+
+                                    <p><strong>Apa yang perlu dijelaskan:</strong></p>
+                                    <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                        <li>Daftar langkah-langkah spesifik yang terukur</li>
+                                        <li>PIC (Person in Charge) untuk setiap aksi</li>
+                                        <li>Deliverables yang dihasilkan dari setiap aksi</li>
+                                        <li>Dependencies antar aksi (jika ada)</li>
+                                    </ul>
+
+                                    <div class="bg-white p-3 rounded border border-orange-200 mt-2">
+                                        <p class="font-semibold text-xs mb-1">💡 Contoh Pengisian (SIMPEG Kaltara):</p>
+                                        <div class="text-xs space-y-2">
+                                            <p><strong>1. Pembentukan Tim Proyek & Kick-off</strong>
+                                            <br>- Bentuk tim: PM (1), Backend Dev (2), Frontend Dev (2), UI/UX (1), QA (1), DBA (1)
+                                            <br>- Kick-off meeting dengan stakeholder Diskominfo dan BKD
+                                            <br>- PIC: Kepala Bidang TI Diskominfo
+                                            <br>- Deliverable: SK Tim Proyek</p>
+
+                                            <p><strong>2. Requirement Gathering</strong>
+                                            <br>- Workshop dengan BKD untuk capture business process
+                                            <br>- Interview dengan 3 SKPD pilot (Diskominfo, BKPSDM, Setda)
+                                            <br>- PIC: Business Analyst & PM
+                                            <br>- Deliverable: Dokumen BRD</p>
+
+                                            <p><strong>3. Setup Development Environment</strong>
+                                            <br>- Provisioning server development & staging di Data Center Kaltara
+                                            <br>- Setup repository Git dan CI/CD pipeline
+                                            <br>- PIC: DevOps Engineer & DBA
+                                            <br>- Deliverable: Dev environment ready</p>
+
+                                            <p><strong>4. Development Sprint (Agile)</strong>
+                                            <br>- Sprint planning setiap 2 minggu
+                                            <br>- Code review mandatory sebelum merge
+                                            <br>- PIC: Scrum Master & Development Team
+                                            <br>- Deliverable: Working software increment</p>
+
+                                            <p><strong>5. Testing & QA</strong>
+                                            <br>- Unit testing (coverage 80%)
+                                            <br>- Security testing (penetration test)
+                                            <br>- PIC: QA Engineer
+                                            <br>- Deliverable: Test report</p>
+
+                                            <p><strong>6. Training & Deployment</strong>
+                                            <br>- Training untuk IT SKPD (3 hari)
+                                            <br>- Deployment production
+                                            <br>- PIC: Tim Training & DevOps
+                                            <br>- Deliverable: Sistem live</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
+                                        <p class="text-xs"><strong>⚠️ Bedakan dengan "Jadwal Pelaksanaan":</strong> Rencana Aksi fokus pada LANGKAH KONKRET (apa & siapa), sedangkan Jadwal fokus pada WAKTU (kapan).</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label for="rencana_aksi" class="block text-sm font-medium text-gray-700 mb-1">
                             Rencana Aksi
@@ -702,6 +1111,114 @@
                     </div>
 
                     <!-- Keamanan Informasi -->
+                    {{-- Petunjuk Pengisian Keamanan Informasi --}}
+                    <div class="mb-3">
+                        <button type="button" onclick="toggleGuidance('keamanan-informasi-guidance')"
+                                class="flex items-center text-red-600 hover:text-red-800 text-sm font-medium mb-2 focus:outline-none">
+                            <svg id="keamanan-informasi-guidance-icon-plus" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <svg id="keamanan-informasi-guidance-icon-minus" class="w-4 h-4 mr-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                            </svg>
+                            <span id="keamanan-informasi-guidance-text">Lihat Petunjuk untuk Keamanan Informasi</span>
+                        </button>
+
+                        <div id="keamanan-informasi-guidance" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-3">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg class="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-sm font-semibold text-red-800 mb-2">🔒 Petunjuk Pengisian: Keamanan Informasi</h3>
+                                <div class="text-sm text-red-700 space-y-2">
+                                    <p><strong>Fokus: Strategi dan mekanisme pengamanan sistem</strong></p>
+
+                                    <p><strong>5 Aspek Keamanan yang Harus Didokumentasikan:</strong></p>
+
+                                    <div class="bg-white p-3 rounded border border-red-200 mt-2 space-y-3">
+                                        <div>
+                                            <p class="font-semibold text-xs mb-1">🔐 1. AUTENTIKASI & OTORISASI</p>
+                                            <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                                <li><strong>Metode Login:</strong> Username/password, SSO, 2FA/MFA</li>
+                                                <li><strong>Password Policy:</strong> Min 12 karakter, kompleksitas, expired 90 hari</li>
+                                                <li><strong>Session Management:</strong> Auto logout 30 menit idle</li>
+                                                <li><strong>Role-Based Access:</strong> Admin, Operator, User biasa</li>
+                                            </ul>
+                                            <p class="text-xs mt-1 italic">Contoh: "SSO dengan Keycloak Pemprov Kaltara. 2FA wajib untuk Admin menggunakan Google Authenticator."</p>
+                                        </div>
+
+                                        <div>
+                                            <p class="font-semibold text-xs mb-1">🔒 2. ENKRIPSI DATA</p>
+                                            <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                                <li><strong>Data in Transit:</strong> HTTPS/TLS 1.3</li>
+                                                <li><strong>Data at Rest:</strong> Enkripsi database AES-256</li>
+                                                <li><strong>Password Hashing:</strong> bcrypt/argon2 (BUKAN MD5)</li>
+                                                <li><strong>API Security:</strong> JWT token expiry 1 jam</li>
+                                            </ul>
+                                            <p class="text-xs mt-1 italic">Contoh: "Data sensitif (NIP, gaji) dienkripsi AES-256. TLS 1.3 dengan certificate Sectigo."</p>
+                                        </div>
+
+                                        <div>
+                                            <p class="font-semibold text-xs mb-1">🛡️ 3. KONTROL AKSES & AUDIT LOGGING</p>
+                                            <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                                <li><strong>RBAC:</strong> Pembatasan akses per role</li>
+                                                <li><strong>Least Privilege:</strong> User hanya akses yang dibutuhkan</li>
+                                                <li><strong>Audit Trail:</strong> Log semua aktivitas (login, CRUD)</li>
+                                                <li><strong>Monitoring:</strong> Dashboard aktivitas mencurigakan</li>
+                                            </ul>
+                                            <p class="text-xs mt-1 italic">Contoh: "Setiap perubahan data dicatat dalam audit log. Retention 5 tahun sesuai UU ITE."</p>
+                                        </div>
+
+                                        <div>
+                                            <p class="font-semibold text-xs mb-1">💾 4. BACKUP & DISASTER RECOVERY</p>
+                                            <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                                <li><strong>Backup Schedule:</strong> Full backup mingguan + incremental harian</li>
+                                                <li><strong>Backup Storage:</strong> Encrypted backup di offsite/cloud</li>
+                                                <li><strong>RTO:</strong> Target waktu restore (contoh: 4 jam)</li>
+                                                <li><strong>RPO:</strong> Target data loss maksimal (contoh: 1 jam)</li>
+                                            </ul>
+                                            <p class="text-xs mt-1 italic">Contoh: "Backup harian pukul 02:00 WIB ke AWS S3. RTO: 4 jam, RPO: 1 jam. DR testing 6 bulan sekali."</p>
+                                        </div>
+
+                                        <div>
+                                            <p class="font-semibold text-xs mb-1">🔍 5. COMPLIANCE & SECURITY TESTING</p>
+                                            <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                                <li><strong>Security Audit:</strong> Audit berkala pihak independen</li>
+                                                <li><strong>Penetration Testing:</strong> Pentest tahunan</li>
+                                                <li><strong>Vulnerability Scanning:</strong> Automated scan (OWASP ZAP)</li>
+                                                <li><strong>Compliance:</strong> ISO 27001, UU ITE, Permenkominfo</li>
+                                            </ul>
+                                            <p class="text-xs mt-1 italic">Contoh: "Pentest tahunan oleh konsultan tersertifikasi. Vulnerability scan otomatis mingguan."</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded border border-red-200 mt-2">
+                                        <p class="font-semibold text-xs mb-1">💡 Contoh Lengkap (SIMPEG Kaltara):</p>
+                                        <div class="text-xs space-y-2">
+                                            <p><strong>1. Autentikasi & Otorisasi:</strong> SSO Keycloak Pemprov Kaltara + 2FA untuk Admin. Password min 12 karakter, expired 90 hari. 4 level role: Superadmin, Admin SKPD, Operator, User. Auto logout 30 menit.</p>
+
+                                            <p><strong>2. Enkripsi Data:</strong> HTTPS TLS 1.3 (Sectigo), Database PostgreSQL encrypted AES-256, Password hashing bcrypt (cost 12), JWT token (expiry 1 jam).</p>
+
+                                            <p><strong>3. Kontrol Akses & Audit:</strong> RBAC (Admin SKPD hanya akses data SKPD sendiri), Audit log semua aktivitas, Log retention 5 tahun, Dashboard monitoring real-time.</p>
+
+                                            <p><strong>4. Backup & Recovery:</strong> Full backup Minggu 02:00, Incremental backup harian 02:00, Backup encrypted di AWS S3 Jakarta + local NAS, RTO 4 jam, RPO 1 jam, DR testing 6 bulan.</p>
+
+                                            <p><strong>5. Compliance & Testing:</strong> Pentest tahunan (konsultan CEH), Vulnerability scan mingguan (OWASP ZAP), Security audit 6 bulan (Inspektorat), ISO 27001 framework + UU ITE.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
+                                        <p class="text-xs"><strong>💡 Tips:</strong> Jangan hanya tulis "enkripsi dan backup". Jelaskan SPESIFIK: algoritma (AES-256), frekuensi (harian), RTO/RPO (berapa jam).</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label for="keamanan_informasi" class="block text-sm font-medium text-gray-700 mb-1">
                             Keamanan Informasi
@@ -1660,6 +2177,26 @@ function populateReview() {
     reviewHTML += '</div>';
 
     document.getElementById('review-content').innerHTML = reviewHTML;
+}
+
+// Toggle guidance function
+function toggleGuidance(guidanceId) {
+    const guidance = document.getElementById(guidanceId);
+    const iconPlus = document.getElementById(guidanceId + '-icon-plus');
+    const iconMinus = document.getElementById(guidanceId + '-icon-minus');
+    const text = document.getElementById(guidanceId + '-text');
+
+    if (guidance.classList.contains('hidden')) {
+        guidance.classList.remove('hidden');
+        iconPlus.classList.add('hidden');
+        iconMinus.classList.remove('hidden');
+        text.textContent = text.textContent.replace('Lihat', 'Sembunyikan');
+    } else {
+        guidance.classList.add('hidden');
+        iconPlus.classList.remove('hidden');
+        iconMinus.classList.add('hidden');
+        text.textContent = text.textContent.replace('Sembunyikan', 'Lihat');
+    }
 }
 </script>
 @endpush
