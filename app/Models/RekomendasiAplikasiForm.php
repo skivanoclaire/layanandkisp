@@ -13,32 +13,7 @@ class RekomendasiAplikasiForm extends Model
     protected $fillable = [
         'ticket_number',
         'user_id',
-        'judul_aplikasi',
-        'dasar_hukum',
-        'permasalahan_kebutuhan',
-        'pihak_terkait',
         'pemilik_proses_bisnis_id',
-        'stakeholder_internal',
-        'stakeholder_eksternal',
-        'maksud_tujuan',
-        'ruang_lingkup',
-        'analisis_biaya_manfaat',
-        'analisis_risiko',
-        'target_waktu',
-        'sasaran_pengguna',
-        'lokasi_implementasi',
-        'perencanaan_ruang_lingkup',
-        'perencanaan_proses_bisnis',
-        'kerangka_kerja',
-        'pelaksana_pembangunan',
-        'peran_tanggung_jawab',
-        'jadwal_pelaksanaan',
-        'rencana_aksi',
-        'keamanan_informasi',
-        'sumber_daya',
-        'indikator_keberhasilan',
-        'alih_pengetahuan',
-        'pemantauan_pelaporan',
         'status',
         'admin_feedback',
         'approved_by',
@@ -51,13 +26,68 @@ class RekomendasiAplikasiForm extends Model
         'revision_notes',
         'revision_requested_by',
         'revision_requested_at',
+        // V2 fields
+        'nama_aplikasi',
+        'prioritas',
+        'deskripsi',
+        'tujuan',
+        'manfaat',
+        'jenis_layanan',
+        'target_pengguna',
+        'estimasi_pengguna',
+        'lingkup_aplikasi',
+        'platform',
+        'teknologi_diusulkan',
+        'estimasi_waktu_pengembangan',
+        'estimasi_biaya',
+        'sumber_pendanaan',
+        'integrasi_sistem_lain',
+        'detail_integrasi',
+        'kebutuhan_khusus',
+        'dampak_tidak_dibangun',
+        'risiko_items',
+        // Permenkomdigi No. 6 Tahun 2025 - Analisis Kebutuhan
+        'dasar_hukum',
+        'uraian_permasalahan',
+        'pihak_terkait',
+        'ruang_lingkup',
+        'analisis_biaya_manfaat',
+        'lokasi_implementasi',
+        // Permenkomdigi No. 6 Tahun 2025 - Perencanaan
+        'uraian_ruang_lingkup',
+        'proses_bisnis',
+        'proses_bisnis_file',
+        'kerangka_kerja',
+        'pelaksana_pembangunan',
+        'peran_tanggung_jawab',
+        'jadwal_pelaksanaan',
+        'rencana_aksi',
+        'keamanan_informasi',
+        'sumber_daya_manusia',
+        'sumber_daya_anggaran',
+        'sumber_daya_sarana',
+        'indikator_keberhasilan',
+        'alih_pengetahuan',
+        'pemantauan_pelaporan',
+        // Fase & Deployment
+        'fase_saat_ini',
+        'repository_url',
+        'url_aplikasi_staging',
+        'url_aplikasi_production',
+        'ip_address_server',
+        'domain_aplikasi',
+        'spesifikasi_server',
     ];
 
     protected $casts = [
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
         'revision_requested_at' => 'datetime',
-        'stakeholder_internal' => 'array',
+        'platform' => 'array',
+        'risiko_items' => 'array',
+        'estimasi_pengguna' => 'integer',
+        'estimasi_waktu_pengembangan' => 'integer',
+        'estimasi_biaya' => 'decimal:2',
     ];
 
     /**
@@ -125,5 +155,137 @@ class RekomendasiAplikasiForm extends Model
     public function pemilikProsesBisnis()
     {
         return $this->belongsTo(UnitKerja::class, 'pemilik_proses_bisnis_id');
+    }
+
+    // V2 Relationships
+
+    /**
+     * Get all dokumen usulan for this form.
+     */
+    public function dokumenUsulan()
+    {
+        return $this->hasMany(RekomendasiDokumenUsulan::class);
+    }
+
+    /**
+     * Get the verifikasi record.
+     */
+    public function verifikasi()
+    {
+        return $this->hasOne(RekomendasiVerifikasi::class);
+    }
+
+    /**
+     * Get the surat rekomendasi.
+     */
+    public function surat()
+    {
+        return $this->hasOne(RekomendasiSurat::class);
+    }
+
+    /**
+     * Get all fase pengembangan records.
+     */
+    public function fasePengembangan()
+    {
+        return $this->hasMany(RekomendasiFasePengembangan::class);
+    }
+
+    /**
+     * Get the current fase pengembangan that is in progress.
+     */
+    public function currentFase()
+    {
+        return $this->hasOne(RekomendasiFasePengembangan::class)
+            ->where('status', 'sedang_berjalan')
+            ->latestOfMany();
+    }
+
+    /**
+     * Get all tim pengembangan members.
+     */
+    public function timPengembangan()
+    {
+        return $this->hasMany(RekomendasiTimPengembangan::class);
+    }
+
+    /**
+     * Get all evaluasi records.
+     */
+    public function evaluasi()
+    {
+        return $this->hasMany(RekomendasiEvaluasi::class);
+    }
+
+    /**
+     * Get the latest evaluasi.
+     */
+    public function latestEvaluasi()
+    {
+        return $this->hasOne(RekomendasiEvaluasi::class)
+            ->latestOfMany('tanggal_evaluasi');
+    }
+
+    /**
+     * Get all histori aktivitas.
+     */
+    public function histori()
+    {
+        return $this->hasMany(RekomendasiHistoriAktivitas::class);
+    }
+
+    /**
+     * Alias for histori relationship (for backward compatibility).
+     */
+    public function historiAktivitas()
+    {
+        return $this->histori();
+    }
+
+    /**
+     * Log an activity for this form.
+     */
+    public function logActivity(string $aktivitas, ?string $deskripsi = null, ?int $userId = null): RekomendasiHistoriAktivitas
+    {
+        return RekomendasiHistoriAktivitas::log(
+            $this->id,
+            $aktivitas,
+            $deskripsi,
+            $userId
+        );
+    }
+
+    /**
+     * Get fase saat ini display name.
+     */
+    public function getFaseSaatIniDisplayAttribute(): string
+    {
+        return match($this->fase_saat_ini) {
+            'usulan' => 'Pengajuan Usulan',
+            'verifikasi' => 'Verifikasi Diskominfo',
+            'penandatanganan' => 'Menunggu Tanda Tangan',
+            'menunggu_kementerian' => 'Menunggu Persetujuan Kementerian',
+            'pengembangan' => 'Fase Pengembangan',
+            'selesai' => 'Selesai',
+            'ditolak' => 'Ditolak',
+            default => $this->fase_saat_ini ?? 'usulan',
+        };
+    }
+
+    /**
+     * Get fase badge color.
+     */
+    public function getFaseBadgeColorAttribute(): string
+    {
+        return match($this->fase_saat_ini) {
+            'usulan' => 'info',
+            'verifikasi' => 'warning',
+            'penandatanganan' => 'primary',
+            'menunggu_kementerian' => 'secondary',
+            'pengembangan' => 'success',
+            'selesai' => 'success',
+            'ditolak' => 'danger',
+            default => 'secondary',
+        };
     }
 }

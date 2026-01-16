@@ -85,7 +85,15 @@ class UserRoleSeeder extends Seeder
             'user.subdomain.ip-change.create',
             'user.subdomain.ip-change.store',
             'user.subdomain.ip-change.show',
-            'user.rekomendasi.index',              // Rekomendasi aplikasi
+            'user.rekomendasi.index',              // Rekomendasi aplikasi (legacy)
+            // Rekomendasi Aplikasi V2
+            'user.rekomendasi.usulan.create',      // Ajukan usulan rekomendasi
+            'user.rekomendasi.usulan.show',        // Lihat usulan sendiri
+            'user.rekomendasi.usulan.edit',        // Edit usulan
+            'user.rekomendasi.dokumen.upload',     // Upload dokumen
+            'user.rekomendasi.dokumen.download',   // Download dokumen
+            'user.rekomendasi.fase.update',        // Update fase pengembangan
+            'user.rekomendasi.evaluasi.create',    // Buat evaluasi aplikasi
         ])->pluck('id')->toArray();
 
         if (count($opdPermissions) > 0) {

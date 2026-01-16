@@ -11,6 +11,12 @@ use App\Http\Controllers\DigitalFormController;
 use App\Http\Controllers\RekomendasiAplikasiController;
 use App\Http\Controllers\User\EmailRequestController;
 use App\Http\Controllers\Admin\EmailRequestAdminController;
+use App\Http\Controllers\User\RekomendasiUsulanController;
+use App\Http\Controllers\User\RekomendasiFasePengembanganController;
+use App\Http\Controllers\User\RekomendasiEvaluasiController;
+use App\Http\Controllers\Admin\RekomendasiVerifikasiController;
+use App\Http\Controllers\Admin\RekomendasiSuratController;
+use App\Http\Controllers\Admin\RekomendasiMonitoringController;
 use App\Http\Controllers\Operator\TikBorrowingController as OpBorrow;
 use App\Http\Controllers\Admin\TikBorrowingAdminController as AdminBorrow;
 use App\Http\Controllers\Admin\SimpegCheckController;
@@ -84,6 +90,61 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
         Route::delete('/{id}', [RekomendasiAplikasiController::class, 'destroy'])->name('user.rekomendasi.aplikasi.destroy');
         Route::get('/{id}/download-pdf', [RekomendasiAplikasiController::class, 'downloadPDF'])->name('user.rekomendasi.aplikasi.download-pdf');
     });
+
+    // FASE 1: Usulan Pertimbangan - V2
+    Route::middleware(['permission:user.rekomendasi.usulan.create'])
+        ->prefix('digital/rekomendasi/usulan')
+        ->name('user.rekomendasi.usulan.')
+        ->group(function () {
+            Route::get('/', [RekomendasiUsulanController::class, 'index'])->name('index');
+            Route::get('/create', [RekomendasiUsulanController::class, 'create'])->name('create');
+            Route::post('/', [RekomendasiUsulanController::class, 'store'])->name('store');
+            Route::get('/{id}', [RekomendasiUsulanController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [RekomendasiUsulanController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [RekomendasiUsulanController::class, 'update'])->name('update');
+            Route::delete('/{id}', [RekomendasiUsulanController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/submit', [RekomendasiUsulanController::class, 'submit'])->name('submit');
+
+            // Document management
+            Route::post('/{id}/dokumen', [RekomendasiUsulanController::class, 'uploadDokumen'])->name('dokumen.upload');
+            Route::get('/{id}/dokumen/{dokumenId}', [RekomendasiUsulanController::class, 'downloadDokumen'])->name('dokumen.download');
+        });
+
+    // Rekomendasi V2 - Development Phase Tracking (User)
+    Route::middleware(['permission:user.rekomendasi.fase.update'])
+        ->prefix('rekomendasi/fase-pengembangan')
+        ->name('rekomendasi.fase.')
+        ->group(function () {
+            Route::get('/{rekomendasiId}', [RekomendasiFasePengembanganController::class, 'index'])->name('index');
+            Route::get('/{rekomendasiId}/fase/{faseId}', [RekomendasiFasePengembanganController::class, 'show'])->name('show');
+            Route::put('/{rekomendasiId}/fase/{faseId}/progress', [RekomendasiFasePengembanganController::class, 'updateProgress'])->name('progress');
+            Route::post('/{rekomendasiId}/fase/{faseId}/dokumen', [RekomendasiFasePengembanganController::class, 'uploadDokumen'])->name('dokumen.upload');
+            Route::delete('/{rekomendasiId}/fase/{faseId}/dokumen/{dokumenId}', [RekomendasiFasePengembanganController::class, 'deleteDokumen'])->name('dokumen.delete');
+
+            Route::post('/{rekomendasiId}/fase/{faseId}/milestone', [RekomendasiFasePengembanganController::class, 'createMilestone'])->name('milestone.create');
+            Route::put('/{rekomendasiId}/fase/{faseId}/milestone/{milestoneId}', [RekomendasiFasePengembanganController::class, 'updateMilestone'])->name('milestone.update');
+            Route::delete('/{rekomendasiId}/fase/{faseId}/milestone/{milestoneId}', [RekomendasiFasePengembanganController::class, 'deleteMilestone'])->name('milestone.delete');
+
+            Route::post('/{rekomendasiId}/fase/{faseId}/complete', [RekomendasiFasePengembanganController::class, 'markPhaseComplete'])->name('complete');
+
+            Route::get('/{rekomendasiId}/team', [RekomendasiFasePengembanganController::class, 'manageTeam'])->name('team');
+            Route::post('/{rekomendasiId}/team', [RekomendasiFasePengembanganController::class, 'addTeamMember'])->name('team.add');
+            Route::delete('/{rekomendasiId}/team/{teamId}', [RekomendasiFasePengembanganController::class, 'deleteTeamMember'])->name('team.delete');
+        });
+
+    // Rekomendasi V2 - Evaluation (User)
+    Route::middleware(['permission:user.rekomendasi.evaluasi.create'])
+        ->prefix('rekomendasi/evaluasi')
+        ->name('rekomendasi.evaluasi.')
+        ->group(function () {
+            Route::get('/{rekomendasiId}', [RekomendasiEvaluasiController::class, 'index'])->name('index');
+            Route::get('/{rekomendasiId}/create', [RekomendasiEvaluasiController::class, 'create'])->name('create');
+            Route::post('/{rekomendasiId}', [RekomendasiEvaluasiController::class, 'store'])->name('store');
+            Route::get('/{rekomendasiId}/{evaluasiId}', [RekomendasiEvaluasiController::class, 'show'])->name('show');
+            Route::get('/{rekomendasiId}/{evaluasiId}/edit', [RekomendasiEvaluasiController::class, 'edit'])->name('edit');
+            Route::put('/{rekomendasiId}/{evaluasiId}', [RekomendasiEvaluasiController::class, 'update'])->name('update');
+            Route::delete('/{rekomendasiId}/{evaluasiId}', [RekomendasiEvaluasiController::class, 'destroy'])->name('destroy');
+        });
 });
 
 // Untuk admin
@@ -130,7 +191,54 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     });
 
     Route::post('/users/{user}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
-    Route::post('/users/{user}/unverify', [AdminController::class, 'unverifyUser'])->name('users.unverify');  
+    Route::post('/users/{user}/unverify', [AdminController::class, 'unverifyUser'])->name('users.unverify');
+
+    // Rekomendasi V2 - Verification
+    Route::middleware(['permission:admin.rekomendasi.verifikasi.view'])
+        ->prefix('rekomendasi/verifikasi')
+        ->name('rekomendasi.verifikasi.')
+        ->group(function () {
+            Route::get('/', [RekomendasiVerifikasiController::class, 'index'])->name('index');
+            Route::get('/{id}', [RekomendasiVerifikasiController::class, 'show'])->name('show');
+            Route::post('/{id}/start', [RekomendasiVerifikasiController::class, 'startVerification'])->name('start');
+            Route::get('/{id}/verify', [RekomendasiVerifikasiController::class, 'verify'])->name('verify');
+            Route::put('/{id}/checklist', [RekomendasiVerifikasiController::class, 'updateChecklist'])->name('checklist.update');
+            Route::post('/{id}/approve', [RekomendasiVerifikasiController::class, 'approve'])->name('approve');
+            Route::post('/{id}/reject', [RekomendasiVerifikasiController::class, 'reject'])->name('reject');
+            Route::post('/{id}/revision', [RekomendasiVerifikasiController::class, 'requestRevision'])->name('revision');
+            Route::get('/{id}/dokumen/{dokumenId}', [RekomendasiVerifikasiController::class, 'downloadDokumen'])->name('dokumen.download');
+        });
+
+    // Rekomendasi V2 - Monitoring & Dashboard
+    Route::middleware(['permission:admin.rekomendasi.monitoring.view'])
+        ->prefix('rekomendasi/monitoring')
+        ->name('rekomendasi.monitoring.')
+        ->group(function () {
+            Route::get('/', [RekomendasiMonitoringController::class, 'dashboard'])->name('dashboard');
+            Route::get('/fase/{fase}', [RekomendasiMonitoringController::class, 'byPhase'])->name('by-phase');
+            Route::get('/status/{status}', [RekomendasiMonitoringController::class, 'byStatus'])->name('by-status');
+            Route::get('/history/{id}', [RekomendasiMonitoringController::class, 'history'])->name('history');
+            Route::get('/export/excel', [RekomendasiMonitoringController::class, 'exportExcel'])->name('export.excel');
+            Route::get('/export/pdf', [RekomendasiMonitoringController::class, 'exportPDF'])->name('export.pdf');
+            Route::get('/chart-data', [RekomendasiMonitoringController::class, 'getChartData'])->name('chart-data');
+        });
+
+    // Rekomendasi V2 - Letter Management
+    Route::middleware(['permission:admin.rekomendasi.surat.manage'])
+        ->prefix('rekomendasi/surat')
+        ->name('rekomendasi.surat.')
+        ->group(function () {
+            Route::get('/', [RekomendasiSuratController::class, 'index'])->name('index');
+            Route::get('/proposal/{proposalId}/create', [RekomendasiSuratController::class, 'create'])->name('create');
+            Route::post('/proposal/{proposalId}', [RekomendasiSuratController::class, 'store'])->name('store');
+            Route::get('/{id}', [RekomendasiSuratController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [RekomendasiSuratController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [RekomendasiSuratController::class, 'update'])->name('update');
+            Route::post('/{id}/sign', [RekomendasiSuratController::class, 'sign'])->name('sign');
+            Route::post('/{id}/delivery', [RekomendasiSuratController::class, 'recordDelivery'])->name('delivery');
+            Route::post('/{id}/ministry-status', [RekomendasiSuratController::class, 'updateMinistryStatus'])->name('ministry-status');
+            Route::get('/{id}/download', [RekomendasiSuratController::class, 'downloadSigned'])->name('download');
+        });
 
     Route::get('/simpeg-check', [SimpegCheckController::class, 'index'])->name('simpeg.index');
     Route::post('/simpeg-check', [SimpegCheckController::class, 'check'])->name('simpeg.check');
