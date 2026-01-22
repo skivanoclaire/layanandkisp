@@ -125,6 +125,44 @@ class RekomendasiAplikasiForm extends Model
                 $form->ticket_number = self::nextTicketNumber();
             }
         });
+
+        static::created(function ($form) {
+            // Auto-create verifikasi record when proposal is created with status 'diajukan'
+            if ($form->status === 'diajukan' && !$form->verifikasi) {
+                RekomendasiVerifikasi::create([
+                    'rekomendasi_aplikasi_form_id' => $form->id,
+                    'verifikator_id' => null,
+                    'status' => 'menunggu',
+                ]);
+            }
+        });
+
+        static::updated(function ($form) {
+            // Handle verifikasi record when proposal status changes to 'diajukan'
+            if ($form->isDirty('status') && $form->status === 'diajukan') {
+                if ($form->verifikasi) {
+                    // Reset existing verifikasi record
+                    $form->verifikasi->update([
+                        'verifikator_id' => null,
+                        'status' => 'menunggu',
+                        'checklist_analisis_kebutuhan' => false,
+                        'checklist_perencanaan' => false,
+                        'checklist_manajemen_risiko' => false,
+                        'checklist_anggaran' => false,
+                        'checklist_timeline' => false,
+                        'catatan_verifikasi' => null,
+                        'tanggal_verifikasi' => null,
+                    ]);
+                } else {
+                    // Create new verifikasi record if it doesn't exist
+                    RekomendasiVerifikasi::create([
+                        'rekomendasi_aplikasi_form_id' => $form->id,
+                        'verifikator_id' => null,
+                        'status' => 'menunggu',
+                    ]);
+                }
+            }
+        });
     }
 
     public function risikoItems()
@@ -157,6 +195,14 @@ class RekomendasiAplikasiForm extends Model
         return $this->belongsTo(UnitKerja::class, 'pemilik_proses_bisnis_id');
     }
 
+    /**
+     * Alias for pemilikProsesBisnis (for convenience).
+     */
+    public function unitKerja()
+    {
+        return $this->pemilikProsesBisnis();
+    }
+
     // V2 Relationships
 
     /**
@@ -184,11 +230,27 @@ class RekomendasiAplikasiForm extends Model
     }
 
     /**
+     * Get the status kementerian directly (without surat).
+     */
+    public function statusKementerian()
+    {
+        return $this->hasOne(RekomendasiStatusKementerian::class, 'rekomendasi_aplikasi_form_id');
+    }
+
+    /**
      * Get all fase pengembangan records.
      */
     public function fasePengembangan()
     {
         return $this->hasMany(RekomendasiFasePengembangan::class);
+    }
+
+    /**
+     * Get all fase pengembangan dokumen.
+     */
+    public function fasePengembanganDokumen()
+    {
+        return $this->hasMany(FasePengembanganDokumen::class, 'rekomendasi_aplikasi_form_id');
     }
 
     /**

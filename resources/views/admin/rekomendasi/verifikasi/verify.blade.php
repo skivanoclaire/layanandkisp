@@ -77,8 +77,8 @@
                             <!-- Checklist Items -->
                             <div class="border-b border-gray-200 pb-4">
                                 <label class="flex items-start cursor-pointer">
-                                    <input type="checkbox" name="checklist_analisis_kebutuhan"
-                                        {{ $verifikasi->checklist_analisis_kebutuhan ? 'checked' : '' }}
+                                    <input type="checkbox" name="checklist_analisis_kebutuhan" value="1"
+                                        {{ old('checklist_analisis_kebutuhan', $verifikasi->checklist_analisis_kebutuhan) ? 'checked' : '' }}
                                         class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5">
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">Dokumen Analisis Kebutuhan</span>
@@ -89,8 +89,8 @@
 
                             <div class="border-b border-gray-200 pb-4">
                                 <label class="flex items-start cursor-pointer">
-                                    <input type="checkbox" name="checklist_perencanaan"
-                                        {{ $verifikasi->checklist_perencanaan ? 'checked' : '' }}
+                                    <input type="checkbox" name="checklist_perencanaan" value="1"
+                                        {{ old('checklist_perencanaan', $verifikasi->checklist_perencanaan) ? 'checked' : '' }}
                                         class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5">
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">Dokumen Perencanaan</span>
@@ -101,8 +101,8 @@
 
                             <div class="border-b border-gray-200 pb-4">
                                 <label class="flex items-start cursor-pointer">
-                                    <input type="checkbox" name="checklist_manajemen_risiko"
-                                        {{ $verifikasi->checklist_manajemen_risiko ? 'checked' : '' }}
+                                    <input type="checkbox" name="checklist_manajemen_risiko" value="1"
+                                        {{ old('checklist_manajemen_risiko', $verifikasi->checklist_manajemen_risiko) ? 'checked' : '' }}
                                         class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5">
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">Dokumen Manajemen Risiko</span>
@@ -113,8 +113,8 @@
 
                             <div class="border-b border-gray-200 pb-4">
                                 <label class="flex items-start cursor-pointer">
-                                    <input type="checkbox" name="checklist_kelengkapan_data"
-                                        {{ $verifikasi->checklist_kelengkapan_data ? 'checked' : '' }}
+                                    <input type="checkbox" name="checklist_kelengkapan_data" value="1"
+                                        {{ old('checklist_kelengkapan_data', $verifikasi->checklist_kelengkapan_data) ? 'checked' : '' }}
                                         class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5">
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">Kelengkapan Data Formulir</span>
@@ -125,8 +125,8 @@
 
                             <div class="border-b border-gray-200 pb-4">
                                 <label class="flex items-start cursor-pointer">
-                                    <input type="checkbox" name="checklist_kesesuaian_peraturan"
-                                        {{ $verifikasi->checklist_kesesuaian_peraturan ? 'checked' : '' }}
+                                    <input type="checkbox" name="checklist_kesesuaian_peraturan" value="1"
+                                        {{ old('checklist_kesesuaian_peraturan', $verifikasi->checklist_kesesuaian_peraturan) ? 'checked' : '' }}
                                         class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5">
                                     <div class="ml-3">
                                         <span class="text-sm font-medium text-gray-900">Kesesuaian dengan Peraturan</span>
@@ -150,50 +150,6 @@
                             </div>
                         </div>
                     </form>
-                </div>
-
-                <!-- Dokumen Usulan -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Dokumen Usulan</h2>
-
-                    <div class="space-y-3">
-                        @forelse($proposal->dokumenUsulan as $dokumen)
-                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="flex-shrink-0">
-                                            <svg class="h-10 w-10 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h4 class="text-sm font-medium text-gray-900">{{ $dokumen->jenis_dokumen_display }}</h4>
-                                            <p class="text-sm text-gray-500">Versi {{ $dokumen->versi }} - {{ $dokumen->human_file_size }}</p>
-                                            <p class="text-xs text-gray-400 mt-1">
-                                                Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <a href="{{ route('admin.rekomendasi.verifikasi.dokumen.download', [$proposal->id, $dokumen->id]) }}"
-                                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                            </svg>
-                                            Download
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-center py-8 text-gray-500">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <p class="mt-2">Belum ada dokumen</p>
-                            </div>
-                        @endforelse
-                    </div>
                 </div>
 
                 <!-- Informasi Usulan -->

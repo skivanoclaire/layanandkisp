@@ -21,7 +21,7 @@ class VpsRequestController extends Controller
 
     public function create()
     {
-        $unitKerjas = UnitKerja::orderBy('nama')->get();
+        $unitKerjas = UnitKerja::forLayananDigital()->orderBy('nama')->get();
         return view('user.datacenter.vps.create', compact('unitKerjas'));
     }
 

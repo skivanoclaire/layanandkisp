@@ -5,7 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\RekomendasiAplikasiForm;
 use App\Models\RekomendasiVerifikasi;
+use App\Models\RekomendasiStatusKementerian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class RekomendasiVerifikasiController extends Controller
 {
@@ -14,20 +18,23 @@ class RekomendasiVerifikasiController extends Controller
      */
     public function index(Request $request)
     {
-        $query = RekomendasiAplikasiForm::whereIn('status', ['diajukan', 'perlu_revisi', 'diproses'])
+        $query = RekomendasiAplikasiForm::query()
             ->with(['user.unitKerja', 'pemilikProsesBisnis', 'verifikasi.verifikator', 'dokumenUsulan'])
             ->latest();
+
+        // Filter by proposal status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        } else {
+            // Default: show proposals that are submitted, need revision, being processed, or approved
+            $query->whereIn('status', ['diajukan', 'perlu_revisi', 'diproses', 'disetujui']);
+        }
 
         // Filter by verification status
         if ($request->filled('verification_status')) {
             $query->whereHas('verifikasi', function ($q) use ($request) {
                 $q->where('status', $request->verification_status);
             });
-        }
-
-        // Filter by proposal status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
         }
 
         // Search by application name or ticket number
@@ -53,7 +60,8 @@ class RekomendasiVerifikasiController extends Controller
             'pemilikProsesBisnis',
             'dokumenUsulan.uploader',
             'verifikasi.verifikator',
-            'historiAktivitas.user'
+            'historiAktivitas.user',
+            'statusKementerian'
         ])->findOrFail($id);
 
         return view('admin.rekomendasi.verifikasi.show', compact('proposal'));
@@ -75,16 +83,20 @@ class RekomendasiVerifikasiController extends Controller
 
             $verifikasi = $proposal->verifikasi;
             if (!$verifikasi) {
-                return redirect()
-                    ->back()
-                    ->with('error', 'Data verifikasi tidak ditemukan.');
+                // Fallback: Create verifikasi record if it doesn't exist
+                $verifikasi = RekomendasiVerifikasi::create([
+                    'rekomendasi_aplikasi_form_id' => $proposal->id,
+                    'verifikator_id' => auth()->id(),
+                    'status' => 'sedang_diverifikasi',
+                    'tanggal_mulai_verifikasi' => now(),
+                ]);
+            } else {
+                $verifikasi->update([
+                    'verifikator_id' => auth()->id(),
+                    'status' => 'sedang_diverifikasi',
+                    'tanggal_mulai_verifikasi' => now(),
+                ]);
             }
-
-            $verifikasi->update([
-                'verifikator_id' => auth()->id(),
-                'status' => 'sedang_diverifikasi',
-                'tanggal_mulai_verifikasi' => now(),
-            ]);
 
             $proposal->update(['status' => 'diproses']);
 
@@ -134,11 +146,11 @@ class RekomendasiVerifikasiController extends Controller
     public function updateChecklist(Request $request, $id)
     {
         $request->validate([
-            'checklist_analisis_kebutuhan' => 'boolean',
-            'checklist_perencanaan' => 'boolean',
-            'checklist_manajemen_risiko' => 'boolean',
-            'checklist_kelengkapan_data' => 'boolean',
-            'checklist_kesesuaian_peraturan' => 'boolean',
+            'checklist_analisis_kebutuhan' => 'nullable|boolean',
+            'checklist_perencanaan' => 'nullable|boolean',
+            'checklist_manajemen_risiko' => 'nullable|boolean',
+            'checklist_kelengkapan_data' => 'nullable|boolean',
+            'checklist_kesesuaian_peraturan' => 'nullable|boolean',
             'catatan_internal' => 'nullable|string',
         ]);
 
@@ -214,7 +226,7 @@ class RekomendasiVerifikasiController extends Controller
 
             $proposal->update([
                 'status' => 'disetujui',
-                'fase_saat_ini' => 'penandatanganan',
+                'fase_saat_ini' => 'menunggu_kementerian',
             ]);
 
             // Log activity
@@ -226,11 +238,10 @@ class RekomendasiVerifikasiController extends Controller
             \DB::commit();
 
             // TODO: Send notification to user
-            // TODO: Trigger letter generation process
 
             return redirect()
                 ->route('admin.rekomendasi.verifikasi.index')
-                ->with('success', 'Usulan berhasil disetujui. Proses selanjutnya: Penandatanganan surat.');
+                ->with('success', 'Usulan berhasil disetujui. Proses selanjutnya: Menunggu persetujuan Kementerian Komdigi.');
 
         } catch (\Exception $e) {
             \DB::rollBack();
@@ -374,6 +385,191 @@ class RekomendasiVerifikasiController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update ministry (Kementerian) approval status.
+     */
+    public function updateMinistryStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:menunggu,diproses,disetujui,ditolak,revisi_diminta',
+            'nomor_surat_respons' => 'nullable|string|max:255',
+            'tanggal_surat_respons' => 'nullable|date',
+            'file_respons' => 'nullable|file|mimes:pdf|max:10240',
+            'catatan' => 'nullable|string|max:2000',
+        ]);
+
+        try {
+            \DB::beginTransaction();
+
+            $proposal = RekomendasiAplikasiForm::findOrFail($id);
+
+            if ($proposal->status !== 'disetujui') {
+                \DB::rollBack();
+                return redirect()
+                    ->back()
+                    ->with('error', 'Hanya usulan yang sudah disetujui DKISP yang dapat diupdate status Kementerian.');
+            }
+
+            // Get or create status kementerian
+            $statusKementerian = $proposal->statusKementerian;
+
+            \Log::info('Ministry Status Debug - Proposal ID: ' . $proposal->id);
+            \Log::info('Ministry Status Debug - StatusKementerian exists: ' . ($statusKementerian ? 'YES (ID: '.$statusKementerian->id.')' : 'NO'));
+
+            $data = [
+                'rekomendasi_aplikasi_form_id' => $proposal->id,
+                'status' => $request->status,
+                'nomor_surat_respons' => $request->nomor_surat_respons,
+                'tanggal_surat_respons' => $request->tanggal_surat_respons,
+                'catatan_internal' => $request->catatan,
+                'updated_by' => auth()->id(),
+            ];
+
+            \Log::info('Ministry Status Debug - Data to save:', $data);
+
+            // Handle file upload
+            if ($request->hasFile('file_respons')) {
+                \Log::info('Ministry Status Debug - File upload detected');
+                // Delete old file if exists
+                if ($statusKementerian && $statusKementerian->file_respons_path) {
+                    Storage::disk('public')->delete($statusKementerian->file_respons_path);
+                    \Log::info('Ministry Status Debug - Old file deleted: ' . $statusKementerian->file_respons_path);
+                }
+
+                $file = $request->file('file_respons');
+                $filename = 'surat_kementerian_' . $proposal->ticket_number . '_' . time() . '.pdf';
+                $path = $file->storeAs('rekomendasi/surat_kementerian', $filename, 'public');
+                $data['file_respons_path'] = $path;
+                \Log::info('Ministry Status Debug - File uploaded to: ' . $path);
+            }
+
+            if ($statusKementerian) {
+                \Log::info('Ministry Status Debug - Calling UPDATE...');
+                $result = $statusKementerian->update($data);
+                \Log::info('Ministry Status Debug - Update result: ' . ($result ? 'TRUE' : 'FALSE'));
+                \Log::info('Ministry Status Debug - After update:', $statusKementerian->fresh()->toArray());
+            } else {
+                \Log::info('Ministry Status Debug - Calling CREATE...');
+                $statusKementerian = RekomendasiStatusKementerian::create($data);
+                \Log::info('Ministry Status Debug - Created with ID: ' . $statusKementerian->id);
+                \Log::info('Ministry Status Debug - Created data:', $statusKementerian->toArray());
+            }
+
+            // Update proposal fase based on status
+            \Log::info('Ministry Status Debug - Updating proposal fase...');
+            if ($request->status === 'disetujui') {
+                $proposal->update(['fase_saat_ini' => 'pengembangan']);
+                \Log::info('Ministry Status Debug - Fase updated to: pengembangan');
+            } elseif ($request->status === 'ditolak') {
+                $proposal->update(['fase_saat_ini' => 'ditolak']);
+                \Log::info('Ministry Status Debug - Fase updated to: ditolak');
+            } elseif (in_array($request->status, ['menunggu', 'diproses'])) {
+                $proposal->update(['fase_saat_ini' => 'menunggu_kementerian']);
+                \Log::info('Ministry Status Debug - Fase updated to: menunggu_kementerian');
+            }
+
+            // Log activity
+            $statusLabels = [
+                'menunggu' => 'Menunggu Respons Kementerian',
+                'diproses' => 'Sedang Diproses Kementerian',
+                'disetujui' => 'Disetujui Kementerian Komdigi',
+                'ditolak' => 'Ditolak Kementerian Komdigi',
+                'revisi_diminta' => 'Kementerian Meminta Revisi',
+            ];
+            $proposal->logActivity(
+                'Status Kementerian Diperbarui',
+                'Status persetujuan Kementerian diubah menjadi: ' . ($statusLabels[$request->status] ?? $request->status)
+            );
+
+            \Log::info('Ministry Status Debug - About to commit transaction...');
+            \DB::commit();
+            \Log::info('Ministry Status Debug - Transaction committed successfully!');
+
+            return redirect()
+                ->back()
+                ->with('success', 'Status persetujuan Kementerian berhasil diperbarui.');
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+
+            \Log::error('Ministry Status Update Error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export proposal detail to PDF.
+     */
+    public function exportPdf($id)
+    {
+        try {
+            $proposal = RekomendasiAplikasiForm::with([
+                'user.unitKerja',
+                'pemilikProsesBisnis',
+                'dokumenUsulan.uploader',
+                'verifikasi.verifikator',
+                'historiAktivitas.user',
+                'statusKementerian'
+            ])->findOrFail($id);
+
+            // Configure DomPDF options
+            $options = new Options();
+            $options->set('isRemoteEnabled', true);
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isPhpEnabled', true);
+            $options->set('defaultFont', 'DejaVu Sans');
+
+            // Create DomPDF instance
+            $dompdf = new Dompdf($options);
+
+            // Encode logo as base64 for PDF embedding
+            $logoPath = public_path('logokaltarafix.png');
+            $logoBase64 = '';
+            if (file_exists($logoPath)) {
+                $logoBase64 = base64_encode(file_get_contents($logoPath));
+            }
+
+            // Load HTML content from view
+            $html = view('admin.rekomendasi.verifikasi.pdf', compact('proposal', 'logoBase64'))->render();
+            $dompdf->loadHtml($html);
+
+            // Set paper size and orientation
+            $dompdf->setPaper('A4', 'portrait');
+
+            // Render PDF
+            $dompdf->render();
+
+            // Generate filename
+            $filename = 'Usulan_Rekomendasi_' . $proposal->ticket_number . '.pdf';
+
+            // Log activity
+            $proposal->logActivity(
+                'PDF Diekspor',
+                'Dokumen usulan rekomendasi diekspor ke PDF oleh ' . auth()->user()->name
+            );
+
+            // Stream PDF to browser
+            return response()->streamDownload(function() use ($dompdf) {
+                echo $dompdf->output();
+            }, $filename, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $filename . '"'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('PDF Export Error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage());
         }
     }
 }

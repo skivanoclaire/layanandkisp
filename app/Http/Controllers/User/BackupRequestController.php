@@ -21,7 +21,7 @@ class BackupRequestController extends Controller
 
     public function create()
     {
-        $unitKerjas = UnitKerja::orderBy('nama')->get();
+        $unitKerjas = UnitKerja::forLayananDigital()->orderBy('nama')->get();
         return view('user.datacenter.backup.create', compact('unitKerjas'));
     }
 

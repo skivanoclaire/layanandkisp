@@ -96,6 +96,11 @@ class WebMonitor extends Model
         return $this->hasMany(SubdomainTechHistory::class);
     }
 
+    public function surveiKepuasan()
+    {
+        return $this->hasMany(SurveiKepuasanLayanan::class, 'web_monitor_id');
+    }
+
     // Status attribute accessor
     public function getIsActiveAttribute(): bool
     {

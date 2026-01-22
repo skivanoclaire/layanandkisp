@@ -1,0 +1,58 @@
+FROM php:8.4-apache
+
+# System deps + imagick deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git zip unzip curl \
+    libzip-dev libpng-dev libjpeg-dev libfreetype6-dev libxml2-dev libonig-dev \
+    libmagickwand-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+# PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql zip mbstring xml
+
+# Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+ && apt-get install -y nodejs \
+ && npm install -g npm@latest
+
+# Imagick
+RUN pecl install imagick \
+ && docker-php-ext-enable imagick
+
+# Apache config: rewrite + public as docroot + timeouts + large body
+RUN a2enmod rewrite proxy proxy_http
+RUN printf "\
+<VirtualHost *:80>\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+        LimitRequestBody 268435456\n\
+    </Directory>\n\
+    Timeout 3600\n\
+    ProxyTimeout 3600\n\
+    ErrorLog \${APACHE_LOG_DIR}/error.log\n\
+    CustomLog \${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>\n\
+" > /etc/apache2/sites-available/000-default.conf
+
+# PHP limits
+RUN printf "\
+upload_max_filesize=256M\n\
+post_max_size=256M\n\
+max_execution_time=3600\n\
+max_input_time=3600\n\
+memory_limit=512M\n\
+max_input_vars=10000\n\
+default_socket_timeout=3600\n\
+" > /usr/local/etc/php/conf.d/custom.ini
+
+# Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# PENTING (dev): jangan COPY source, nanti pakai volume dari host
+# PENTING (dev): jangan composer install / npm install di build

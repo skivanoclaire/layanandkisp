@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\RekomendasiAplikasiForm;
 use App\Models\RekomendasiHistoriAktivitas;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -251,11 +253,53 @@ class RekomendasiMonitoringController extends Controller
             $query->where('created_at', '<=', $request->date_to);
         }
 
-        $applications = $query->get();
+        try {
+            $applications = $query->get();
 
-        $pdf = \PDF::loadView('admin.rekomendasi.monitoring.export-pdf', compact('applications'));
+            // Configure DomPDF options
+            $options = new Options();
+            $options->set('isRemoteEnabled', true);
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isPhpEnabled', true);
+            $options->set('defaultFont', 'DejaVu Sans');
 
-        return $pdf->download('rekomendasi_aplikasi_' . date('YmdHis') . '.pdf');
+            // Create DomPDF instance
+            $dompdf = new Dompdf($options);
+
+            // Encode logo as base64 for PDF embedding
+            $logoPath = public_path('logokaltarafix.png');
+            $logoBase64 = '';
+            if (file_exists($logoPath)) {
+                $logoBase64 = base64_encode(file_get_contents($logoPath));
+            }
+
+            // Load HTML content from view
+            $html = view('admin.rekomendasi.monitoring.export-pdf', compact('applications', 'logoBase64'))->render();
+            $dompdf->loadHtml($html);
+
+            // Set paper size and orientation
+            $dompdf->setPaper('A4', 'landscape');
+
+            // Render PDF
+            $dompdf->render();
+
+            // Generate filename
+            $filename = 'Monitoring_Rekomendasi_Aplikasi_' . date('YmdHis') . '.pdf';
+
+            // Stream PDF to browser
+            return response()->streamDownload(function() use ($dompdf) {
+                echo $dompdf->output();
+            }, $filename, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('PDF Export Error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            return redirect()->back()->with('error', 'Gagal mengekspor PDF: ' . $e->getMessage());
+        }
     }
 
     /**

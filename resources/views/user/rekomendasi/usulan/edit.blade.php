@@ -206,9 +206,8 @@
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             required>
                             <option value="">Pilih Jenis Layanan</option>
-                            <option value="internal" {{ old('jenis_layanan', $proposal->jenis_layanan) == 'internal' ? 'selected' : '' }}>Internal</option>
-                            <option value="eksternal" {{ old('jenis_layanan', $proposal->jenis_layanan) == 'eksternal' ? 'selected' : '' }}>Eksternal</option>
-                            <option value="hybrid" {{ old('jenis_layanan', $proposal->jenis_layanan) == 'hybrid' ? 'selected' : '' }}>Hybrid</option>
+                            <option value="publik" {{ old('jenis_layanan', $proposal->jenis_layanan) == 'publik' ? 'selected' : '' }}>Layanan Publik</option>
+                            <option value="internal" {{ old('jenis_layanan', $proposal->jenis_layanan) == 'internal' ? 'selected' : '' }}>Layanan Internal</option>
                         </select>
                         @error('jenis_layanan')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -232,14 +231,17 @@
 
                     <!-- Estimasi Pengguna -->
                     <div>
-                        <label for="estimasi_pengguna" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="estimasi_pengguna_display" class="block text-sm font-medium text-gray-700 mb-1">
                             Estimasi Jumlah Pengguna <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" id="estimasi_pengguna" name="estimasi_pengguna"
-                            value="{{ old('estimasi_pengguna', $proposal->estimasi_pengguna) }}"
-                            min="1"
+                        <input type="text" id="estimasi_pengguna_display"
+                            value="{{ old('estimasi_pengguna', $proposal->estimasi_pengguna) ? number_format(old('estimasi_pengguna', $proposal->estimasi_pengguna), 0, ',', '.') : '' }}"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Contoh: 1.000"
+                            oninput="formatNumber(this, 'estimasi_pengguna')"
                             required>
+                        <input type="hidden" id="estimasi_pengguna" name="estimasi_pengguna"
+                            value="{{ old('estimasi_pengguna', $proposal->estimasi_pengguna) }}">
                         @error('estimasi_pengguna')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -253,10 +255,10 @@
                         <select id="lingkup_aplikasi" name="lingkup_aplikasi"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             required>
-                            <option value="">Pilih Lingkup</option>
-                            <option value="lokal" {{ old('lingkup_aplikasi', $proposal->lingkup_aplikasi) == 'lokal' ? 'selected' : '' }}>Lokal</option>
-                            <option value="regional" {{ old('lingkup_aplikasi', $proposal->lingkup_aplikasi) == 'regional' ? 'selected' : '' }}>Regional</option>
-                            <option value="nasional" {{ old('lingkup_aplikasi', $proposal->lingkup_aplikasi) == 'nasional' ? 'selected' : '' }}>Nasional</option>
+                            <option value="">Pilih Lingkup Aplikasi</option>
+                            <option value="lokal" {{ old('lingkup_aplikasi', $proposal->lingkup_aplikasi ?? '') == 'lokal' ? 'selected' : '' }}>Lokal</option>
+                            <option value="regional" {{ old('lingkup_aplikasi', $proposal->lingkup_aplikasi ?? '') == 'regional' ? 'selected' : '' }}>Regional</option>
+                            <option value="nasional" {{ old('lingkup_aplikasi', $proposal->lingkup_aplikasi ?? '') == 'nasional' ? 'selected' : '' }}>Nasional</option>
                         </select>
                         @error('lingkup_aplikasi')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -327,14 +329,17 @@
 
                     <!-- Estimasi Biaya -->
                     <div>
-                        <label for="estimasi_biaya" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="estimasi_biaya_display" class="block text-sm font-medium text-gray-700 mb-1">
                             Estimasi Biaya (Rp) <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" id="estimasi_biaya" name="estimasi_biaya"
-                            value="{{ old('estimasi_biaya', $proposal->estimasi_biaya) }}"
-                            min="0" step="1000"
+                        <input type="text" id="estimasi_biaya_display"
+                            value="{{ old('estimasi_biaya', $proposal->estimasi_biaya) ? number_format(old('estimasi_biaya', $proposal->estimasi_biaya), 0, ',', '.') : '' }}"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Contoh: 100.000.000"
+                            oninput="formatCurrency(this)"
                             required>
+                        <input type="hidden" id="estimasi_biaya" name="estimasi_biaya"
+                            value="{{ old('estimasi_biaya', $proposal->estimasi_biaya) }}">
                         @error('estimasi_biaya')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -604,23 +609,6 @@
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Perencanaan</h2>
                 <p class="text-sm text-gray-600 mb-6">Sesuai Permenkomdigi No. 6 Tahun 2025 tentang Pembangunan Aplikasi Khusus</p>
 
-                <!-- Petunjuk Pengisian Step 3 -->
-                <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6">
-                    <h3 class="text-base font-semibold text-purple-900 mb-2">📋 Petunjuk Pengisian</h3>
-                    <div class="text-sm text-purple-800 space-y-2">
-                        <p><strong>Contoh pengisian:</strong></p>
-                        <ul class="list-disc list-inside space-y-1 ml-2">
-                            <li><strong>Proses Bisnis:</strong> "1) Pegawai login → 2) Mengisi form cuti → 3) Atasan approve/reject → 4) HRD verifikasi → 5) Sistem update database → 6) Notifikasi ke pegawai"</li>
-                            <li><strong>Kerangka Kerja:</strong> "Menggunakan Agile Scrum dengan sprint 2 minggu, daily standup, sprint review, dan retrospective. Tech stack: Laravel, Vue.js, PostgreSQL"</li>
-                            <li><strong>Pelaksana Pembangunan:</strong> Pilih Menteri jika ditangani Kementerian, Swakelola jika tim internal, Pihak Ketiga jika vendor eksternal</li>
-                            <li><strong>Jadwal Pelaksanaan:</strong> "Q1 2026: Requirement gathering & design (2 bulan); Q2-Q3 2026: Development & testing (4 bulan); Q4 2026: UAT & deployment (2 bulan)"</li>
-                            <li><strong>SDM:</strong> "Project Manager (1), Backend Developer (2), Frontend Developer (2), UI/UX Designer (1), QA Tester (1), DBA (1)"</li>
-                            <li><strong>Anggaran:</strong> "Development: Rp 300 juta, Infrastruktur: Rp 100 juta, Training: Rp 50 juta, Maintenance 1 tahun: Rp 50 juta"</li>
-                            <li><strong>Indikator Keberhasilan:</strong> "Waktu proses cuti berkurang dari 5 hari menjadi 1 hari, akurasi data 99%, user satisfaction score minimal 4.0/5.0"</li>
-                        </ul>
-                    </div>
-                </div>
-
                 <div class="space-y-4">
                     <!-- Uraian Ruang Lingkup -->
                     {{-- Petunjuk Pengisian Uraian Ruang Lingkup --}}
@@ -717,6 +705,11 @@
                     </div>
 
                     <!-- Proses Bisnis -->
+                    {{-- Petunjuk Pengisian Proses Bisnis --}}
+                    <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-2">
+                        <p class="text-xs text-blue-800"><strong>💡 Contoh:</strong> "1) Pegawai login → 2) Mengisi form cuti → 3) Atasan approve/reject → 4) HRD verifikasi → 5) Sistem update database → 6) Notifikasi ke pegawai"</p>
+                    </div>
+
                     <div>
                         <label for="proses_bisnis" class="block text-sm font-medium text-gray-700 mb-1">
                             Proses Bisnis
@@ -751,7 +744,7 @@
                         </svg>
                                         <span class="text-sm text-green-800">File saat ini: {{ basename($proposal->proses_bisnis_file) }}</span>
                                     </div>
-                                    <a href="{{ Storage::url($proposal->proses_bisnis_file) }}" target="_blank"
+                                    <a href="{{ route('file.download', $proposal->proses_bisnis_file) }}" target="_blank"
                                        class="text-sm text-blue-600 hover:text-blue-800">
                                         Lihat File
                                     </a>
@@ -900,6 +893,11 @@
                     </div>
 
                     <!-- Pelaksana Pembangunan -->
+                    {{-- Petunjuk Pengisian Pelaksana Pembangunan --}}
+                    <div class="bg-teal-50 border border-teal-200 rounded p-3 mb-2">
+                        <p class="text-xs text-teal-800"><strong>💡 Contoh:</strong> Pilih <strong>Menteri</strong> jika ditangani Kementerian, <strong>Swakelola</strong> jika tim internal, <strong>Pihak Ketiga</strong> jika vendor eksternal</p>
+                    </div>
+
                     <div>
                         <label for="pelaksana_pembangunan" class="block text-sm font-medium text-gray-700 mb-1">
                             Pelaksana Pembangunan
@@ -917,6 +915,81 @@
                     </div>
 
                     <!-- Peran dan Tanggung Jawab -->
+                    {{-- Petunjuk Pengisian Peran dan Tanggung Jawab --}}
+                    <div class="mb-3">
+                        <button type="button" onclick="toggleGuidance('peran-tanggung-jawab-guidance')"
+                                class="flex items-center text-yellow-600 hover:text-yellow-800 text-sm font-medium mb-2 focus:outline-none">
+                            <svg id="peran-tanggung-jawab-guidance-icon-plus" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <svg id="peran-tanggung-jawab-guidance-icon-minus" class="w-4 h-4 mr-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                            </svg>
+                            <span id="peran-tanggung-jawab-guidance-text">Lihat Petunjuk untuk Peran dan Tanggung Jawab Tim</span>
+                        </button>
+
+                        <div id="peran-tanggung-jawab-guidance" class="hidden bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-3">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg class="h-6 w-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-sm font-semibold text-yellow-800 mb-2">👥 Petunjuk Pengisian: Peran dan Tanggung Jawab Tim</h3>
+                                <div class="text-sm text-yellow-700 space-y-2">
+                                    <p><strong>Fokus: Peran dan tanggung jawab INSTITUSI/ORGANISASI yang terlibat</strong></p>
+
+                                    <p>Jelaskan peran masing-masing institusi/organisasi sesuai dengan pilihan <strong>"Pelaksana Pembangunan"</strong> di atas (Menteri/Swakelola/Pihak Ketiga).</p>
+
+                                    <div class="bg-white p-3 rounded border border-yellow-200 mt-2 space-y-3">
+                                        <div>
+                                            <p class="font-semibold text-xs mb-1">📋 Skenario 1: Pelaksana = Menteri</p>
+                                            <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                                <li><strong>Kementerian Kominfo:</strong> Koordinator dan penanggung jawab utama</li>
+                                                <li><strong>Pemerintah Daerah (Diskominfo Kaltara):</strong> Menyediakan infrastruktur dan data</li>
+                                                <li><strong>SKPD Terkait (BKD):</strong> Menyediakan business process dan validasi kebutuhan</li>
+                                                <li><strong>Kementerian PANRB:</strong> Supervisi terkait ASN dan kepegawaian</li>
+                                            </ul>
+                                        </div>
+
+                                        <div>
+                                            <p class="font-semibold text-xs mb-1">🏢 Skenario 2: Pelaksana = Swakelola</p>
+                                            <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                                <li><strong>Diskominfo Kaltara:</strong> Tim developer internal sebagai pembangun aplikasi</li>
+                                                <li><strong>BKD:</strong> Product owner dan validasi kebutuhan bisnis</li>
+                                                <li><strong>15 SKPD Perangkat Daerah:</strong> User/tester untuk UAT (User Acceptance Testing)</li>
+                                                <li><strong>Inspektorat:</strong> Quality assurance dan compliance check</li>
+                                                <li><strong>Biro Hukum:</strong> Review aspek legal dan kepatuhan regulasi</li>
+                                            </ul>
+                                        </div>
+
+                                        <div>
+                                            <p class="font-semibold text-xs mb-1">🤝 Skenario 3: Pelaksana = Pihak Ketiga (Vendor)</p>
+                                            <ul class="list-disc list-inside space-y-1 text-xs ml-2">
+                                                <li><strong>PT Vendor IT:</strong> Pembangun aplikasi (development, testing, deployment)</li>
+                                                <li><strong>Diskominfo Kaltara:</strong> Project owner dan monitoring progres vendor</li>
+                                                <li><strong>BKD:</strong> Subject matter expert dan validasi kebutuhan</li>
+                                                <li><strong>Tim IT Internal Diskominfo:</strong> Knowledge transfer dan maintenance pasca-proyek</li>
+                                                <li><strong>Bagian Pengadaan:</strong> Pengelolaan kontrak dan pembayaran vendor</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-yellow-100 border border-yellow-300 p-2 rounded mt-2">
+                                        <p class="text-xs"><strong>⚠️ Catatan Penting:</strong></p>
+                                        <ul class="list-disc list-inside text-xs ml-2 space-y-1 mt-1">
+                                            <li>Fokus pada peran <strong>organisasi/institusi</strong>, bukan individu teknis</li>
+                                            <li>Detail SDM teknis (PM, Developer, dll) diisi di kolom <strong>"Sumber Daya Manusia"</strong></li>
+                                            <li>Sesuaikan contoh dengan pilihan "Pelaksana Pembangunan" Anda</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label for="peran_tanggung_jawab" class="block text-sm font-medium text-gray-700 mb-1">
                             Peran dan Tanggung Jawab Tim
@@ -1232,6 +1305,11 @@
                     </div>
 
                     <!-- Sumber Daya Manusia -->
+                    {{-- Petunjuk Pengisian Sumber Daya Manusia --}}
+                    <div class="bg-pink-50 border border-pink-200 rounded p-3 mb-2">
+                        <p class="text-xs text-pink-800"><strong>💡 Contoh:</strong> "Project Manager (1 orang), Backend Developer (2 orang), Frontend Developer (2 orang), UI/UX Designer (1 orang), QA Tester (1 orang), DBA (1 orang) = Total 8 orang"</p>
+                    </div>
+
                     <div>
                         <label for="sumber_daya_manusia" class="block text-sm font-medium text-gray-700 mb-1">
                             Sumber Daya Manusia
@@ -1245,6 +1323,39 @@
                     </div>
 
                     <!-- Sumber Daya Anggaran -->
+                    {{-- Petunjuk Pengisian Sumber Daya Anggaran --}}
+                    <div class="bg-emerald-50 border border-emerald-200 rounded p-3 mb-2">
+                        <p class="text-xs text-emerald-800 mb-2"><strong>💡 Contoh Rincian Anggaran (6 bulan pengembangan):</strong></p>
+                        <div class="text-xs text-emerald-700 space-y-1 ml-3">
+                            <p><strong>1. Biaya Development (Rp 180 juta):</strong></p>
+                            <ul class="list-disc ml-4 space-y-0.5">
+                                <li>Fullstack Developer (2 orang × Rp 15 juta/bulan × 6 bulan = Rp 180 juta)</li>
+                            </ul>
+                            <p class="mt-2"><strong>2. Biaya Manajemen & QA (Rp 90 juta):</strong></p>
+                            <ul class="list-disc ml-4 space-y-0.5">
+                                <li>Project Manager (1 orang × Rp 10 juta/bulan × 6 bulan = Rp 60 juta)</li>
+                                <li>Quality Assurance (1 orang × Rp 5 juta/bulan × 6 bulan = Rp 30 juta)</li>
+                            </ul>
+                            <p class="mt-2"><strong>3. Infrastruktur & Hosting (Rp 30 juta):</strong></p>
+                            <ul class="list-disc ml-4 space-y-0.5">
+                                <li>Cloud Server 1 tahun (Rp 20 juta)</li>
+                                <li>Domain & SSL Certificate (Rp 5 juta)</li>
+                                <li>Database Storage (Rp 5 juta)</li>
+                            </ul>
+                            <p class="mt-2"><strong>4. Training & Implementasi (Rp 50 juta):</strong></p>
+                            <ul class="list-disc ml-4 space-y-0.5">
+                                <li>Pelatihan Admin & Operator (15 SKPD × Rp 3 juta = Rp 45 juta)</li>
+                                <li>Dokumentasi & User Manual (Rp 5 juta)</li>
+                            </ul>
+                            <p class="mt-2"><strong>5. Maintenance 1 Tahun (Rp 50 juta):</strong></p>
+                            <ul class="list-disc ml-4 space-y-0.5">
+                                <li>Bug fixing & minor updates (Rp 30 juta)</li>
+                                <li>Server maintenance & monitoring (Rp 20 juta)</li>
+                            </ul>
+                            <p class="mt-2 font-semibold">📊 Total Estimasi: Rp 400 juta</p>
+                        </div>
+                    </div>
+
                     <div>
                         <label for="sumber_daya_anggaran" class="block text-sm font-medium text-gray-700 mb-1">
                             Sumber Daya Anggaran
@@ -1258,6 +1369,11 @@
                     </div>
 
                     <!-- Sumber Daya Sarana -->
+                    {{-- Petunjuk Pengisian Sumber Daya Sarana Prasarana --}}
+                    <div class="bg-cyan-50 border border-cyan-200 rounded p-3 mb-2">
+                        <p class="text-xs text-cyan-800"><strong>💡 Contoh:</strong> "Server (2 unit: 1 production + 1 backup), Database PostgreSQL, Cloud Storage AWS S3 100GB, SSL Certificate, 15 unit PC client untuk SKPD, Fingerprint reader (3 unit per SKPD)"</p>
+                    </div>
+
                     <div>
                         <label for="sumber_daya_sarana" class="block text-sm font-medium text-gray-700 mb-1">
                             Sumber Daya Sarana Prasarana
@@ -1271,6 +1387,11 @@
                     </div>
 
                     <!-- Indikator Keberhasilan -->
+                    {{-- Petunjuk Pengisian Indikator Keberhasilan --}}
+                    <div class="bg-violet-50 border border-violet-200 rounded p-3 mb-2">
+                        <p class="text-xs text-violet-800"><strong>💡 Contoh:</strong> "Waktu proses cuti berkurang dari 5 hari menjadi 1 hari, akurasi data 99%, user satisfaction score minimal 4.0/5.0, penggunaan kertas berkurang 80%, sistem uptime 99.5%"</p>
+                    </div>
+
                     <div>
                         <label for="indikator_keberhasilan" class="block text-sm font-medium text-gray-700 mb-1">
                             Indikator Keberhasilan
@@ -1324,7 +1445,24 @@
             <!-- Step 4: Manajemen Risiko -->
             <div id="step-4" class="step-content bg-white rounded-lg shadow-md p-6" style="display: none;">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Manajemen Risiko SPBE</h2>
-                <p class="text-sm text-gray-600 mb-6">Identifikasi dan kelola risiko sesuai Permenkomdigi No. 6 Tahun 2025</p>
+                <p class="text-sm text-gray-600 mb-4">Identifikasi dan kelola risiko sesuai Permenkomdigi No. 6 Tahun 2025</p>
+
+                <!-- Edit Instructions -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div class="flex">
+                        <svg class="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                        <div>
+                            <h3 class="text-sm font-semibold text-blue-800 mb-1">Cara Mengelola Risiko</h3>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li><strong>Risiko yang Sudah Tersimpan:</strong> Ditandai dengan label <span class="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">Dapat Diedit</span>. Anda dapat mengubah semua field dan klik "Simpan Perubahan" untuk memperbarui data.</li>
+                                <li><strong>Risiko Baru:</strong> Klik tombol "+ Tambah Risiko" di bawah untuk menambahkan risiko baru. Risiko baru akan ditandai dengan label <span class="px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full">Baru Ditambahkan</span>.</li>
+                                <li><strong>Menghapus Risiko:</strong> Klik tombol "Hapus Risiko" di pojok kanan atas setiap risiko.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Petunjuk Pengisian -->
                 <div class="bg-orange-50 border-l-4 border-orange-500 p-4 mb-6">
@@ -1364,7 +1502,7 @@
                 </div>
 
                 <!-- Warning Container -->
-                <div id="risiko-warning" class="hidden bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                <div id="risiko-warning" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
                     <div class="flex">
                         <svg class="h-5 w-5 text-yellow-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -1375,237 +1513,165 @@
                     </div>
                 </div>
 
-                <!-- Risiko Container -->
-                <div id="risiko-wrapper" class="space-y-4 mb-6">
-                    @php
-                        $risikoItems = old('risiko_items', $proposal->risiko_items ?? []);
-                    @endphp
+                @php
+                    $risikoItems = old('risiko_items', $proposal->risiko_items ?? []);
+                @endphp
+
+                <!-- Tabel Daftar Risiko yang Sudah Tersimpan -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Daftar Risiko Teridentifikasi</h3>
+                        <span id="risiko-count" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                            {{ count($risikoItems) }} Risiko
+                        </span>
+                    </div>
+
+                    <div id="risiko-table-container">
+                        @if(!empty($risikoItems))
+                            <div class="overflow-x-auto bg-white border border-gray-300 rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uraian Kejadian</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Besaran</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="risiko-table-body" class="bg-white divide-y divide-gray-200">
+                                        @foreach($risikoItems as $index => $risiko)
+                                            <tr data-index="{{ $index }}" class="hover:bg-gray-50">
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $loop->iteration }}</td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                                    @if(($risiko['jenis_risiko'] ?? '') == 'positif')
+                                                        <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Positif</span>
+                                                    @else
+                                                        <span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">Negatif</span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-700">
+                                                    {{ ucwords(str_replace('_', ' ', $risiko['kategori_risiko'] ?? '-')) }}
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate" title="{{ $risiko['uraian_kejadian'] ?? '-' }}">
+                                                    {{ $risiko['uraian_kejadian'] ?? '-' }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                                    @php
+                                                        $besaran = $risiko['besaran_risiko_nilai'] ?? 0;
+                                                        if ($besaran >= 15) {
+                                                            $color = 'bg-red-100 text-red-800';
+                                                            $text = 'Sangat Tinggi';
+                                                        } elseif ($besaran >= 10) {
+                                                            $color = 'bg-orange-100 text-orange-800';
+                                                            $text = 'Tinggi';
+                                                        } elseif ($besaran >= 5) {
+                                                            $color = 'bg-yellow-100 text-yellow-800';
+                                                            $text = 'Sedang';
+                                                        } else {
+                                                            $color = 'bg-green-100 text-green-800';
+                                                            $text = 'Rendah';
+                                                        }
+                                                    @endphp
+                                                    <span class="px-2 py-1 text-xs {{ $color }} rounded-full font-medium">
+                                                        {{ $besaran }} - {{ $text }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-center text-sm">
+                                                    <button type="button" onclick="editRisiko({{ $index }})"
+                                                            class="inline-flex items-center px-3 py-1 mr-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                        Edit
+                                                    </button>
+                                                    <button type="button" onclick="hapusRisiko({{ $index }})"
+                                                            class="inline-flex items-center px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                        Hapus
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="bg-gray-50 border border-gray-300 rounded-lg p-8 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600">Belum ada risiko teridentifikasi</p>
+                                <p class="mt-1 text-xs text-gray-500">Klik tombol "Tambah Risiko Baru" di bawah untuk menambahkan</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Form Tambah/Edit Risiko -->
+                <div id="risiko-form-container" class="bg-white border-2 border-blue-200 rounded-lg p-6 mb-6" style="display: none;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 id="risiko-form-title" class="text-lg font-semibold text-gray-800">Tambah Risiko Baru</h3>
+                        <button type="button" onclick="batalFormRisiko()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div id="risiko-form-fields" class="space-y-4">
+                        <!-- Form fields will be populated here by JavaScript -->
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                        <button type="button" onclick="batalFormRisiko()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+                            Batal
+                        </button>
+                        <button type="button" onclick="simpanRisiko()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            Simpan Risiko
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tombol Tambah Risiko Baru -->
+                <button type="button" onclick="tambahRisikoBaru()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition inline-flex items-center mb-6">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Tambah Risiko Baru
+                </button>
+
+                <!-- Hidden storage for risiko data -->
+                <div id="risiko-data-storage" style="display: none;">
                     @if(!empty($risikoItems))
                         @foreach($risikoItems as $index => $risiko)
-                            <div class="risiko-item bg-gray-50 border border-gray-300 rounded-lg p-6 mb-4" data-index="{{ $index }}">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-lg font-semibold text-gray-800">Risiko SPBE #{{ $index + 1 }}</h3>
-                                    <button type="button" onclick="removeRisiko({{ $index }})" class="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition">
-                                        Hapus Risiko
-                                    </button>
-                                </div>
-
-                                <div class="space-y-4">
-                                    <!-- Jenis Risiko SPBE -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Jenis Risiko SPBE <span class="text-red-500">*</span>
-                                        </label>
-                                        <select name="risiko_items[{{ $index }}][jenis_risiko]"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <option value="">Pilih Jenis Risiko</option>
-                                            <option value="positif" {{ ($risiko['jenis_risiko'] ?? '') == 'positif' ? 'selected' : '' }}>Positif (Peluang)</option>
-                                            <option value="negatif" {{ ($risiko['jenis_risiko'] ?? '') == 'negatif' ? 'selected' : '' }}>Negatif (Ancaman)</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Kategori Risiko SPBE -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Kategori Risiko SPBE <span class="text-red-500">*</span>
-                                        </label>
-                                        <select name="risiko_items[{{ $index }}][kategori_risiko]"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <option value="">Pilih Kategori</option>
-                                            <option value="rencana_induk_spbe" {{ ($risiko['kategori_risiko'] ?? '') == 'rencana_induk_spbe' ? 'selected' : '' }}>Rencana Induk SPBE Nasional</option>
-                                            <option value="arsitektur_spbe" {{ ($risiko['kategori_risiko'] ?? '') == 'arsitektur_spbe' ? 'selected' : '' }}>Arsitektur SPBE</option>
-                                            <option value="peta_rencana" {{ ($risiko['kategori_risiko'] ?? '') == 'peta_rencana' ? 'selected' : '' }}>Peta Rencana SPBE</option>
-                                            <option value="aplikasi_umum" {{ ($risiko['kategori_risiko'] ?? '') == 'aplikasi_umum' ? 'selected' : '' }}>Aplikasi Umum</option>
-                                            <option value="aplikasi_khusus" {{ ($risiko['kategori_risiko'] ?? '') == 'aplikasi_khusus' ? 'selected' : '' }}>Aplikasi Khusus</option>
-                                            <option value="keamanan_informasi" {{ ($risiko['kategori_risiko'] ?? '') == 'keamanan_informasi' ? 'selected' : '' }}>Keamanan Informasi</option>
-                                            <option value="audit_tik" {{ ($risiko['kategori_risiko'] ?? '') == 'audit_tik' ? 'selected' : '' }}>Audit Teknologi Informasi dan Komunikasi</option>
-                                            <option value="pengadaan_tik" {{ ($risiko['kategori_risiko'] ?? '') == 'pengadaan_tik' ? 'selected' : '' }}>Pengadaan Teknologi Informasi dan Komunikasi</option>
-                                            <option value="penyelenggara_spbe" {{ ($risiko['kategori_risiko'] ?? '') == 'penyelenggara_spbe' ? 'selected' : '' }}>Penyelenggara SPBE</option>
-                                            <option value="layanan_pusat_data" {{ ($risiko['kategori_risiko'] ?? '') == 'layanan_pusat_data' ? 'selected' : '' }}>Layanan Pusat Data Nasional</option>
-                                            <option value="data_informasi" {{ ($risiko['kategori_risiko'] ?? '') == 'data_informasi' ? 'selected' : '' }}>Data dan Informasi</option>
-                                            <option value="infrastruktur" {{ ($risiko['kategori_risiko'] ?? '') == 'infrastruktur' ? 'selected' : '' }}>Infrastruktur</option>
-                                            <option value="sumber_daya_manusia" {{ ($risiko['kategori_risiko'] ?? '') == 'sumber_daya_manusia' ? 'selected' : '' }}>Sumber Daya Manusia</option>
-                                            <option value="anggaran" {{ ($risiko['kategori_risiko'] ?? '') == 'anggaran' ? 'selected' : '' }}>Anggaran</option>
-                                            <option value="regulasi" {{ ($risiko['kategori_risiko'] ?? '') == 'regulasi' ? 'selected' : '' }}>Regulasi</option>
-                                            <option value="lainnya" {{ ($risiko['kategori_risiko'] ?? '') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Area Dampak Risiko SPBE -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Area Dampak Risiko SPBE <span class="text-red-500">*</span>
-                                        </label>
-                                        <select name="risiko_items[{{ $index }}][area_dampak]"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <option value="">Pilih Area Dampak</option>
-                                            <option value="finansial" {{ ($risiko['area_dampak'] ?? '') == 'finansial' ? 'selected' : '' }}>Finansial</option>
-                                            <option value="reputasi" {{ ($risiko['area_dampak'] ?? '') == 'reputasi' ? 'selected' : '' }}>Reputasi</option>
-                                            <option value="kinerja_operasional" {{ ($risiko['area_dampak'] ?? '') == 'kinerja_operasional' ? 'selected' : '' }}>Kinerja Operasional</option>
-                                            <option value="kepatuhan" {{ ($risiko['area_dampak'] ?? '') == 'kepatuhan' ? 'selected' : '' }}>Kepatuhan</option>
-                                            <option value="keamanan" {{ ($risiko['area_dampak'] ?? '') == 'keamanan' ? 'selected' : '' }}>Keamanan</option>
-                                            <option value="lingkungan" {{ ($risiko['area_dampak'] ?? '') == 'lingkungan' ? 'selected' : '' }}>Lingkungan</option>
-                                            <option value="kesehatan_keselamatan" {{ ($risiko['area_dampak'] ?? '') == 'kesehatan_keselamatan' ? 'selected' : '' }}>Kesehatan dan Keselamatan</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Uraian Kejadian -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Uraian Kejadian <span class="text-red-500">*</span>
-                                        </label>
-                                        <textarea name="risiko_items[{{ $index }}][uraian_kejadian]" rows="3"
-                                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                  placeholder="Jelaskan detail kejadian risiko yang mungkin terjadi">{{ $risiko['uraian_kejadian'] ?? '' }}</textarea>
-                                    </div>
-
-                                    <!-- Penyebab -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Penyebab <span class="text-red-500">*</span>
-                                        </label>
-                                        <input type="text" name="risiko_items[{{ $index }}][penyebab]"
-                                               value="{{ $risiko['penyebab'] ?? '' }}"
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                               placeholder="Contoh: Kurangnya SDM kompeten, Keterbatasan anggaran">
-                                    </div>
-
-                                    <!-- Dampak -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Dampak <span class="text-red-500">*</span>
-                                        </label>
-                                        <input type="text" name="risiko_items[{{ $index }}][dampak]"
-                                               value="{{ $risiko['dampak'] ?? '' }}"
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                               placeholder="Contoh: Keterlambatan project, Penurunan kualitas aplikasi">
-                                    </div>
-
-                                    <!-- Level Kemungkinan & Level Dampak -->
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                Level Kemungkinan <span class="text-red-500">*</span>
-                                            </label>
-                                            <select name="risiko_items[{{ $index }}][level_kemungkinan]"
-                                                    onchange="hitungBesaranRisiko({{ $index }})"
-                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                                <option value="">Pilih Level</option>
-                                                <option value="1" {{ ($risiko['level_kemungkinan'] ?? '') == '1' ? 'selected' : '' }}>1 - Sangat Jarang (0-10%)</option>
-                                                <option value="2" {{ ($risiko['level_kemungkinan'] ?? '') == '2' ? 'selected' : '' }}>2 - Jarang (11-30%)</option>
-                                                <option value="3" {{ ($risiko['level_kemungkinan'] ?? '') == '3' ? 'selected' : '' }}>3 - Kadang-kadang (31-50%)</option>
-                                                <option value="4" {{ ($risiko['level_kemungkinan'] ?? '') == '4' ? 'selected' : '' }}>4 - Sering (51-70%)</option>
-                                                <option value="5" {{ ($risiko['level_kemungkinan'] ?? '') == '5' ? 'selected' : '' }}>5 - Sangat Sering (>70%)</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                Level Dampak <span class="text-red-500">*</span>
-                                            </label>
-                                            <select name="risiko_items[{{ $index }}][level_dampak]"
-                                                    onchange="hitungBesaranRisiko({{ $index }})"
-                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                                <option value="">Pilih Level</option>
-                                                <option value="1" {{ ($risiko['level_dampak'] ?? '') == '1' ? 'selected' : '' }}>1 - Tidak Signifikan</option>
-                                                <option value="2" {{ ($risiko['level_dampak'] ?? '') == '2' ? 'selected' : '' }}>2 - Minor</option>
-                                                <option value="3" {{ ($risiko['level_dampak'] ?? '') == '3' ? 'selected' : '' }}>3 - Moderat</option>
-                                                <option value="4" {{ ($risiko['level_dampak'] ?? '') == '4' ? 'selected' : '' }}>4 - Major</option>
-                                                <option value="5" {{ ($risiko['level_dampak'] ?? '') == '5' ? 'selected' : '' }}>5 - Ekstrem</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <!-- Besaran Risiko (Auto-calculated) -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Besaran Risiko (Otomatis Terhitung)
-                                        </label>
-                                        <input type="text" id="besaran-risiko-{{ $index }}" name="risiko_items[{{ $index }}][besaran_risiko]"
-                                               value="{{ $risiko['besaran_risiko'] ?? '' }}"
-                                               class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg" readonly
-                                               placeholder="Akan dihitung otomatis">
-                                        <input type="hidden" id="besaran-risiko-nilai-{{ $index }}" name="risiko_items[{{ $index }}][besaran_risiko_nilai]"
-                                               value="{{ $risiko['besaran_risiko_nilai'] ?? '' }}">
-                                    </div>
-
-                                    <!-- Perlu Penanganan -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Perlu Penanganan? <span class="text-red-500">*</span>
-                                        </label>
-                                        <select name="risiko_items[{{ $index }}][perlu_penanganan]"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <option value="">Pilih</option>
-                                            <option value="ya" {{ ($risiko['perlu_penanganan'] ?? '') == 'ya' ? 'selected' : '' }}>Ya</option>
-                                            <option value="tidak" {{ ($risiko['perlu_penanganan'] ?? '') == 'tidak' ? 'selected' : '' }}>Tidak</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Opsi Penanganan -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Opsi Penanganan
-                                        </label>
-                                        <textarea name="risiko_items[{{ $index }}][opsi_penanganan]" rows="2"
-                                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                  placeholder="Jelaskan pilihan strategi penanganan risiko">{{ $risiko['opsi_penanganan'] ?? '' }}</textarea>
-                                    </div>
-
-                                    <!-- Rencana Aksi -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Rencana Aksi
-                                        </label>
-                                        <textarea name="risiko_items[{{ $index }}][rencana_aksi]" rows="2"
-                                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                  placeholder="Jelaskan rencana aksi konkret untuk menangani risiko">{{ $risiko['rencana_aksi'] ?? '' }}</textarea>
-                                    </div>
-
-                                    <!-- Jadwal Implementasi -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Jadwal Implementasi
-                                        </label>
-                                        <input type="text" name="risiko_items[{{ $index }}][jadwal_implementasi]"
-                                               value="{{ $risiko['jadwal_implementasi'] ?? '' }}"
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                               placeholder="Contoh: Bulan 1-2, Q1 2026">
-                                    </div>
-
-                                    <!-- Penanggung Jawab -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Penanggung Jawab
-                                        </label>
-                                        <input type="text" name="risiko_items[{{ $index }}][penanggung_jawab]"
-                                               value="{{ $risiko['penanggung_jawab'] ?? '' }}"
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                               placeholder="Contoh: Tim Teknis, Project Manager">
-                                    </div>
-
-                                    <!-- Risiko Residual -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Risiko Residual?
-                                        </label>
-                                        <select name="risiko_items[{{ $index }}][risiko_residual]"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <option value="">Pilih</option>
-                                            <option value="ya" {{ ($risiko['risiko_residual'] ?? '') == 'ya' ? 'selected' : '' }}>Ya</option>
-                                            <option value="tidak" {{ ($risiko['risiko_residual'] ?? '') == 'tidak' ? 'selected' : '' }}>Tidak</option>
-                                        </select>
-                                    </div>
-                                </div>
+                            <div class="risiko-stored-item" data-index="{{ $index }}" data-risiko='@json($risiko)'>
+                                <!-- Hidden inputs for form submission -->
+                                <input type="hidden" name="risiko_items[{{ $index }}][jenis_risiko]" value="{{ $risiko['jenis_risiko'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][kategori_risiko]" value="{{ $risiko['kategori_risiko'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][area_dampak]" value="{{ $risiko['area_dampak'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][uraian_kejadian]" value="{{ $risiko['uraian_kejadian'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][penyebab]" value="{{ $risiko['penyebab'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][dampak]" value="{{ $risiko['dampak'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][level_kemungkinan]" value="{{ $risiko['level_kemungkinan'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][level_dampak]" value="{{ $risiko['level_dampak'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][besaran_risiko]" value="{{ $risiko['besaran_risiko'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][besaran_risiko_nilai]" value="{{ $risiko['besaran_risiko_nilai'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][perlu_penanganan]" value="{{ $risiko['perlu_penanganan'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][opsi_penanganan]" value="{{ $risiko['opsi_penanganan'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][rencana_aksi]" value="{{ $risiko['rencana_aksi'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][jadwal_implementasi]" value="{{ $risiko['jadwal_implementasi'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][penanggung_jawab]" value="{{ $risiko['penanggung_jawab'] ?? '' }}">
+                                <input type="hidden" name="risiko_items[{{ $index }}][risiko_residual]" value="{{ $risiko['risiko_residual'] ?? '' }}">
                             </div>
                         @endforeach
                     @else
-                        <!-- Empty state - JavaScript will add first risiko -->
+                        <!-- If no existing data, storage will be empty -->
                     @endif
                 </div>
-
-                <button type="button" onclick="addRisiko()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    + Tambah Risiko
-                </button>
 
                 <!-- Navigation -->
                 <div class="flex justify-between mt-6 pt-4 border-t">
@@ -1696,7 +1762,31 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 let currentStep = 1;
-let risikoCounter = {{ !empty($risikoItems ?? []) ? count($risikoItems ?? []) : 1 }};
+// Get max index from existing risiko items to avoid conflicts
+let risikoCounter = {{ !empty($risikoItems ?? []) ? max(array_keys($risikoItems)) + 1 : 0 }};
+
+// Format number input with thousand separators (generic function)
+function formatNumber(input, hiddenFieldId) {
+    // Get the input value and remove all non-digits
+    let value = input.value.replace(/\D/g, '');
+
+    // Update hidden field with raw number
+    document.getElementById(hiddenFieldId).value = value;
+
+    // Format with thousand separators
+    if (value) {
+        // Convert to number and format with Indonesian locale
+        let formattedValue = parseInt(value).toLocaleString('id-ID');
+        input.value = formattedValue;
+    } else {
+        input.value = '';
+    }
+}
+
+// Alias for backward compatibility
+function formatCurrency(input) {
+    formatNumber(input, 'estimasi_biaya');
+}
 
 // Step Navigation
 function nextStep(step) {
@@ -1758,9 +1848,10 @@ function validateStep(step) {
         // Check regular fields
         for (let field of requiredFields) {
             const input = document.getElementById(field);
-            if (!input.value.trim()) {
-                alert(`Mohon lengkapi field: ${input.previousElementSibling.textContent}`);
-                input.focus();
+            if (!input || !input.value.trim()) {
+                const fieldLabel = input?.previousElementSibling?.textContent || field;
+                alert(`Mohon lengkapi field: ${fieldLabel}`);
+                if (input) input.focus();
                 return false;
             }
         }
@@ -1805,277 +1896,529 @@ document.getElementById('usulan-form').addEventListener('submit', function(e) {
     syncEditorData();
 });
 
-// Risiko Management - SPBE Compliant
-function addRisiko() {
-    const wrapper = document.getElementById('risiko-wrapper');
-    const index = risikoCounter;
+// Risiko Management - NEW: Table + Form System
+let currentEditingIndex = null;
+let risikoData = {};
 
-    const risikoHTML = `
-        <div class="risiko-item bg-gray-50 border border-gray-300 rounded-lg p-6 mb-4" data-index="${index}">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-gray-800">Risiko SPBE #${index + 1}</h3>
-                <button type="button" onclick="removeRisiko(${index})" class="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition">
-                    Hapus Risiko
-                </button>
+// Load existing risiko data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Load existing data from hidden storage
+    const storedItems = document.querySelectorAll('.risiko-stored-item');
+
+    storedItems.forEach(item => {
+        const index = item.getAttribute('data-index');
+        const dataAttr = item.getAttribute('data-risiko');
+
+        if (dataAttr) {
+            try {
+                const data = JSON.parse(dataAttr);
+                risikoData[index] = data;
+            } catch(e) {
+                console.error('Failed to parse risiko data:', e);
+            }
+        }
+    });
+
+    updateRisikoDisplay();
+    updateRisikoWarning();
+});
+
+function tambahRisikoBaru() {
+    currentEditingIndex = null;
+    document.getElementById('risiko-form-title').textContent = 'Tambah Risiko Baru';
+    document.getElementById('risiko-form-container').style.display = 'block';
+
+    // Populate form with empty values
+    populateFormFields({});
+
+    // Scroll to form
+    document.getElementById('risiko-form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function editRisiko(index) {
+    currentEditingIndex = index;
+    document.getElementById('risiko-form-title').textContent = 'Edit Risiko #' + (parseInt(index) + 1);
+    document.getElementById('risiko-form-container').style.display = 'block';
+
+    // Load data into form
+    const data = risikoData[index] || {};
+    populateFormFields(data);
+
+    // Scroll to form
+    document.getElementById('risiko-form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function populateFormFields(data) {
+    const formFields = document.getElementById('risiko-form-fields');
+
+    // Calculate besaran risiko values if levels are provided
+    const kemungkinan = data.level_kemungkinan || '';
+    const dampak = data.level_dampak || '';
+    let besaranValue = data.besaran_risiko || '';
+    let besaranNilai = data.besaran_risiko_nilai || '';
+
+    if (kemungkinan && dampak) {
+        besaranNilai = parseInt(kemungkinan) * parseInt(dampak);
+        let level = '';
+        if (besaranNilai >= 1 && besaranNilai <= 4) level = 'Rendah';
+        else if (besaranNilai >= 5 && besaranNilai <= 9) level = 'Sedang';
+        else if (besaranNilai >= 10 && besaranNilai <= 14) level = 'Tinggi';
+        else if (besaranNilai >= 15) level = 'Sangat Tinggi';
+        besaranValue = besaranNilai + ' - ' + level;
+    }
+
+    formFields.innerHTML = `
+        <!-- Jenis Risiko SPBE -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Jenis Risiko SPBE <span class="text-red-500">*</span>
+            </label>
+            <select id="form-jenis_risiko" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Pilih Jenis Risiko</option>
+                <option value="positif" ${data.jenis_risiko === 'positif' ? 'selected' : ''}>Positif (Peluang)</option>
+                <option value="negatif" ${data.jenis_risiko === 'negatif' ? 'selected' : ''}>Negatif (Ancaman)</option>
+            </select>
+        </div>
+
+        <!-- Kategori Risiko SPBE -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Kategori Risiko SPBE <span class="text-red-500">*</span>
+            </label>
+            <select id="form-kategori_risiko" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Pilih Kategori</option>
+                <option value="rencana_induk_spbe" ${data.kategori_risiko === 'rencana_induk_spbe' ? 'selected' : ''}>Rencana Induk SPBE Nasional</option>
+                <option value="arsitektur_spbe" ${data.kategori_risiko === 'arsitektur_spbe' ? 'selected' : ''}>Arsitektur SPBE</option>
+                <option value="peta_rencana" ${data.kategori_risiko === 'peta_rencana' ? 'selected' : ''}>Peta Rencana SPBE</option>
+                <option value="aplikasi_umum" ${data.kategori_risiko === 'aplikasi_umum' ? 'selected' : ''}>Aplikasi Umum</option>
+                <option value="aplikasi_khusus" ${data.kategori_risiko === 'aplikasi_khusus' ? 'selected' : ''}>Aplikasi Khusus</option>
+                <option value="keamanan_informasi" ${data.kategori_risiko === 'keamanan_informasi' ? 'selected' : ''}>Keamanan Informasi</option>
+                <option value="audit_tik" ${data.kategori_risiko === 'audit_tik' ? 'selected' : ''}>Audit Teknologi Informasi dan Komunikasi</option>
+                <option value="pengadaan_tik" ${data.kategori_risiko === 'pengadaan_tik' ? 'selected' : ''}>Pengadaan Teknologi Informasi dan Komunikasi</option>
+                <option value="penyelenggara_spbe" ${data.kategori_risiko === 'penyelenggara_spbe' ? 'selected' : ''}>Penyelenggara SPBE</option>
+                <option value="layanan_pusat_data" ${data.kategori_risiko === 'layanan_pusat_data' ? 'selected' : ''}>Layanan Pusat Data Nasional</option>
+                <option value="data_informasi" ${data.kategori_risiko === 'data_informasi' ? 'selected' : ''}>Data dan Informasi</option>
+                <option value="infrastruktur" ${data.kategori_risiko === 'infrastruktur' ? 'selected' : ''}>Infrastruktur</option>
+                <option value="sumber_daya_manusia" ${data.kategori_risiko === 'sumber_daya_manusia' ? 'selected' : ''}>Sumber Daya Manusia</option>
+                <option value="anggaran" ${data.kategori_risiko === 'anggaran' ? 'selected' : ''}>Anggaran</option>
+                <option value="regulasi" ${data.kategori_risiko === 'regulasi' ? 'selected' : ''}>Regulasi</option>
+                <option value="lainnya" ${data.kategori_risiko === 'lainnya' ? 'selected' : ''}>Lainnya</option>
+            </select>
+        </div>
+
+        <!-- Area Dampak Risiko SPBE -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Area Dampak Risiko SPBE <span class="text-red-500">*</span>
+            </label>
+            <select id="form-area_dampak" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Pilih Area Dampak</option>
+                <option value="finansial" ${data.area_dampak === 'finansial' ? 'selected' : ''}>Finansial</option>
+                <option value="reputasi" ${data.area_dampak === 'reputasi' ? 'selected' : ''}>Reputasi</option>
+                <option value="kinerja_operasional" ${data.area_dampak === 'kinerja_operasional' ? 'selected' : ''}>Kinerja Operasional</option>
+                <option value="kepatuhan" ${data.area_dampak === 'kepatuhan' ? 'selected' : ''}>Kepatuhan</option>
+                <option value="keamanan" ${data.area_dampak === 'keamanan' ? 'selected' : ''}>Keamanan</option>
+                <option value="lingkungan" ${data.area_dampak === 'lingkungan' ? 'selected' : ''}>Lingkungan</option>
+                <option value="kesehatan_keselamatan" ${data.area_dampak === 'kesehatan_keselamatan' ? 'selected' : ''}>Kesehatan dan Keselamatan</option>
+            </select>
+        </div>
+
+        <!-- Uraian Kejadian -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Uraian Kejadian <span class="text-red-500">*</span>
+            </label>
+            <textarea id="form-uraian_kejadian" rows="3"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Jelaskan detail kejadian risiko yang mungkin terjadi">${data.uraian_kejadian || ''}</textarea>
+        </div>
+
+        <!-- Penyebab -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Penyebab <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="form-penyebab" value="${data.penyebab || ''}"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                   placeholder="Contoh: Kurangnya SDM kompeten, Keterbatasan anggaran">
+        </div>
+
+        <!-- Dampak -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Dampak <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="form-dampak" value="${data.dampak || ''}"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                   placeholder="Contoh: Keterlambatan project, Penurunan kualitas aplikasi">
+        </div>
+
+        <!-- Level Kemungkinan & Level Dampak -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Level Kemungkinan <span class="text-red-500">*</span>
+                </label>
+                <select id="form-level_kemungkinan" onchange="hitungBesaranRisikoForm()"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <option value="">Pilih Level</option>
+                    <option value="1" ${kemungkinan == '1' ? 'selected' : ''}>1 - Sangat Jarang (0-10%)</option>
+                    <option value="2" ${kemungkinan == '2' ? 'selected' : ''}>2 - Jarang (11-30%)</option>
+                    <option value="3" ${kemungkinan == '3' ? 'selected' : ''}>3 - Kadang-kadang (31-50%)</option>
+                    <option value="4" ${kemungkinan == '4' ? 'selected' : ''}>4 - Sering (51-70%)</option>
+                    <option value="5" ${kemungkinan == '5' ? 'selected' : ''}>5 - Sangat Sering (>70%)</option>
+                </select>
             </div>
-
-            <div class="space-y-4">
-                <!-- Jenis Risiko SPBE -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Jenis Risiko SPBE <span class="text-red-500">*</span>
-                    </label>
-                    <select name="risiko_items[${index}][jenis_risiko]"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">Pilih Jenis Risiko</option>
-                        <option value="positif">Positif (Peluang)</option>
-                        <option value="negatif">Negatif (Ancaman)</option>
-                    </select>
-                </div>
-
-                <!-- Kategori Risiko SPBE -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Kategori Risiko SPBE <span class="text-red-500">*</span>
-                    </label>
-                    <select name="risiko_items[${index}][kategori_risiko]"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">Pilih Kategori</option>
-                        <option value="rencana_induk_spbe">Rencana Induk SPBE Nasional</option>
-                        <option value="arsitektur_spbe">Arsitektur SPBE</option>
-                        <option value="peta_rencana">Peta Rencana SPBE</option>
-                        <option value="aplikasi_umum">Aplikasi Umum</option>
-                        <option value="aplikasi_khusus">Aplikasi Khusus</option>
-                        <option value="keamanan_informasi">Keamanan Informasi</option>
-                        <option value="audit_tik">Audit Teknologi Informasi dan Komunikasi</option>
-                        <option value="pengadaan_tik">Pengadaan Teknologi Informasi dan Komunikasi</option>
-                        <option value="penyelenggara_spbe">Penyelenggara SPBE</option>
-                        <option value="layanan_pusat_data">Layanan Pusat Data Nasional</option>
-                        <option value="data_informasi">Data dan Informasi</option>
-                        <option value="infrastruktur">Infrastruktur</option>
-                        <option value="sumber_daya_manusia">Sumber Daya Manusia</option>
-                        <option value="anggaran">Anggaran</option>
-                        <option value="regulasi">Regulasi</option>
-                        <option value="lainnya">Lainnya</option>
-                    </select>
-                </div>
-
-                <!-- Area Dampak Risiko SPBE -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Area Dampak Risiko SPBE <span class="text-red-500">*</span>
-                    </label>
-                    <select name="risiko_items[${index}][area_dampak]"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">Pilih Area Dampak</option>
-                        <option value="finansial">Finansial</option>
-                        <option value="reputasi">Reputasi</option>
-                        <option value="kinerja_operasional">Kinerja Operasional</option>
-                        <option value="kepatuhan">Kepatuhan</option>
-                        <option value="keamanan">Keamanan</option>
-                        <option value="lingkungan">Lingkungan</option>
-                        <option value="kesehatan_keselamatan">Kesehatan dan Keselamatan</option>
-                    </select>
-                </div>
-
-                <!-- Uraian Kejadian -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Uraian Kejadian <span class="text-red-500">*</span>
-                    </label>
-                    <textarea name="risiko_items[${index}][uraian_kejadian]" rows="3"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                              placeholder="Jelaskan detail kejadian risiko yang mungkin terjadi"></textarea>
-                </div>
-
-                <!-- Penyebab -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Penyebab <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="risiko_items[${index}][penyebab]"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                           placeholder="Contoh: Kurangnya SDM kompeten, Keterbatasan anggaran">
-                </div>
-
-                <!-- Dampak -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Dampak <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="risiko_items[${index}][dampak]"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                           placeholder="Contoh: Keterlambatan project, Penurunan kualitas aplikasi">
-                </div>
-
-                <!-- Level Kemungkinan & Level Dampak -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Level Kemungkinan <span class="text-red-500">*</span>
-                        </label>
-                        <select name="risiko_items[${index}][level_kemungkinan]"
-                                onchange="hitungBesaranRisiko(${index})"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="">Pilih Level</option>
-                            <option value="1">1 - Sangat Jarang (0-10%)</option>
-                            <option value="2">2 - Jarang (11-30%)</option>
-                            <option value="3">3 - Kadang-kadang (31-50%)</option>
-                            <option value="4">4 - Sering (51-70%)</option>
-                            <option value="5">5 - Sangat Sering (>70%)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Level Dampak <span class="text-red-500">*</span>
-                        </label>
-                        <select name="risiko_items[${index}][level_dampak]"
-                                onchange="hitungBesaranRisiko(${index})"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="">Pilih Level</option>
-                            <option value="1">1 - Tidak Signifikan</option>
-                            <option value="2">2 - Minor</option>
-                            <option value="3">3 - Moderat</option>
-                            <option value="4">4 - Major</option>
-                            <option value="5">5 - Ekstrem</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Besaran Risiko (Auto-calculated) -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Besaran Risiko (Otomatis Terhitung)
-                    </label>
-                    <input type="text" id="besaran-risiko-${index}" name="risiko_items[${index}][besaran_risiko]"
-                           class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg" readonly
-                           placeholder="Akan dihitung otomatis">
-                    <input type="hidden" id="besaran-risiko-nilai-${index}" name="risiko_items[${index}][besaran_risiko_nilai]">
-                </div>
-
-                <!-- Perlu Penanganan -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Perlu Penanganan? <span class="text-red-500">*</span>
-                    </label>
-                    <select name="risiko_items[${index}][perlu_penanganan]"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">Pilih</option>
-                        <option value="ya">Ya</option>
-                        <option value="tidak">Tidak</option>
-                    </select>
-                </div>
-
-                <!-- Opsi Penanganan -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Opsi Penanganan
-                    </label>
-                    <textarea name="risiko_items[${index}][opsi_penanganan]" rows="2"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                              placeholder="Jelaskan pilihan strategi penanganan risiko"></textarea>
-                </div>
-
-                <!-- Rencana Aksi -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Rencana Aksi
-                    </label>
-                    <textarea name="risiko_items[${index}][rencana_aksi]" rows="2"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                              placeholder="Jelaskan rencana aksi konkret untuk menangani risiko"></textarea>
-                </div>
-
-                <!-- Jadwal Implementasi -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Jadwal Implementasi
-                    </label>
-                    <input type="text" name="risiko_items[${index}][jadwal_implementasi]"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                           placeholder="Contoh: Bulan 1-2, Q1 2026">
-                </div>
-
-                <!-- Penanggung Jawab -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Penanggung Jawab
-                    </label>
-                    <input type="text" name="risiko_items[${index}][penanggung_jawab]"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                           placeholder="Contoh: Tim Teknis, Project Manager">
-                </div>
-
-                <!-- Risiko Residual -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Risiko Residual?
-                    </label>
-                    <select name="risiko_items[${index}][risiko_residual]"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">Pilih</option>
-                        <option value="ya">Ya</option>
-                        <option value="tidak">Tidak</option>
-                    </select>
-                </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Level Dampak <span class="text-red-500">*</span>
+                </label>
+                <select id="form-level_dampak" onchange="hitungBesaranRisikoForm()"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <option value="">Pilih Level</option>
+                    <option value="1" ${dampak == '1' ? 'selected' : ''}>1 - Tidak Signifikan</option>
+                    <option value="2" ${dampak == '2' ? 'selected' : ''}>2 - Minor</option>
+                    <option value="3" ${dampak == '3' ? 'selected' : ''}>3 - Moderat</option>
+                    <option value="4" ${dampak == '4' ? 'selected' : ''}>4 - Major</option>
+                    <option value="5" ${dampak == '5' ? 'selected' : ''}>5 - Ekstrem</option>
+                </select>
             </div>
         </div>
+
+        <!-- Besaran Risiko (Auto-calculated) -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Besaran Risiko (Otomatis Terhitung)
+            </label>
+            <input type="text" id="form-besaran_risiko" value="${besaranValue}"
+                   class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg font-semibold" readonly
+                   placeholder="Akan dihitung otomatis">
+            <input type="hidden" id="form-besaran_risiko_nilai" value="${besaranNilai}">
+        </div>
+
+        <!-- Perlu Penanganan -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Perlu Penanganan? <span class="text-red-500">*</span>
+            </label>
+            <select id="form-perlu_penanganan"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Pilih</option>
+                <option value="ya" ${data.perlu_penanganan === 'ya' ? 'selected' : ''}>Ya</option>
+                <option value="tidak" ${data.perlu_penanganan === 'tidak' ? 'selected' : ''}>Tidak</option>
+            </select>
+        </div>
+
+        <!-- Opsi Penanganan -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Opsi Penanganan
+            </label>
+            <textarea id="form-opsi_penanganan" rows="2"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Jelaskan pilihan strategi penanganan risiko">${data.opsi_penanganan || ''}</textarea>
+        </div>
+
+        <!-- Rencana Aksi -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Rencana Aksi
+            </label>
+            <textarea id="form-rencana_aksi" rows="2"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Jelaskan rencana aksi konkret untuk menangani risiko">${data.rencana_aksi || ''}</textarea>
+        </div>
+
+        <!-- Jadwal Implementasi -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Jadwal Implementasi
+            </label>
+            <input type="text" id="form-jadwal_implementasi" value="${data.jadwal_implementasi || ''}"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                   placeholder="Contoh: Bulan 1-2, Q1 2026">
+        </div>
+
+        <!-- Penanggung Jawab -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Penanggung Jawab
+            </label>
+            <input type="text" id="form-penanggung_jawab" value="${data.penanggung_jawab || ''}"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                   placeholder="Contoh: Tim Teknis, Project Manager">
+        </div>
+
+        <!-- Risiko Residual -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Risiko Residual?
+            </label>
+            <select id="form-risiko_residual"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Pilih</option>
+                <option value="ya" ${data.risiko_residual === 'ya' ? 'selected' : ''}>Ya</option>
+                <option value="tidak" ${data.risiko_residual === 'tidak' ? 'selected' : ''}>Tidak</option>
+            </select>
+        </div>
     `;
-
-    wrapper.insertAdjacentHTML('beforeend', risikoHTML);
-    risikoCounter++;
-    updateRisikoWarning();
 }
 
-function removeRisiko(index) {
-    const item = document.querySelector(`.risiko-item[data-index="${index}"]`);
-    if (item) {
-        item.remove();
-        updateRisikoWarning();
-    }
-}
-
-function hitungBesaranRisiko(index) {
-    const kemungkinanSelect = document.querySelector(`select[name="risiko_items[${index}][level_kemungkinan]"]`);
-    const dampakSelect = document.querySelector(`select[name="risiko_items[${index}][level_dampak]"]`);
-    const besaranInput = document.getElementById(`besaran-risiko-${index}`);
-    const besaranNilaiInput = document.getElementById(`besaran-risiko-nilai-${index}`);
-
-    const kemungkinan = parseInt(kemungkinanSelect?.value || 0);
-    const dampak = parseInt(dampakSelect?.value || 0);
+function hitungBesaranRisikoForm() {
+    const kemungkinan = parseInt(document.getElementById('form-level_kemungkinan').value || 0);
+    const dampak = parseInt(document.getElementById('form-level_dampak').value || 0);
 
     if (kemungkinan > 0 && dampak > 0) {
         const nilai = kemungkinan * dampak;
-        besaranNilaiInput.value = nilai;
+        document.getElementById('form-besaran_risiko_nilai').value = nilai;
 
         let level = '';
         let color = '';
 
-        if (nilai >= 1 && nilai <= 5) {
+        if (nilai >= 1 && nilai <= 4) {
             level = 'Rendah';
             color = 'text-green-700 bg-green-100';
-        } else if (nilai >= 6 && nilai <= 10) {
+        } else if (nilai >= 5 && nilai <= 9) {
             level = 'Sedang';
             color = 'text-yellow-700 bg-yellow-100';
-        } else if (nilai >= 11 && nilai <= 15) {
+        } else if (nilai >= 10 && nilai <= 14) {
             level = 'Tinggi';
             color = 'text-orange-700 bg-orange-100';
-        } else if (nilai >= 16) {
+        } else if (nilai >= 15) {
             level = 'Sangat Tinggi';
             color = 'text-red-700 bg-red-100';
         }
 
+        const besaranInput = document.getElementById('form-besaran_risiko');
         besaranInput.value = `${nilai} - ${level}`;
         besaranInput.className = `w-full px-4 py-2 border border-gray-300 rounded-lg font-semibold ${color}`;
     } else {
-        besaranInput.value = '';
-        besaranNilaiInput.value = '';
-        besaranInput.className = 'w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg';
+        document.getElementById('form-besaran_risiko').value = '';
+        document.getElementById('form-besaran_risiko_nilai').value = '';
+        document.getElementById('form-besaran_risiko').className = 'w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg';
     }
 }
 
+function simpanRisiko() {
+    // Collect form data
+    const formData = {
+        jenis_risiko: document.getElementById('form-jenis_risiko').value,
+        kategori_risiko: document.getElementById('form-kategori_risiko').value,
+        area_dampak: document.getElementById('form-area_dampak').value,
+        uraian_kejadian: document.getElementById('form-uraian_kejadian').value,
+        penyebab: document.getElementById('form-penyebab').value,
+        dampak: document.getElementById('form-dampak').value,
+        level_kemungkinan: document.getElementById('form-level_kemungkinan').value,
+        level_dampak: document.getElementById('form-level_dampak').value,
+        besaran_risiko: document.getElementById('form-besaran_risiko').value,
+        besaran_risiko_nilai: document.getElementById('form-besaran_risiko_nilai').value,
+        perlu_penanganan: document.getElementById('form-perlu_penanganan').value,
+        opsi_penanganan: document.getElementById('form-opsi_penanganan').value,
+        rencana_aksi: document.getElementById('form-rencana_aksi').value,
+        jadwal_implementasi: document.getElementById('form-jadwal_implementasi').value,
+        penanggung_jawab: document.getElementById('form-penanggung_jawab').value,
+        risiko_residual: document.getElementById('form-risiko_residual').value
+    };
+
+    // Validate required fields
+    if (!formData.jenis_risiko || !formData.kategori_risiko || !formData.area_dampak ||
+        !formData.uraian_kejadian || !formData.penyebab || !formData.dampak ||
+        !formData.level_kemungkinan || !formData.level_dampak || !formData.perlu_penanganan) {
+        alert('Mohon lengkapi semua field yang wajib diisi (bertanda *)');
+        return;
+    }
+
+    // Determine index
+    let index;
+    if (currentEditingIndex !== null) {
+        // Editing existing
+        index = currentEditingIndex;
+    } else {
+        // Adding new - find next available index
+        const existingIndices = Object.keys(risikoData).map(k => parseInt(k));
+        index = existingIndices.length > 0 ? Math.max(...existingIndices) + 1 : 0;
+    }
+
+    // Save to risikoData
+    risikoData[index] = formData;
+
+    // Update display
+    updateRisikoDisplay();
+    updateRisikoWarning();
+
+    // Close form
+    batalFormRisiko();
+
+    // Show success message
+    alert(currentEditingIndex !== null ? 'Risiko berhasil diupdate!' : 'Risiko berhasil ditambahkan!');
+}
+
+function batalFormRisiko() {
+    document.getElementById('risiko-form-container').style.display = 'none';
+    currentEditingIndex = null;
+}
+
+function hapusRisiko(index) {
+    if (!confirm('Yakin ingin menghapus risiko ini?')) {
+        return;
+    }
+
+    delete risikoData[index];
+    updateRisikoDisplay();
+    updateRisikoWarning();
+}
+
+function updateRisikoDisplay() {
+    const tableBody = document.getElementById('risiko-table-body');
+    const storage = document.getElementById('risiko-data-storage');
+    const count = document.getElementById('risiko-count');
+    const tableContainer = document.getElementById('risiko-table-container');
+
+    const indices = Object.keys(risikoData).sort((a, b) => parseInt(a) - parseInt(b));
+    count.textContent = indices.length + ' Risiko';
+
+    if (indices.length === 0) {
+        tableContainer.innerHTML = `
+            <div class="bg-gray-50 border border-gray-300 rounded-lg p-8 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p class="mt-2 text-sm text-gray-600">Belum ada risiko teridentifikasi</p>
+                <p class="mt-1 text-xs text-gray-500">Klik tombol "Tambah Risiko Baru" di bawah untuk menambahkan</p>
+            </div>
+        `;
+        storage.innerHTML = '';
+        return;
+    }
+
+    // Rebuild table
+    let tableHTML = '';
+    let storageHTML = '';
+
+    indices.forEach((index, arrayIndex) => {
+        const risiko = risikoData[index];
+        const besaran = parseInt(risiko.besaran_risiko_nilai || 0);
+
+        let color, text;
+        if (besaran >= 15) {
+            color = 'bg-red-100 text-red-800';
+            text = 'Sangat Tinggi';
+        } else if (besaran >= 10) {
+            color = 'bg-orange-100 text-orange-800';
+            text = 'Tinggi';
+        } else if (besaran >= 5) {
+            color = 'bg-yellow-100 text-yellow-800';
+            text = 'Sedang';
+        } else {
+            color = 'bg-green-100 text-green-800';
+            text = 'Rendah';
+        }
+
+        const jenisColor = risiko.jenis_risiko === 'positif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        const jenisText = risiko.jenis_risiko === 'positif' ? 'Positif' : 'Negatif';
+
+        tableHTML += `
+            <tr data-index="${index}" class="hover:bg-gray-50">
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${arrayIndex + 1}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                    <span class="px-2 py-1 text-xs ${jenisColor} rounded-full">${jenisText}</span>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-700">
+                    ${ucwords((risiko.kategori_risiko || '-').replace(/_/g, ' '))}
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate" title="${risiko.uraian_kejadian || '-'}">
+                    ${risiko.uraian_kejadian || '-'}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                    <span class="px-2 py-1 text-xs ${color} rounded-full font-medium">
+                        ${besaran} - ${text}
+                    </span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-center text-sm">
+                    <button type="button" onclick="editRisiko(${index})"
+                            class="inline-flex items-center px-3 py-1 mr-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                    </button>
+                    <button type="button" onclick="hapusRisiko(${index})"
+                            class="inline-flex items-center px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Hapus
+                    </button>
+                </td>
+            </tr>
+        `;
+
+        // Build hidden inputs with data-risiko attribute for persistence
+        const risikoJSON = JSON.stringify(risiko).replace(/"/g, '&quot;');
+        storageHTML += `
+            <div class="risiko-stored-item" data-index="${index}" data-risiko="${risikoJSON}">
+                <input type="hidden" name="risiko_items[${index}][jenis_risiko]" value="${risiko.jenis_risiko || ''}">
+                <input type="hidden" name="risiko_items[${index}][kategori_risiko]" value="${risiko.kategori_risiko || ''}">
+                <input type="hidden" name="risiko_items[${index}][area_dampak]" value="${risiko.area_dampak || ''}">
+                <input type="hidden" name="risiko_items[${index}][uraian_kejadian]" value="${escapeHtml(risiko.uraian_kejadian || '')}">
+                <input type="hidden" name="risiko_items[${index}][penyebab]" value="${escapeHtml(risiko.penyebab || '')}">
+                <input type="hidden" name="risiko_items[${index}][dampak]" value="${escapeHtml(risiko.dampak || '')}">
+                <input type="hidden" name="risiko_items[${index}][level_kemungkinan]" value="${risiko.level_kemungkinan || ''}">
+                <input type="hidden" name="risiko_items[${index}][level_dampak]" value="${risiko.level_dampak || ''}">
+                <input type="hidden" name="risiko_items[${index}][besaran_risiko]" value="${risiko.besaran_risiko || ''}">
+                <input type="hidden" name="risiko_items[${index}][besaran_risiko_nilai]" value="${risiko.besaran_risiko_nilai || ''}">
+                <input type="hidden" name="risiko_items[${index}][perlu_penanganan]" value="${risiko.perlu_penanganan || ''}">
+                <input type="hidden" name="risiko_items[${index}][opsi_penanganan]" value="${escapeHtml(risiko.opsi_penanganan || '')}">
+                <input type="hidden" name="risiko_items[${index}][rencana_aksi]" value="${escapeHtml(risiko.rencana_aksi || '')}">
+                <input type="hidden" name="risiko_items[${index}][jadwal_implementasi]" value="${escapeHtml(risiko.jadwal_implementasi || '')}">
+                <input type="hidden" name="risiko_items[${index}][penanggung_jawab]" value="${escapeHtml(risiko.penanggung_jawab || '')}">
+                <input type="hidden" name="risiko_items[${index}][risiko_residual]" value="${risiko.risiko_residual || ''}">
+            </div>
+        `;
+    });
+
+    tableContainer.innerHTML = `
+        <div class="overflow-x-auto bg-white border border-gray-300 rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uraian Kejadian</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Besaran</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="risiko-table-body" class="bg-white divide-y divide-gray-200">
+                    ${tableHTML}
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    storage.innerHTML = storageHTML;
+}
+
+function ucwords(str) {
+    return str.toLowerCase().replace(/\b[a-z]/g, function(letter) {
+        return letter.toUpperCase();
+    });
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 function updateRisikoWarning() {
-    const risikoCount = document.querySelectorAll('.risiko-item').length;
+    const risikoCount = Object.keys(risikoData).length;
     const warning = document.getElementById('risiko-warning');
 
     if (risikoCount === 0) {
@@ -2084,16 +2427,6 @@ function updateRisikoWarning() {
         warning.classList.add('hidden');
     }
 }
-
-// Initialize risk calculations on page load for existing data
-document.addEventListener('DOMContentLoaded', function() {
-    // Calculate besaran risiko for existing items
-    const existingItems = document.querySelectorAll('.risiko-item[data-index]');
-    existingItems.forEach(item => {
-        const index = item.getAttribute('data-index');
-        hitungBesaranRisiko(index);
-    });
-});
 
 // Conditional field handling
 document.getElementById('integrasi_sistem_lain').addEventListener('change', function() {
@@ -2150,23 +2483,93 @@ function populateReview() {
 
     // Step 4: Manajemen Risiko
     reviewHTML += '<div class="border-b pb-4"><h3 class="font-semibold text-lg mb-3">4. Manajemen Risiko</h3>';
-    const risikoItems = document.querySelectorAll('.risiko-item');
+    const risikoIndices = Object.keys(risikoData || {});
     reviewHTML += `<div class="text-gray-600">`;
-    reviewHTML += `<p class="mb-3"><strong>Total Risiko Teridentifikasi:</strong> ${risikoItems.length} risiko</p>`;
+    reviewHTML += `<p class="mb-3"><strong>Total Risiko Teridentifikasi:</strong> ${risikoIndices.length} risiko</p>`;
 
-    if (risikoItems.length > 0) {
+    if (risikoIndices.length > 0) {
         reviewHTML += `<div class="space-y-3">`;
-        risikoItems.forEach((item, index) => {
-            const jenis = item.querySelector(`input[name*="[jenis]"]`)?.value || '-';
-            const tingkat = item.querySelector(`select[name*="[tingkat]"]`)?.value || '-';
-            const kategori = item.querySelector(`select[name*="[kategori]"]`)?.value || '-';
-            const mitigasi = item.querySelector(`textarea[name*="[mitigasi]"]`)?.value || '-';
+        risikoIndices.forEach((idx, arrayIndex) => {
+            const risiko = risikoData[idx];
 
-            reviewHTML += `<div class="bg-gray-50 p-3 rounded-lg">`;
-            reviewHTML += `<p class="font-medium mb-1">Risiko #${index + 1}: ${jenis}</p>`;
-            reviewHTML += `<p class="text-sm"><strong>Tingkat:</strong> ${tingkat} | <strong>Kategori:</strong> ${kategori}</p>`;
-            reviewHTML += `<p class="text-sm"><strong>Mitigasi:</strong> ${mitigasi}</p>`;
+            // Get data from risikoData object
+            const jenisRisiko = risiko.jenis_risiko || '-';
+            const kategoriRisiko = risiko.kategori_risiko || '-';
+            const areaDampak = risiko.area_dampak || '-';
+            const uraianKejadian = risiko.uraian_kejadian || '-';
+            const penyebab = risiko.penyebab || '-';
+            const dampak = risiko.dampak || '-';
+            const levelKemungkinan = risiko.level_kemungkinan || '-';
+            const levelDampak = risiko.level_dampak || '-';
+            const besaranRisiko = risiko.besaran_risiko || '-';
+            const perluPenanganan = risiko.perlu_penanganan || '-';
+            const opsiPenanganan = risiko.opsi_penanganan || '-';
+            const rencanaAksi = risiko.rencana_aksi || '-';
+            const jadwalImplementasi = risiko.jadwal_implementasi || '-';
+            const penanggungJawab = risiko.penanggung_jawab || '-';
+            const risikoResidual = risiko.risiko_residual || '-';
+
+            // Get text labels for display
+            const jenisText = jenisRisiko === 'positif' ? 'Positif (Peluang)' : jenisRisiko === 'negatif' ? 'Negatif (Ancaman)' : jenisRisiko;
+            const levelKemungkinanText = levelKemungkinan ? `Level ${levelKemungkinan}` : '-';
+            const levelDampakText = levelDampak ? `Level ${levelDampak}` : '-';
+
+            // Determine risk level color based on besaran_risiko
+            let riskLevelColor = 'text-gray-600';
+            let riskLevelText = '';
+            const besaran = parseInt(besaranRisiko);
+            if (besaran >= 15) {
+                riskLevelColor = 'text-red-600 font-semibold';
+                riskLevelText = 'Sangat Tinggi';
+            } else if (besaran >= 10) {
+                riskLevelColor = 'text-orange-600 font-semibold';
+                riskLevelText = 'Tinggi';
+            } else if (besaran >= 5) {
+                riskLevelColor = 'text-yellow-600 font-semibold';
+                riskLevelText = 'Sedang';
+            } else if (besaran >= 1) {
+                riskLevelColor = 'text-green-600';
+                riskLevelText = 'Rendah';
+            }
+
+            reviewHTML += `<div class="bg-gray-50 p-4 rounded-lg border border-gray-200">`;
+            reviewHTML += `<p class="font-semibold text-base mb-2">Risiko SPBE #${arrayIndex + 1}</p>`;
+            reviewHTML += `<div class="grid grid-cols-2 gap-2 text-sm">`;
+
+            // Row 1
+            reviewHTML += `<div><strong>Jenis Risiko:</strong> ${jenisText}</div>`;
+            reviewHTML += `<div><strong>Kategori:</strong> ${kategoriRisiko}</div>`;
+
+            // Row 2
+            reviewHTML += `<div class="col-span-2"><strong>Area Dampak:</strong> ${areaDampak}</div>`;
+
+            // Row 3 - Uraian
+            reviewHTML += `<div class="col-span-2 mt-2"><strong>Uraian Kejadian:</strong><br><span class="text-gray-700">${uraianKejadian}</span></div>`;
+
+            // Row 4
+            reviewHTML += `<div class="col-span-2 mt-2"><strong>Penyebab:</strong> ${penyebab}</div>`;
+            reviewHTML += `<div class="col-span-2"><strong>Dampak:</strong> ${dampak}</div>`;
+
+            // Row 5 - Risk Assessment
+            reviewHTML += `<div class="col-span-2 mt-2 p-2 bg-white rounded border border-gray-300">`;
+            reviewHTML += `<strong>Penilaian Risiko:</strong><br>`;
+            reviewHTML += `Level Kemungkinan: ${levelKemungkinanText} × Level Dampak: ${levelDampakText} = `;
+            reviewHTML += `<span class="${riskLevelColor}">Besaran Risiko: ${besaranRisiko} (${riskLevelText})</span>`;
             reviewHTML += `</div>`;
+
+            // Row 6 - Penanganan
+            if (perluPenanganan === 'ya') {
+                reviewHTML += `<div class="col-span-2 mt-2"><strong>Perlu Penanganan:</strong> Ya</div>`;
+                reviewHTML += `<div class="col-span-2"><strong>Opsi Penanganan:</strong> ${opsiPenanganan}</div>`;
+                reviewHTML += `<div class="col-span-2"><strong>Rencana Aksi:</strong><br><span class="text-gray-700">${rencanaAksi}</span></div>`;
+                reviewHTML += `<div class="col-span-2"><strong>Jadwal Implementasi:</strong> ${jadwalImplementasi}</div>`;
+                reviewHTML += `<div class="col-span-2"><strong>Penanggung Jawab:</strong> ${penanggungJawab}</div>`;
+                reviewHTML += `<div class="col-span-2"><strong>Risiko Residual:</strong> ${risikoResidual === 'ya' ? 'Ada' : risikoResidual === 'tidak' ? 'Tidak Ada' : risikoResidual}</div>`;
+            } else {
+                reviewHTML += `<div class="col-span-2 mt-2"><strong>Perlu Penanganan:</strong> Tidak</div>`;
+            }
+
+            reviewHTML += `</div></div>`;
         });
         reviewHTML += `</div>`;
     } else {

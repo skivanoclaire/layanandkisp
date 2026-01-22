@@ -36,6 +36,17 @@ Route::get('/services', function () {
 // Public Document Verification
 Route::get('/verify/{code}', [VerificationController::class, 'verify'])->name('verify.document');
 
+// File Download Route (untuk handle storage file access)
+Route::get('/download/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+
+    if (!file_exists($fullPath)) {
+        abort(404, 'File tidak ditemukan: ' . $fullPath);
+    }
+
+    return response()->file($fullPath);
+})->where('path', '.*')->name('file.download')->middleware('auth');
+
 Route::get('/request', function () {
     return view('request');
 });
@@ -108,6 +119,21 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
             // Document management
             Route::post('/{id}/dokumen', [RekomendasiUsulanController::class, 'uploadDokumen'])->name('dokumen.upload');
             Route::get('/{id}/dokumen/{dokumenId}', [RekomendasiUsulanController::class, 'downloadDokumen'])->name('dokumen.download');
+
+            // Download surat persetujuan/respons Kementerian
+            Route::get('/{id}/download-surat-kementerian', [RekomendasiUsulanController::class, 'downloadSuratKementerian'])->name('download-surat-kementerian');
+        });
+
+    // FASE PENGEMBANGAN: Simple Document Upload (3 Phases)
+    Route::middleware(['permission:user.fase-pengembangan'])
+        ->prefix('fase-pengembangan')
+        ->name('fase-pengembangan.')
+        ->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\FasePengembanganController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\User\FasePengembanganController::class, 'show'])->name('show');
+            Route::post('/{id}/upload', [\App\Http\Controllers\User\FasePengembanganController::class, 'uploadDokumen'])->name('upload');
+            Route::get('/{id}/dokumen/{dokumenId}', [\App\Http\Controllers\User\FasePengembanganController::class, 'downloadDokumen'])->name('dokumen.download');
+            Route::delete('/{id}/dokumen/{dokumenId}', [\App\Http\Controllers\User\FasePengembanganController::class, 'deleteDokumen'])->name('dokumen.delete');
         });
 
     // Rekomendasi V2 - Development Phase Tracking (User)
@@ -207,6 +233,24 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
             Route::post('/{id}/reject', [RekomendasiVerifikasiController::class, 'reject'])->name('reject');
             Route::post('/{id}/revision', [RekomendasiVerifikasiController::class, 'requestRevision'])->name('revision');
             Route::get('/{id}/dokumen/{dokumenId}', [RekomendasiVerifikasiController::class, 'downloadDokumen'])->name('dokumen.download');
+
+            // Update status Kementerian
+            Route::post('/{id}/ministry-status', [RekomendasiVerifikasiController::class, 'updateMinistryStatus'])->name('ministry-status');
+
+            // Export PDF
+            Route::get('/{id}/export-pdf', [RekomendasiVerifikasiController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+    // Rekomendasi V2 - Fase Pengembangan (Admin Monitoring)
+    Route::middleware(['permission:admin.fase-pengembangan.view'])
+        ->prefix('rekomendasi/fase-pengembangan')
+        ->name('fase-pengembangan.')
+        ->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'show'])->name('show');
+            Route::get('/{id}/dokumen/{dokumenId}', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'downloadDokumen'])->name('dokumen.download');
+            Route::delete('/{id}/dokumen/{dokumenId}', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'deleteDokumen'])->name('dokumen.delete');
+            Route::post('/{id}/note', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'addNote'])->name('note.add');
         });
 
     // Rekomendasi V2 - Monitoring & Dashboard
@@ -223,22 +267,22 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
             Route::get('/chart-data', [RekomendasiMonitoringController::class, 'getChartData'])->name('chart-data');
         });
 
-    // Rekomendasi V2 - Letter Management
-    Route::middleware(['permission:admin.rekomendasi.surat.manage'])
-        ->prefix('rekomendasi/surat')
-        ->name('rekomendasi.surat.')
-        ->group(function () {
-            Route::get('/', [RekomendasiSuratController::class, 'index'])->name('index');
-            Route::get('/proposal/{proposalId}/create', [RekomendasiSuratController::class, 'create'])->name('create');
-            Route::post('/proposal/{proposalId}', [RekomendasiSuratController::class, 'store'])->name('store');
-            Route::get('/{id}', [RekomendasiSuratController::class, 'show'])->name('show');
-            Route::get('/{id}/edit', [RekomendasiSuratController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [RekomendasiSuratController::class, 'update'])->name('update');
-            Route::post('/{id}/sign', [RekomendasiSuratController::class, 'sign'])->name('sign');
-            Route::post('/{id}/delivery', [RekomendasiSuratController::class, 'recordDelivery'])->name('delivery');
-            Route::post('/{id}/ministry-status', [RekomendasiSuratController::class, 'updateMinistryStatus'])->name('ministry-status');
-            Route::get('/{id}/download', [RekomendasiSuratController::class, 'downloadSigned'])->name('download');
-        });
+    // Rekomendasi V2 - Letter Management (DISABLED - fitur dipindahkan ke Verifikasi)
+    // Route::middleware(['permission:admin.rekomendasi.surat.manage'])
+    //     ->prefix('rekomendasi/surat')
+    //     ->name('rekomendasi.surat.')
+    //     ->group(function () {
+    //         Route::get('/', [RekomendasiSuratController::class, 'index'])->name('index');
+    //         Route::get('/proposal/{proposalId}/create', [RekomendasiSuratController::class, 'create'])->name('create');
+    //         Route::post('/proposal/{proposalId}', [RekomendasiSuratController::class, 'store'])->name('store');
+    //         Route::get('/{id}', [RekomendasiSuratController::class, 'show'])->name('show');
+    //         Route::get('/{id}/edit', [RekomendasiSuratController::class, 'edit'])->name('edit');
+    //         Route::put('/{id}', [RekomendasiSuratController::class, 'update'])->name('update');
+    //         Route::post('/{id}/sign', [RekomendasiSuratController::class, 'sign'])->name('sign');
+    //         Route::post('/{id}/delivery', [RekomendasiSuratController::class, 'recordDelivery'])->name('delivery');
+    //         Route::post('/{id}/ministry-status', [RekomendasiSuratController::class, 'updateMinistryStatus'])->name('ministry-status');
+    //         Route::get('/{id}/download', [RekomendasiSuratController::class, 'downloadSigned'])->name('download');
+    //     });
 
     Route::get('/simpeg-check', [SimpegCheckController::class, 'index'])->name('simpeg.index');
     Route::post('/simpeg-check', [SimpegCheckController::class, 'check'])->name('simpeg.check');
@@ -459,6 +503,31 @@ Route::middleware(['auth', 'role:Admin'])
         Route::post('/{id}/reject', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'reject'])->name('reject');
         Route::post('/{id}/process', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'setProcess'])->name('process');
         Route::post('/{id}/update-info', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'updateInfo'])->name('update-info');
+    });
+
+// ===== SURVEI KEPUASAN LAYANAN =====
+
+// Survei Kepuasan Layanan - User Routes
+Route::middleware(['auth', 'verified.user', 'permission:Akses Survei Kepuasan'])
+    ->prefix('digital/survei-kepuasan')
+    ->name('survei-kepuasan.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\User\SurveiKepuasanController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\User\SurveiKepuasanController::class, 'create'])->name('create');
+        Route::post('/store', [\App\Http\Controllers\User\SurveiKepuasanController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\User\SurveiKepuasanController::class, 'show'])->name('show');
+    });
+
+// Survei Kepuasan Layanan - Admin Routes
+Route::middleware(['auth', 'role:Admin', 'permission:Kelola Survei Kepuasan'])
+    ->prefix('admin/survei-kepuasan')
+    ->name('admin.survei-kepuasan.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SurveiKepuasanAdminController::class, 'index'])->name('index');
+        Route::get('/statistics', [\App\Http\Controllers\Admin\SurveiKepuasanAdminController::class, 'statistics'])->name('statistics');
+        Route::get('/export-pdf', [\App\Http\Controllers\Admin\SurveiKepuasanAdminController::class, 'exportPdf'])->name('export-pdf');
+        Route::get('/export-excel', [\App\Http\Controllers\Admin\SurveiKepuasanAdminController::class, 'exportExcel'])->name('export-excel');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\SurveiKepuasanAdminController::class, 'show'])->name('show');
     });
 
 // ===== INTERNET SERVICES =====

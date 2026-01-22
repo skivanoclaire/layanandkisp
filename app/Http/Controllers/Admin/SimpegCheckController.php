@@ -74,13 +74,29 @@ class SimpegCheckController extends Controller
 
         // === Mapping hasil bila ditemukan ===
         $data = is_array($api['data'] ?? null) ? $api['data'] : [];
+
+        // Log all available fields from SIMPEG for debugging
+        Log::info('SIMPEG data fields', [
+            'nik' => $nik,
+            'available_fields' => array_keys($data)
+        ]);
+
         $nip     = $data['nip']      ?? null;
         $nama    = $data['nama']     ?? null;
         $tel     = $data['telepon']  ?? null; // sesuaikan key API
         $eml     = $data['email']    ?? null;
         $jabatan = $data['jabatan']  ?? null;
         $golongan = $data['golongan'] ?? null;
-        $instansi = $data['instansi'] ?? null; // Get instansi from SIMPEG
+
+        // Try different possible field names for instansi/unit kerja
+        $instansi = $data['instansi']
+                    ?? $data['unit_kerja']
+                    ?? $data['unitKerja']
+                    ?? $data['unit_kerja_nama']
+                    ?? $data['nama_unit_kerja']
+                    ?? $data['organisasi']
+                    ?? $data['skpd']
+                    ?? null;
 
         // Try to match instansi with UnitKerja
         $matchedUnitKerja = null;
@@ -170,7 +186,7 @@ class SimpegCheckController extends Controller
             'user_id' => ['required', 'exists:users,id'],
             'nik' => ['required', 'string'],
             'fields' => ['required', 'array', 'min:1'],
-            'fields.*' => ['in:nip,name,phone,email,jabatan,unit_kerja'],
+            'fields.*' => ['in:nik,nip,name,phone,email,jabatan,unit_kerja'],
             'nip' => ['nullable', 'string', 'max:20'],
             'nama' => ['nullable', 'string', 'max:255'],
             'telepon' => ['nullable', 'string', 'max:20'],
@@ -186,6 +202,12 @@ class SimpegCheckController extends Controller
         // Update hanya field yang dipilih
         foreach ($validated['fields'] as $field) {
             switch ($field) {
+                case 'nik':
+                    if (!empty($validated['nik'])) {
+                        $user->nik = $validated['nik'];
+                        $updatedFields[] = 'NIK';
+                    }
+                    break;
                 case 'nip':
                     if (!empty($validated['nip'])) {
                         $user->nip = $validated['nip'];

@@ -19,9 +19,12 @@ class RekomendasiVerifikasi extends Model
         'checklist_analisis_kebutuhan',
         'checklist_perencanaan',
         'checklist_manajemen_risiko',
+        'checklist_kelengkapan_data',
+        'checklist_kesesuaian_peraturan',
         'checklist_anggaran',
         'checklist_timeline',
         'catatan_verifikasi',
+        'catatan_internal',
         'tanggal_verifikasi',
     ];
 
@@ -29,6 +32,8 @@ class RekomendasiVerifikasi extends Model
         'checklist_analisis_kebutuhan' => 'boolean',
         'checklist_perencanaan' => 'boolean',
         'checklist_manajemen_risiko' => 'boolean',
+        'checklist_kelengkapan_data' => 'boolean',
+        'checklist_kesesuaian_peraturan' => 'boolean',
         'checklist_anggaran' => 'boolean',
         'checklist_timeline' => 'boolean',
         'tanggal_verifikasi' => 'datetime',
@@ -58,8 +63,8 @@ class RekomendasiVerifikasi extends Model
         return $this->checklist_analisis_kebutuhan
             && $this->checklist_perencanaan
             && $this->checklist_manajemen_risiko
-            && $this->checklist_anggaran
-            && $this->checklist_timeline;
+            && $this->checklist_kelengkapan_data
+            && $this->checklist_kesesuaian_peraturan;
     }
 
     /**

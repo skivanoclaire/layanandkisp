@@ -35,7 +35,7 @@ class TteAssistanceController extends Controller
                 ->with('error', 'NIP Anda belum terdaftar di Master Data Email atau email dalam status suspended. Silakan hubungi administrator.');
         }
 
-        $unitKerjas = UnitKerja::active()->orderBy('nama')->get();
+        $unitKerjas = UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
 
         return view('user.tte.assistance.create', compact('user', 'emailAccount', 'unitKerjas'));
     }

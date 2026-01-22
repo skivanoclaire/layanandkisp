@@ -47,6 +47,17 @@ class UnitKerja extends Model
         return $query->where('tipe', $tipe);
     }
 
+    // Scope untuk filter unit kerja yang ditampilkan di Layanan Digital
+    // Excludes 'Instansi Pusat/Lainnya'
+    public function scopeForLayananDigital($query)
+    {
+        return $query->whereIn('tipe', [
+            self::TIPE_INDUK,
+            self::TIPE_CABANG,
+            self::TIPE_SEKOLAH,
+        ]);
+    }
+
     // Relationships
 
     /**

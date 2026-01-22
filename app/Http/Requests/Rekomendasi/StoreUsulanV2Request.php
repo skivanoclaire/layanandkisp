@@ -15,6 +15,54 @@ class StoreUsulanV2Request extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $fieldsToDecodeHtml = [
+            // Basic information
+            'deskripsi',
+            'tujuan',
+            'manfaat',
+            // Integration & special needs
+            'detail_integrasi',
+            'kebutuhan_khusus',
+            'dampak_tidak_dibangun',
+            // Analisis Kebutuhan (Permenkomdigi No. 6 Tahun 2025)
+            'dasar_hukum',
+            'uraian_permasalahan',
+            'pihak_terkait',
+            'ruang_lingkup',
+            'analisis_biaya_manfaat',
+            // Perencanaan (Permenkomdigi No. 6 Tahun 2025)
+            'uraian_ruang_lingkup',
+            'proses_bisnis',
+            'kerangka_kerja',
+            'peran_tanggung_jawab',
+            'jadwal_pelaksanaan',
+            'rencana_aksi',
+            'keamanan_informasi',
+            'sumber_daya_manusia',
+            'sumber_daya_anggaran',
+            'sumber_daya_sarana',
+            'indikator_keberhasilan',
+            'alih_pengetahuan',
+            'pemantauan_pelaporan',
+        ];
+
+        $decodedData = [];
+        foreach ($fieldsToDecodeHtml as $field) {
+            if ($this->has($field) && !empty($this->input($field))) {
+                $decodedData[$field] = html_entity_decode($this->input($field), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+        }
+
+        if (!empty($decodedData)) {
+            $this->merge($decodedData);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array
@@ -25,7 +73,7 @@ class StoreUsulanV2Request extends FormRequest
             'tujuan' => 'required|string',
             'manfaat' => 'required|string',
             'pemilik_proses_bisnis_id' => 'required|exists:unit_kerjas,id',
-            'jenis_layanan' => 'required|in:internal,eksternal,hybrid',
+            'jenis_layanan' => 'required|in:publik,internal',
             'target_pengguna' => 'required|string|max:255',
             'estimasi_pengguna' => 'required|integer|min:1',
             'lingkup_aplikasi' => 'required|in:lokal,regional,nasional',
@@ -40,10 +88,25 @@ class StoreUsulanV2Request extends FormRequest
             'kebutuhan_khusus' => 'nullable|string',
             'dampak_tidak_dibangun' => 'nullable|string',
             'prioritas' => 'required|in:rendah,sedang,tinggi,sangat_tinggi',
+
+            // Manajemen Risiko SPBE (Permenkomdigi No. 6 Tahun 2025)
             'risiko_items' => 'nullable|array',
-            'risiko_items.*.jenis' => 'nullable|string',
-            'risiko_items.*.tingkat' => 'nullable|in:rendah,sedang,tinggi',
-            'risiko_items.*.mitigasi' => 'nullable|string',
+            'risiko_items.*.jenis_risiko' => 'nullable|in:positif,negatif',
+            'risiko_items.*.kategori_risiko' => 'nullable|string',
+            'risiko_items.*.area_dampak' => 'nullable|string',
+            'risiko_items.*.uraian_kejadian' => 'nullable|string',
+            'risiko_items.*.penyebab' => 'nullable|string',
+            'risiko_items.*.dampak' => 'nullable|string',
+            'risiko_items.*.level_kemungkinan' => 'nullable|integer|min:1|max:5',
+            'risiko_items.*.level_dampak' => 'nullable|integer|min:1|max:5',
+            'risiko_items.*.besaran_risiko' => 'nullable|string',
+            'risiko_items.*.besaran_risiko_nilai' => 'nullable|integer|min:1|max:25',
+            'risiko_items.*.perlu_penanganan' => 'nullable|in:ya,tidak',
+            'risiko_items.*.opsi_penanganan' => 'nullable|string',
+            'risiko_items.*.rencana_aksi' => 'nullable|string',
+            'risiko_items.*.jadwal_implementasi' => 'nullable|string',
+            'risiko_items.*.penanggung_jawab' => 'nullable|string',
+            'risiko_items.*.risiko_residual' => 'nullable|in:ya,tidak',
 
             // Permenkomdigi No. 6 Tahun 2025 - Analisis Kebutuhan
             'dasar_hukum' => 'nullable|string',
@@ -85,7 +148,7 @@ class StoreUsulanV2Request extends FormRequest
             'pemilik_proses_bisnis_id.required' => 'Pemilik proses bisnis wajib dipilih',
             'pemilik_proses_bisnis_id.exists' => 'Pemilik proses bisnis tidak valid',
             'jenis_layanan.required' => 'Jenis layanan wajib dipilih',
-            'jenis_layanan.in' => 'Jenis layanan tidak valid',
+            'jenis_layanan.in' => 'Jenis layanan harus Layanan Publik atau Layanan Internal',
             'target_pengguna.required' => 'Target pengguna wajib diisi',
             'estimasi_pengguna.required' => 'Estimasi jumlah pengguna wajib diisi',
             'estimasi_pengguna.integer' => 'Estimasi jumlah pengguna harus berupa angka',

@@ -5,7 +5,13 @@
       "Bash(cat:*)",
       "Bash(php -r:*)",
       "Bash(grep:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(php -l:*)",
+      "Bash(mysql:*)",
+      "Bash(service mysql status:*)",
+      "Bash(php:*)",
+      "Bash(docker compose exec:*)",
+      "Bash(truncate:*)"
     ]
   }
 }

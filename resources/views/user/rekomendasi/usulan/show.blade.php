@@ -19,6 +19,36 @@
                         class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                         Edit
                     </a>
+
+                    @if($proposal->status === 'draft')
+                        <form action="{{ route('user.rekomendasi.usulan.submit', $proposal->id) }}"
+                              method="POST"
+                              class="inline"
+                              onsubmit="return confirm('Yakin ingin mengajukan usulan ini? Usulan yang sudah diajukan tidak dapat diubah kembali.')">
+                            @csrf
+                            <button type="submit"
+                                    class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Ajukan Usulan
+                            </button>
+                        </form>
+                    @elseif($proposal->status === 'perlu_revisi')
+                        <form action="{{ route('user.rekomendasi.usulan.submit', $proposal->id) }}"
+                              method="POST"
+                              class="inline"
+                              onsubmit="return confirm('Yakin ingin mengajukan ulang usulan ini setelah melakukan revisi?')">
+                            @csrf
+                            <button type="submit"
+                                    class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Ajukan Ulang
+                            </button>
+                        </form>
+                    @endif
                 @endif
             </div>
         </div>
@@ -106,6 +136,141 @@
             </div>
         @endif
 
+        <!-- Status Persetujuan Kementerian -->
+        @php
+            // Support both direct relation and legacy relation via surat
+            $statusKementerian = $proposal->statusKementerian ?? ($proposal->surat?->statusKementerian);
+        @endphp
+        @if(in_array($proposal->fase_saat_ini, ['menunggu_kementerian', 'pengembangan', 'selesai']) && $statusKementerian)
+            @php
+                $statusKementerianColors = [
+                    'terkirim' => 'bg-blue-50 border-blue-200',
+                    'menunggu' => 'bg-yellow-50 border-yellow-200',
+                    'diproses' => 'bg-yellow-50 border-yellow-200',
+                    'disetujui' => 'bg-green-50 border-green-200',
+                    'ditolak' => 'bg-red-50 border-red-200',
+                    'revisi_diminta' => 'bg-orange-50 border-orange-200',
+                ];
+                $statusKementerianBadgeColors = [
+                    'terkirim' => 'bg-blue-100 text-blue-800',
+                    'menunggu' => 'bg-yellow-100 text-yellow-800',
+                    'diproses' => 'bg-yellow-100 text-yellow-800',
+                    'disetujui' => 'bg-green-100 text-green-800',
+                    'ditolak' => 'bg-red-100 text-red-800',
+                    'revisi_diminta' => 'bg-orange-100 text-orange-800',
+                ];
+                $statusKementerianLabels = [
+                    'terkirim' => 'Surat Terkirim ke Kementerian',
+                    'menunggu' => 'Menunggu Respons Kementerian',
+                    'diproses' => 'Sedang Diproses Kementerian',
+                    'disetujui' => 'Disetujui Kementerian Komunikasi dan Digital RI',
+                    'ditolak' => 'Ditolak oleh Kementerian',
+                    'revisi_diminta' => 'Kementerian Meminta Revisi',
+                ];
+                $statusKementerianIcons = [
+                    'terkirim' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+                    'menunggu' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+                    'diproses' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+                    'disetujui' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+                    'ditolak' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
+                    'revisi_diminta' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+                ];
+                $currentStatus = $statusKementerian->status;
+            @endphp
+            <div class="rounded-lg border p-6 mb-6 {{ $statusKementerianColors[$currentStatus] ?? 'bg-gray-50 border-gray-200' }}">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center {{ $currentStatus === 'disetujui' ? 'bg-green-100' : ($currentStatus === 'ditolak' ? 'bg-red-100' : 'bg-blue-100') }}">
+                            <svg class="h-6 w-6 {{ $currentStatus === 'disetujui' ? 'text-green-600' : ($currentStatus === 'ditolak' ? 'text-red-600' : 'text-blue-600') }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $statusKementerianIcons[$currentStatus] ?? $statusKementerianIcons['menunggu'] }}" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Status Persetujuan Kementerian</h3>
+                                <span class="inline-flex items-center mt-2 px-3 py-1 rounded-full text-sm font-medium {{ $statusKementerianBadgeColors[$currentStatus] ?? 'bg-gray-100 text-gray-800' }}">
+                                    {{ $statusKementerianLabels[$currentStatus] ?? ucfirst(str_replace('_', ' ', $currentStatus)) }}
+                                </span>
+                            </div>
+                        </div>
+
+                        @if($statusKementerian->tanggal_surat_respons || $statusKementerian->tanggal_diterima)
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                @if($statusKementerian->nomor_surat_respons)
+                                    <div>
+                                        <span class="text-gray-500">Nomor Surat:</span>
+                                        <span class="ml-1 text-gray-900 font-medium">{{ $statusKementerian->nomor_surat_respons }}</span>
+                                    </div>
+                                @endif
+                                @if($statusKementerian->tanggal_surat_respons)
+                                    <div>
+                                        <span class="text-gray-500">Tanggal Surat:</span>
+                                        <span class="ml-1 text-gray-900 font-medium">{{ $statusKementerian->tanggal_surat_respons->format('d F Y') }}</span>
+                                    </div>
+                                @endif
+                                @if($statusKementerian->tanggal_diterima)
+                                    <div>
+                                        <span class="text-gray-500">Tanggal Diterima:</span>
+                                        <span class="ml-1 text-gray-900 font-medium">{{ $statusKementerian->tanggal_diterima->format('d F Y') }}</span>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
+                        @if($currentStatus === 'ditolak' && $statusKementerian->alasan_ditolak)
+                            <div class="mt-3 p-3 bg-red-100 rounded-lg">
+                                <p class="text-sm font-medium text-red-800">Alasan Penolakan:</p>
+                                <p class="text-sm text-red-700 mt-1">{{ $statusKementerian->alasan_ditolak }}</p>
+                            </div>
+                        @endif
+
+                        @if($currentStatus === 'revisi_diminta' && !empty($statusKementerian->catatan_revisi))
+                            <div class="mt-3 p-3 bg-orange-100 rounded-lg">
+                                <p class="text-sm font-medium text-orange-800">Catatan Revisi dari Kementerian:</p>
+                                <ul class="mt-1 list-disc list-inside text-sm text-orange-700">
+                                    @foreach($statusKementerian->catatan_revisi as $catatan)
+                                        <li>{{ $catatan }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        {{-- Download Surat Persetujuan Kementerian --}}
+                        @if($statusKementerian->file_respons_path)
+                            <div class="mt-4 p-4 bg-white border border-gray-200 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <svg class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                        </svg>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">
+                                                @if($currentStatus === 'disetujui')
+                                                    Surat Persetujuan Kementerian Komdigi
+                                                @else
+                                                    Surat Respons Kementerian Komdigi
+                                                @endif
+                                            </p>
+                                            <p class="text-xs text-gray-500">Dokumen PDF</p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('user.rekomendasi.usulan.download-surat-kementerian', $proposal->id) }}"
+                                       class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition shadow-sm">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        Download Surat
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Main Content Tabs -->
         <div class="bg-white rounded-lg shadow">
             <div class="border-b border-gray-200">
@@ -113,10 +278,6 @@
                     <button onclick="showTab('informasi')" id="tab-informasi"
                         class="tab-button py-4 px-6 text-sm font-medium border-b-2 border-blue-500 text-blue-600">
                         Informasi Dasar
-                    </button>
-                    <button onclick="showTab('dokumen')" id="tab-dokumen"
-                        class="tab-button py-4 px-6 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                        Dokumen
                     </button>
                     <button onclick="showTab('timeline')" id="tab-timeline"
                         class="tab-button py-4 px-6 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
@@ -152,17 +313,17 @@
 
                     <div class="col-span-2">
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Deskripsi</h3>
-                        <div class="text-gray-900 prose max-w-none">{!! $proposal->deskripsi !!}</div>
+                        <div class="text-gray-900 prose prose-sm max-w-none">{!! $proposal->deskripsi !!}</div>
                     </div>
 
                     <div class="col-span-2">
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Tujuan</h3>
-                        <div class="text-gray-900 prose max-w-none">{!! $proposal->tujuan !!}</div>
+                        <div class="text-gray-900 prose prose-sm max-w-none">{!! $proposal->tujuan !!}</div>
                     </div>
 
                     <div class="col-span-2">
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Manfaat</h3>
-                        <div class="text-gray-900 prose max-w-none">{!! $proposal->manfaat !!}</div>
+                        <div class="text-gray-900 prose prose-sm max-w-none">{!! $proposal->manfaat !!}</div>
                     </div>
 
                     <div>
@@ -235,65 +396,23 @@
                     @if($proposal->integrasi_sistem_lain === 'ya' && $proposal->detail_integrasi)
                         <div class="col-span-2">
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Detail Integrasi</h3>
-                            <p class="text-gray-900">{{ $proposal->detail_integrasi }}</p>
+                            <div class="text-gray-900 prose prose-sm max-w-none">{!! $proposal->detail_integrasi !!}</div>
                         </div>
                     @endif
 
                     @if($proposal->kebutuhan_khusus)
                         <div class="col-span-2">
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Kebutuhan Khusus</h3>
-                            <p class="text-gray-900">{{ $proposal->kebutuhan_khusus }}</p>
+                            <div class="text-gray-900 prose prose-sm max-w-none">{!! $proposal->kebutuhan_khusus !!}</div>
                         </div>
                     @endif
 
                     @if($proposal->dampak_tidak_dibangun)
                         <div class="col-span-2">
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Dampak Jika Tidak Dibangun</h3>
-                            <p class="text-gray-900">{{ $proposal->dampak_tidak_dibangun }}</p>
+                            <div class="text-gray-900 prose prose-sm max-w-none">{!! $proposal->dampak_tidak_dibangun !!}</div>
                         </div>
                     @endif
-                </div>
-            </div>
-
-            <!-- Tab: Dokumen -->
-            <div id="content-dokumen" class="tab-content p-6 hidden">
-                <div class="space-y-4">
-                    @forelse($proposal->dokumenUsulan as $dokumen)
-                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-10 w-10 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-sm font-medium text-gray-900">{{ $dokumen->jenis_dokumen_display }}</h4>
-                                        <p class="text-sm text-gray-500">Versi {{ $dokumen->versi }} - {{ $dokumen->human_file_size }}</p>
-                                        <p class="text-xs text-gray-400 mt-1">
-                                            Diupload oleh {{ $dokumen->uploader->name }} pada {{ $dokumen->created_at->format('d M Y H:i') }}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <a href="{{ route('user.rekomendasi.usulan.dokumen.download', [$proposal->id, $dokumen->id]) }}"
-                                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        Download
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center py-8">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <p class="mt-2 text-sm text-gray-500">Belum ada dokumen yang diupload</p>
-                        </div>
-                    @endforelse
                 </div>
             </div>
 
@@ -350,7 +469,7 @@
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Dasar Hukum</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->dasar_hukum)
                                 {!! $proposal->dasar_hukum !!}
                             @else
@@ -361,7 +480,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Uraian Permasalahan</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->uraian_permasalahan)
                                 {!! $proposal->uraian_permasalahan !!}
                             @else
@@ -372,7 +491,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Pihak Terkait</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->pihak_terkait)
                                 {!! $proposal->pihak_terkait !!}
                             @else
@@ -383,7 +502,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Ruang Lingkup</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->ruang_lingkup)
                                 {!! $proposal->ruang_lingkup !!}
                             @else
@@ -394,7 +513,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Analisis Biaya Manfaat</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->analisis_biaya_manfaat)
                                 {!! $proposal->analisis_biaya_manfaat !!}
                             @else
@@ -405,7 +524,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Lokasi Implementasi</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->lokasi_implementasi)
                                 {!! $proposal->lokasi_implementasi !!}
                             @else
@@ -426,7 +545,7 @@
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Uraian Ruang Lingkup</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->uraian_ruang_lingkup)
                                 {!! $proposal->uraian_ruang_lingkup !!}
                             @else
@@ -437,7 +556,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Proses Bisnis</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->proses_bisnis)
                                 {!! $proposal->proses_bisnis !!}
                             @else
@@ -457,7 +576,7 @@
                                             <p class="text-xs text-blue-700">{{ basename($proposal->proses_bisnis_file) }}</p>
                                         </div>
                                     </div>
-                                    <a href="{{ Storage::url($proposal->proses_bisnis_file) }}" target="_blank"
+                                    <a href="{{ route('file.download', $proposal->proses_bisnis_file) }}" target="_blank"
                                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -471,7 +590,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Kerangka Kerja</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->kerangka_kerja)
                                 {!! $proposal->kerangka_kerja !!}
                             @else
@@ -500,7 +619,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Peran Tanggung Jawab</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->peran_tanggung_jawab)
                                 {!! $proposal->peran_tanggung_jawab !!}
                             @else
@@ -511,7 +630,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Jadwal Pelaksanaan</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->jadwal_pelaksanaan)
                                 {!! $proposal->jadwal_pelaksanaan !!}
                             @else
@@ -522,7 +641,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Rencana Aksi</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->rencana_aksi)
                                 {!! $proposal->rencana_aksi !!}
                             @else
@@ -533,7 +652,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Keamanan Informasi</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->keamanan_informasi)
                                 {!! $proposal->keamanan_informasi !!}
                             @else
@@ -544,7 +663,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Sumber Daya Manusia</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->sumber_daya_manusia)
                                 {!! $proposal->sumber_daya_manusia !!}
                             @else
@@ -555,7 +674,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Sumber Daya Anggaran</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->sumber_daya_anggaran)
                                 {!! $proposal->sumber_daya_anggaran !!}
                             @else
@@ -566,7 +685,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Sumber Daya Sarana</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->sumber_daya_sarana)
                                 {!! $proposal->sumber_daya_sarana !!}
                             @else
@@ -577,7 +696,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Indikator Keberhasilan</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->indikator_keberhasilan)
                                 {!! $proposal->indikator_keberhasilan !!}
                             @else
@@ -588,7 +707,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Alih Pengetahuan</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->alih_pengetahuan)
                                 {!! $proposal->alih_pengetahuan !!}
                             @else
@@ -599,7 +718,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Pemantauan Pelaporan</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose prose-sm max-w-none">
                             @if($proposal->pemantauan_pelaporan)
                                 {!! $proposal->pemantauan_pelaporan !!}
                             @else
@@ -619,6 +738,33 @@
 
                 <div class="space-y-4">
                     @forelse($proposal->risiko_items ?? [] as $index => $risiko)
+                        @php
+                            // Get risk level based on besaran_risiko_nilai
+                            $besaranNilai = $risiko['besaran_risiko_nilai'] ?? 0;
+                            $riskLevelColor = 'bg-gray-100 text-gray-800 border-gray-200';
+                            $riskLevelText = 'Tidak Diketahui';
+
+                            if ($besaranNilai >= 15) {
+                                $riskLevelColor = 'bg-red-100 text-red-800 border-red-200';
+                                $riskLevelText = 'Sangat Tinggi';
+                            } elseif ($besaranNilai >= 10) {
+                                $riskLevelColor = 'bg-orange-100 text-orange-800 border-orange-200';
+                                $riskLevelText = 'Tinggi';
+                            } elseif ($besaranNilai >= 5) {
+                                $riskLevelColor = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                                $riskLevelText = 'Sedang';
+                            } elseif ($besaranNilai >= 1) {
+                                $riskLevelColor = 'bg-green-100 text-green-800 border-green-200';
+                                $riskLevelText = 'Rendah';
+                            }
+
+                            // Get jenis risiko text
+                            $jenisText = 'Risiko ' . ($index + 1);
+                            if (isset($risiko['jenis_risiko'])) {
+                                $jenisText = $risiko['jenis_risiko'] === 'positif' ? 'Positif (Peluang)' : 'Negatif (Ancaman)';
+                            }
+                        @endphp
+
                         <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
                             <div class="p-6">
                                 <div class="flex items-start mb-4">
@@ -628,66 +774,120 @@
                                         </div>
                                     </div>
                                     <div class="ml-4 flex-1">
-                                        <h3 class="text-lg font-semibold text-gray-900">{{ $risiko['jenis'] ?? $risiko['nama'] ?? 'Risiko ' . ($index + 1) }}</h3>
-                                        @if(isset($risiko['kategori']) && $risiko['kategori'])
-                                            <p class="text-sm text-gray-500 mt-1">Kategori: {{ $risiko['kategori'] }}</p>
-                                        @endif
+                                        <h3 class="text-lg font-semibold text-gray-900">Risiko SPBE #{{ $index + 1 }}</h3>
+                                        <div class="flex items-center gap-3 mt-2 text-sm">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+                                                <strong class="mr-1">Jenis:</strong> {{ $jenisText }}
+                                            </span>
+                                            @if(isset($risiko['kategori_risiko']) && $risiko['kategori_risiko'])
+                                                <span class="inline-flex items-center px-2 py-1 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+                                                    <strong class="mr-1">Kategori:</strong> {{ ucwords(str_replace('_', ' ', $risiko['kategori_risiko'])) }}
+                                                </span>
+                                            @endif
+                                            @if(isset($risiko['area_dampak']) && $risiko['area_dampak'])
+                                                <span class="inline-flex items-center px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                    <strong class="mr-1">Area Dampak:</strong> {{ ucwords(str_replace('_', ' ', $risiko['area_dampak'])) }}
+                                                </span>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="flex-shrink-0 ml-4">
-                                        @php
-                                            $tingkat = $risiko['tingkat'] ?? '';
-                                            $tingkatColors = [
-                                                'rendah' => 'bg-green-100 text-green-800 border-green-200',
-                                                'sedang' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                                                'tinggi' => 'bg-orange-100 text-orange-800 border-orange-200',
-                                                'sangat_tinggi' => 'bg-red-100 text-red-800 border-red-200',
-                                            ];
-                                            $tingkatLabels = [
-                                                'rendah' => 'Rendah',
-                                                'sedang' => 'Sedang',
-                                                'tinggi' => 'Tinggi',
-                                                'sangat_tinggi' => 'Sangat Tinggi',
-                                            ];
-                                        @endphp
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold border {{ $tingkatColors[$tingkat] ?? 'bg-gray-100 text-gray-800 border-gray-200' }}">
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold border {{ $riskLevelColor }}">
                                             <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                             </svg>
-                                            {{ $tingkatLabels[$tingkat] ?? ucfirst($tingkat) }}
+                                            {{ $riskLevelText }}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div class="space-y-4">
-                                    @if(isset($risiko['deskripsi']) && $risiko['deskripsi'])
+                                    @if(isset($risiko['uraian_kejadian']) && $risiko['uraian_kejadian'])
                                         <div class="bg-gray-50 rounded-lg p-4">
                                             <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
                                                 <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
-                                                Deskripsi Risiko
+                                                Uraian Kejadian Risiko
                                             </h4>
-                                            <p class="text-sm text-gray-700 leading-relaxed">{{ $risiko['deskripsi'] }}</p>
+                                            <p class="text-sm text-gray-700 leading-relaxed">{!! nl2br(e($risiko['uraian_kejadian'])) !!}</p>
                                         </div>
                                     @endif
 
-                                    <div class="bg-blue-50 rounded-lg p-4">
-                                        <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                            </svg>
-                                            Strategi Mitigasi
-                                        </h4>
-                                        <p class="text-sm text-blue-900 leading-relaxed">{{ $risiko['mitigasi'] ?? '-' }}</p>
-                                    </div>
+                                    @if((isset($risiko['penyebab']) && $risiko['penyebab']) || (isset($risiko['dampak']) && $risiko['dampak']))
+                                        <div class="grid grid-cols-2 gap-4">
+                                            @if(isset($risiko['penyebab']) && $risiko['penyebab'])
+                                                <div class="bg-red-50 rounded-lg p-4">
+                                                    <h4 class="text-sm font-semibold text-red-900 mb-2">Penyebab</h4>
+                                                    <p class="text-sm text-red-800 leading-relaxed">{{ $risiko['penyebab'] }}</p>
+                                                </div>
+                                            @endif
+                                            @if(isset($risiko['dampak']) && $risiko['dampak'])
+                                                <div class="bg-orange-50 rounded-lg p-4">
+                                                    <h4 class="text-sm font-semibold text-orange-900 mb-2">Dampak</h4>
+                                                    <p class="text-sm text-orange-800 leading-relaxed">{{ $risiko['dampak'] }}</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
 
-                                    @if(isset($risiko['penanggung_jawab']) && $risiko['penanggung_jawab'])
-                                        <div class="flex items-center text-sm text-gray-600">
-                                            <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                            </svg>
-                                            <span class="font-medium text-gray-700">Penanggung Jawab:</span>
-                                            <span class="ml-2">{{ $risiko['penanggung_jawab'] }}</span>
+                                    @if(isset($risiko['level_kemungkinan']) && isset($risiko['level_dampak']))
+                                        <div class="bg-purple-50 rounded-lg p-4">
+                                            <h4 class="text-sm font-semibold text-purple-900 mb-2">Penilaian Risiko</h4>
+                                            <p class="text-sm text-purple-800">
+                                                Level Kemungkinan: <strong>{{ $risiko['level_kemungkinan'] }}</strong> ×
+                                                Level Dampak: <strong>{{ $risiko['level_dampak'] }}</strong> =
+                                                Besaran Risiko: <strong class="{{ str_replace(['bg-', 'border-'], ['text-', ''], $riskLevelColor) }}">{{ $besaranNilai }} ({{ $riskLevelText }})</strong>
+                                            </p>
+                                        </div>
+                                    @endif
+
+                                    @if(isset($risiko['perlu_penanganan']) && $risiko['perlu_penanganan'] === 'ya')
+                                        <div class="bg-blue-50 rounded-lg p-4 space-y-3">
+                                            <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center">
+                                                <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                                </svg>
+                                                Penanganan Risiko
+                                            </h4>
+
+                                            @if(isset($risiko['opsi_penanganan']) && $risiko['opsi_penanganan'])
+                                                <div>
+                                                    <p class="text-xs font-semibold text-blue-700 mb-1">Opsi Penanganan:</p>
+                                                    <p class="text-sm text-blue-900">{{ ucwords(str_replace('_', ' ', $risiko['opsi_penanganan'])) }}</p>
+                                                </div>
+                                            @endif
+
+                                            @if(isset($risiko['rencana_aksi']) && $risiko['rencana_aksi'])
+                                                <div>
+                                                    <p class="text-xs font-semibold text-blue-700 mb-1">Rencana Aksi:</p>
+                                                    <p class="text-sm text-blue-900 leading-relaxed">{!! nl2br(e($risiko['rencana_aksi'])) !!}</p>
+                                                </div>
+                                            @endif
+
+                                            @if(isset($risiko['jadwal_implementasi']) && $risiko['jadwal_implementasi'])
+                                                <div>
+                                                    <p class="text-xs font-semibold text-blue-700 mb-1">Jadwal Implementasi:</p>
+                                                    <p class="text-sm text-blue-900">{{ $risiko['jadwal_implementasi'] }}</p>
+                                                </div>
+                                            @endif
+
+                                            @if(isset($risiko['penanggung_jawab']) && $risiko['penanggung_jawab'])
+                                                <div class="flex items-center text-sm text-blue-900">
+                                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                    </svg>
+                                                    <span class="font-semibold">Penanggung Jawab:</span>
+                                                    <span class="ml-2">{{ $risiko['penanggung_jawab'] }}</span>
+                                                </div>
+                                            @endif
+
+                                            @if(isset($risiko['risiko_residual']))
+                                                <div>
+                                                    <p class="text-xs font-semibold text-blue-700 mb-1">Risiko Residual:</p>
+                                                    <p class="text-sm text-blue-900">{{ $risiko['risiko_residual'] === 'ya' ? 'Ada' : 'Tidak Ada' }}</p>
+                                                </div>
+                                            @endif
                                         </div>
                                     @endif
                                 </div>

@@ -17,7 +17,7 @@
 
         <div class="flex justify-center gap-4">
             @php
-                $dashboardRoute = auth()->user()->hasRole('Admin') ? 'admin.dashboard' : 'user.dashboard';
+                $dashboardRoute = auth()->check() && auth()->user()->hasRole('Admin') ? 'admin.dashboard' : 'user.dashboard';
             @endphp
             <a href="{{ route($dashboardRoute) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold">
                 Kembali ke Dashboard

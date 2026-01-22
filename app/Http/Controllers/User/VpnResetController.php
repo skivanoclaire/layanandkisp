@@ -21,7 +21,7 @@ class VpnResetController extends Controller
 
     public function create()
     {
-        $unitKerjas = UnitKerja::orderBy('nama')->get();
+        $unitKerjas = UnitKerja::forLayananDigital()->orderBy('nama')->get();
         return view('user.vpn.reset.create', compact('unitKerjas'));
     }
 

@@ -54,7 +54,7 @@ class RekomendasiUsulanController extends Controller
      */
     public function create()
     {
-        $unitKerjaList = UnitKerja::orderBy('nama')->get();
+        $unitKerjaList = UnitKerja::forLayananDigital()->orderBy('nama')->get();
 
         return view('user.rekomendasi.usulan.create', compact('unitKerjaList'));
     }
@@ -76,7 +76,10 @@ class RekomendasiUsulanController extends Controller
             // Handle file upload for proses_bisnis_file
             if ($request->hasFile('proses_bisnis_file')) {
                 $file = $request->file('proses_bisnis_file');
-                $filename = 'proses_bisnis_' . time() . '_' . $file->getClientOriginalName();
+                // Sanitize filename: remove spaces and special characters
+                $originalName = $file->getClientOriginalName();
+                $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $originalName);
+                $filename = 'proses_bisnis_' . time() . '_' . $sanitizedName;
                 $path = $file->storeAs('rekomendasi/proses_bisnis', $filename, 'public');
                 $data['proses_bisnis_file'] = $path;
             }
@@ -118,6 +121,7 @@ class RekomendasiUsulanController extends Controller
                 'dokumenUsulan.uploader',
                 'verifikasi.verifikator',
                 'surat.statusKementerian',
+                'statusKementerian',
                 'historiAktivitas.user'
             ])
             ->firstOrFail();
@@ -136,7 +140,7 @@ class RekomendasiUsulanController extends Controller
             ->with('verifikasi')
             ->firstOrFail();
 
-        $unitKerjaList = UnitKerja::orderBy('nama')->get();
+        $unitKerjaList = UnitKerja::forLayananDigital()->orderBy('nama')->get();
 
         return view('user.rekomendasi.usulan.edit', compact('proposal', 'unitKerjaList'));
     }
@@ -165,7 +169,10 @@ class RekomendasiUsulanController extends Controller
                 }
 
                 $file = $request->file('proses_bisnis_file');
-                $filename = 'proses_bisnis_' . time() . '_' . $file->getClientOriginalName();
+                // Sanitize filename: remove spaces and special characters
+                $originalName = $file->getClientOriginalName();
+                $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $originalName);
+                $filename = 'proses_bisnis_' . time() . '_' . $sanitizedName;
                 $path = $file->storeAs('rekomendasi/proses_bisnis', $filename, 'public');
                 $data['proses_bisnis_file'] = $path;
             }
@@ -283,8 +290,10 @@ class RekomendasiUsulanController extends Controller
         try {
             $proposal = RekomendasiAplikasiForm::where('id', $id)
                 ->where('user_id', auth()->id())
-                ->where('status', 'draft')
+                ->whereIn('status', ['draft', 'perlu_revisi'])
                 ->firstOrFail();
+
+            $isResubmission = $proposal->status === 'perlu_revisi';
 
             // Check if all required documents are uploaded
             if (!$this->documentService->hasAllRequiredDocuments($id)) {
@@ -293,28 +302,124 @@ class RekomendasiUsulanController extends Controller
                     ->with('error', 'Harap upload semua dokumen wajib sebelum mengajukan usulan.');
             }
 
-            $proposal->update([
+            $updateData = [
                 'status' => 'diajukan',
                 'fase_saat_ini' => 'verifikasi',
-            ]);
+            ];
 
-            // Create verifikasi record
-            $proposal->verifikasi()->create([
-                'verifikator_id' => null,
-                'status' => 'menunggu',
-            ]);
+            // Clear revision fields if resubmitting
+            if ($isResubmission) {
+                $updateData['revision_notes'] = null;
+                $updateData['revision_requested_by'] = null;
+                $updateData['revision_requested_at'] = null;
+            }
+
+            $proposal->update($updateData);
+
+            // Handle verifikasi record
+            if ($isResubmission) {
+                // Reset verifikasi status when resubmitting
+                if ($proposal->verifikasi) {
+                    $proposal->verifikasi->update([
+                        'verifikator_id' => null,
+                        'status' => 'menunggu',
+                        'checklist_analisis_kebutuhan' => false,
+                        'checklist_perencanaan' => false,
+                        'checklist_manajemen_risiko' => false,
+                        'checklist_anggaran' => false,
+                        'checklist_timeline' => false,
+                        'catatan_verifikasi' => null,
+                        'tanggal_verifikasi' => null,
+                    ]);
+                } else {
+                    // Create new verifikasi record if it doesn't exist
+                    $proposal->verifikasi()->create([
+                        'verifikator_id' => null,
+                        'status' => 'menunggu',
+                    ]);
+                }
+            } else {
+                // Create verifikasi record if it doesn't exist (should auto-create via model observer, but fallback)
+                if (!$proposal->verifikasi) {
+                    $proposal->verifikasi()->create([
+                        'verifikator_id' => null,
+                        'status' => 'menunggu',
+                    ]);
+                }
+            }
 
             // Log activity
+            $activityMessage = $isResubmission
+                ? 'Usulan diajukan ulang setelah revisi'
+                : 'Usulan diajukan untuk verifikasi Diskominfo';
+
             $proposal->logActivity(
-                'Usulan Diajukan',
-                'Usulan diajukan untuk verifikasi Diskominfo'
+                $isResubmission ? 'Usulan Diajukan Ulang' : 'Usulan Diajukan',
+                $activityMessage
             );
 
             // TODO: Send notification to admin
 
+            $successMessage = $isResubmission
+                ? 'Usulan berhasil diajukan ulang. Menunggu verifikasi dari Diskominfo.'
+                : 'Usulan berhasil diajukan. Menunggu verifikasi dari Diskominfo.';
+
             return redirect()
                 ->route('user.rekomendasi.usulan.show', $proposal->id)
-                ->with('success', 'Usulan berhasil diajukan. Menunggu verifikasi dari Diskominfo.');
+                ->with('success', $successMessage);
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download surat persetujuan/respons dari Kementerian.
+     */
+    public function downloadSuratKementerian($id)
+    {
+        try {
+            // Verify ownership
+            $proposal = RekomendasiAplikasiForm::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->with(['surat.statusKementerian', 'statusKementerian'])
+                ->firstOrFail();
+
+            // Support both direct relation and legacy relation via surat
+            $statusKementerian = $proposal->statusKementerian ?? $proposal->surat?->statusKementerian;
+
+            // Check if status kementerian exist
+            if (!$statusKementerian) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Surat kementerian tidak ditemukan.');
+            }
+
+            // Check if file exists
+            if (!$statusKementerian->file_respons_path) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'File surat kementerian belum tersedia.');
+            }
+
+            $filePath = storage_path('app/public/' . $statusKementerian->file_respons_path);
+
+            if (!file_exists($filePath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'File tidak ditemukan di server.');
+            }
+
+            // Determine filename based on status
+            $statusLabel = $statusKementerian->status === 'disetujui'
+                ? 'Surat_Persetujuan_Kementerian'
+                : 'Surat_Respons_Kementerian';
+
+            $filename = $statusLabel . '_' . $proposal->ticket_number . '.pdf';
+
+            return response()->download($filePath, $filename);
 
         } catch (\Exception $e) {
             return redirect()

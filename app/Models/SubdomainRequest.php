@@ -45,6 +45,7 @@ class SubdomainRequest extends Model
     public function serverLocation(): BelongsTo { return $this->belongsTo(ServerLocation::class); }
     public function webMonitor(): BelongsTo { return $this->belongsTo(WebMonitor::class); }
     public function logs(): HasMany { return $this->hasMany(SubdomainRequestLog::class); }
+    public function surveiKepuasan(): HasMany { return $this->hasMany(SurveiKepuasanLayanan::class, 'subdomain_request_id'); }
 
     // Scopes
     public function scopeByStatus($query, string $status) { return $query->where('status', $status); }

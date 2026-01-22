@@ -23,7 +23,9 @@ yarn-error.log
 /.zed
 Dockerfile
 .yaml
+.yml
 
 # Google Sheets Service Account credentials
 /storage/app/google/
 nul
+

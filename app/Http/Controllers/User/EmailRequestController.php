@@ -32,7 +32,7 @@ class EmailRequestController extends Controller
         }
 
         // Get active unit kerja for dropdown
-        $unitKerjaList = \App\Models\UnitKerja::active()->orderBy('nama')->get();
+        $unitKerjaList = \App\Models\UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
         return view('user.email.create', compact('unitKerjaList'));
     }
 
@@ -115,7 +115,7 @@ class EmailRequestController extends Controller
             abort(403, 'Permohonan tidak bisa diedit karena sudah diproses.');
         }
         // Get active unit kerja for dropdown
-        $unitKerjaList = \App\Models\UnitKerja::active()->orderBy('nama')->get();
+        $unitKerjaList = \App\Models\UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
         return view('user.email.edit', compact('item', 'unitKerjaList'));
     }
 

@@ -31,7 +31,7 @@ class VidconRequestController extends Controller
         }
 
         // Get master data for dropdowns
-        $unitKerjaList = UnitKerja::active()->orderBy('nama')->get();
+        $unitKerjaList = UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
 
         return view('user.vidcon.create', compact('unitKerjaList'));
     }
@@ -117,7 +117,7 @@ class VidconRequestController extends Controller
             abort(403);
         }
 
-        $unitKerjaList = UnitKerja::active()->orderBy('nama')->get();
+        $unitKerjaList = UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
 
         return view('user.vidcon.edit', compact('vidconRequest', 'unitKerjaList'));
     }

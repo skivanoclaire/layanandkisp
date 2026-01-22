@@ -21,7 +21,7 @@ class CloudStorageRequestController extends Controller
 
     public function create()
     {
-        $unitKerjas = UnitKerja::orderBy('nama')->get();
+        $unitKerjas = UnitKerja::forLayananDigital()->orderBy('nama')->get();
         return view('user.datacenter.cloud-storage.create', compact('unitKerjas'));
     }
 

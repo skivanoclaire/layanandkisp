@@ -31,7 +31,7 @@ class StarlinkController extends Controller
                 ->with('error', 'Layanan Starlink saat ini tidak tersedia. ' . ($serviceSetting->inactive_reason ?? ''));
         }
 
-        $unitKerjaList = UnitKerja::orderBy('nama')->get();
+        $unitKerjaList = UnitKerja::forLayananDigital()->orderBy('nama')->get();
         return view('user.internet.starlink.create', compact('unitKerjaList'));
     }
 
