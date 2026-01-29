@@ -38,3 +38,6 @@ docker-compose.yml
 # local docker dev (do not commit)
 Dockerfile.dev
 docker-compose.yml
+
+# never commit archives
+*.zip
