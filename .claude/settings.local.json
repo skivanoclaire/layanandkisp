@@ -5,7 +5,9 @@
       "Bash(cat:*)",
       "Bash(php -r:*)",
       "Bash(grep:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(dir /s \"c:\\\\projects\\\\laravel12-app\\\\resources\\\\views\")",
+      "Bash(ls:*)"
     ]
   }
 }

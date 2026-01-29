@@ -111,10 +111,8 @@ class TechStackSeeder extends Seeder
         Database::firstOrCreate(['name' => 'Firebase']);
 
         // Server Locations
-        ServerLocation::firstOrCreate(['name' => 'Kalimantan Utara']);
-        ServerLocation::firstOrCreate(['name' => 'Tanjung Selor']);
-        ServerLocation::firstOrCreate(['name' => 'Tarakan']);
         ServerLocation::firstOrCreate(['name' => 'Bulungan']);
+        ServerLocation::firstOrCreate(['name' => 'Tarakan']);
         ServerLocation::firstOrCreate(['name' => 'Malinau']);
         ServerLocation::firstOrCreate(['name' => 'Nunukan']);
         ServerLocation::firstOrCreate(['name' => 'Jakarta']);

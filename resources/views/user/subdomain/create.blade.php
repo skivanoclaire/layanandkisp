@@ -16,7 +16,7 @@
         </ul>
     </div>
 
-    <form action="{{ route('user.subdomain.store') }}" method="POST" class="space-y-6" id="subdomainForm">
+    <form action="{{ route('user.subdomain.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6" id="subdomainForm">
         @csrf
 
         {{-- SECTION 1: INFORMASI PEMOHON --}}
@@ -524,12 +524,8 @@
                     <p class="text-xs text-gray-500 mt-1">Opsional: Jadwal rutin pemeliharaan/maintenance website (jika ada downtime terjadwal)</p>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" name="has_https" id="has_https" value="1"
-                        {{ old('has_https', true) ? 'checked' : '' }}
-                        class="rounded border-gray-300">
-                    <label for="has_https" class="text-sm">Website menggunakan HTTPS/SSL</label>
-                </div>
+                {{-- HTTPS/SSL is mandatory, set as hidden field --}}
+                <input type="hidden" name="has_https" value="1">
             </div>
         </div>
 
@@ -537,10 +533,451 @@
         <input type="hidden" name="needs_ssl" value="0">
         <input type="hidden" name="needs_proxy" value="0">
 
-        {{-- SECTION 6: PERSETUJUAN --}}
+        {{-- SECTION 6: KATEGORI SISTEM ELEKTRONIK --}}
         <div class="bg-white rounded shadow-md">
             <div class="bg-green-600 text-white px-6 py-3 font-semibold">
-                6. Pernyataan & Persetujuan
+                6. Kategori Sistem Elektronik
+            </div>
+            <div class="p-6 space-y-4">
+                {{-- Info Panel --}}
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded text-sm">
+                    <p class="font-semibold text-blue-800 mb-2">Tentang Kuesioner Ini:</p>
+                    <ul class="text-blue-700 text-xs space-y-1 list-disc list-inside">
+                        <li>Kuesioner ini digunakan untuk mengkategorikan tingkat kekritisan sistem elektronik</li>
+                        <li>Terdapat 10 pertanyaan dengan pilihan jawaban A, B, atau C</li>
+                        <li>Kategori akan dihitung otomatis: <strong>Strategis (36-50 poin)</strong>, <strong>Tinggi (16-35 poin)</strong>, atau <strong>Rendah (0-15 poin)</strong></li>
+                    </ul>
+                </div>
+
+                {{-- Question 1.1 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.1. Nilai investasi sistem elektronik yang terpasang <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_1]" value="A" required class="mt-1" {{ old('esc_answers.1_1') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Lebih dari Rp.30 Miliar</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_1]" value="B" class="mt-1" {{ old('esc_answers.1_1') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] Lebih dari Rp.3 Miliar s/d Rp.30 Miliar</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_1]" value="C" class="mt-1" {{ old('esc_answers.1_1') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Kurang dari Rp.3 Miliar</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_1')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Question 1.2 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.2. Total anggaran operasional tahunan yang dialokasikan untuk pengelolaan Sistem Elektronik <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_2]" value="A" required class="mt-1" {{ old('esc_answers.1_2') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Lebih dari Rp.10 Miliar</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_2]" value="B" class="mt-1" {{ old('esc_answers.1_2') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] Lebih dari Rp.1 Miliar s/d Rp.10 Miliar</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_2]" value="C" class="mt-1" {{ old('esc_answers.1_2') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Kurang dari Rp.1 Miliar</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_2')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Question 1.3 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.3. Memiliki kewajiban kepatuhan terhadap Peraturan atau Standar tertentu <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_3]" value="A" required class="mt-1" {{ old('esc_answers.1_3') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Peraturan atau Standar nasional dan internasional</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_3]" value="B" class="mt-1" {{ old('esc_answers.1_3') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] Peraturan atau Standar nasional</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_3]" value="C" class="mt-1" {{ old('esc_answers.1_3') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Tidak ada Peraturan khusus</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_3')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Question 1.4 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.4. Menggunakan teknik kriptografi khusus untuk keamanan informasi dalam Sistem Elektronik <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_4]" value="A" required class="mt-1" {{ old('esc_answers.1_4') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Teknik kriptografi khusus yang disertifikasi oleh Negara</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_4]" value="B" class="mt-1" {{ old('esc_answers.1_4') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] Teknik kriptografi sesuai standar industri, tersedia secara publik atau dikembangkan sendiri</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_4]" value="C" class="mt-1" {{ old('esc_answers.1_4') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Tidak ada penggunaan teknik kriptografi</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_4')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Question 1.5 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.5. Jumlah pengguna Sistem Elektronik <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_5]" value="A" required class="mt-1" {{ old('esc_answers.1_5') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Lebih dari 5.000 pengguna</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_5]" value="B" class="mt-1" {{ old('esc_answers.1_5') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] 1.000 sampai dengan 5.000 pengguna</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_5]" value="C" class="mt-1" {{ old('esc_answers.1_5') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Kurang dari 1.000 pengguna</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_5')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Question 1.6 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.6. Data pribadi yang dikelola Sistem Elektronik <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_6]" value="A" required class="mt-1" {{ old('esc_answers.1_6') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Data pribadi yang memiliki hubungan dengan Data Pribadi lainnya</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_6]" value="B" class="mt-1" {{ old('esc_answers.1_6') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] Data pribadi yang bersifat individu dan/atau data pribadi yang terkait dengan kepemilikan badan usaha</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_6]" value="C" class="mt-1" {{ old('esc_answers.1_6') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Tidak ada data pribadi</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_6')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Question 1.7 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.7. Tingkat klasifikasi/kekritisan Data yang ada dalam Sistem Elektronik, relatif terhadap ancaman upaya penyerangan atau peneroboson keamanan informasi <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_7]" value="A" required class="mt-1" {{ old('esc_answers.1_7') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Sangat Rahasia</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_7]" value="B" class="mt-1" {{ old('esc_answers.1_7') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] Rahasia dan/ atau Terbatas</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_7]" value="C" class="mt-1" {{ old('esc_answers.1_7') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Biasa</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_7')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Question 1.8 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.8. Tingkat kekritisan proses yang ada dalam Sistem Elektronik, relatif terhadap ancaman upaya penyerangan atau peneroboson keamanan informasi <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_8]" value="A" required class="mt-1" {{ old('esc_answers.1_8') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Proses yang berisiko mengganggu hajat hidup orang banyak dan memberi dampak langsung pada layanan publik</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_8]" value="B" class="mt-1" {{ old('esc_answers.1_8') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] Proses yang berisiko mengganggu hajat hidup orang banyak dan memberi dampak tidak langsung</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_8]" value="C" class="mt-1" {{ old('esc_answers.1_8') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Proses yang hanya berdampak pada bisnis perusahaan</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_8')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Question 1.9 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.9. Dampak dari kegagalan Sistem Elektronik <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_9]" value="A" required class="mt-1" {{ old('esc_answers.1_9') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Tidak tersedianya layanan publik berskala nasional atau membahayakan pertahanan keamanan negara</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_9]" value="B" class="mt-1" {{ old('esc_answers.1_9') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] Tidak tersedianya layanan publik dalam 1 provinsi atau lebih</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_9]" value="C" class="mt-1" {{ old('esc_answers.1_9') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Tidak tersedianya layanan publik dalam 1 kabupaten/kota atau lebih</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_9')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Question 1.10 --}}
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                    <label class="block font-semibold mb-2">
+                        1.10. Potensi kerugian atau dampak negatif dari insiden ditembusnya keamanan informasi Sistem Elektronik (sabotase, terorisme) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_10]" value="A" required class="mt-1" {{ old('esc_answers.1_10') == 'A' ? 'checked' : '' }}>
+                            <span class="text-sm">[A] Menimbulkan korban jiwa</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_10]" value="B" class="mt-1" {{ old('esc_answers.1_10') == 'B' ? 'checked' : '' }}>
+                            <span class="text-sm">[B] Terbatas pada kerugian finansial</span>
+                        </label>
+                        <label class="flex items-start gap-2">
+                            <input type="radio" name="esc_answers[1_10]" value="C" class="mt-1" {{ old('esc_answers.1_10') == 'C' ? 'checked' : '' }}>
+                            <span class="text-sm">[C] Mengakibatkan gangguan operasional sementara (tidak membahayakan finansial)</span>
+                        </label>
+                    </div>
+                    @error('esc_answers.1_10')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Live Score Display --}}
+                <div class="mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Total Skor Saat Ini:</p>
+                            <p class="text-3xl font-bold text-green-700" id="esc-total-score">0</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">Kategori:</p>
+                            <p class="text-2xl font-bold" id="esc-category">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Supporting Document Upload --}}
+                <div class="mt-4">
+                    <label class="block text-sm font-medium mb-1">Dokumen Pendukung (Opsional)</label>
+                    <input type="file" name="esc_document" accept=".pdf,.doc,.docx,.xls,.xlsx"
+                        class="w-full border rounded p-2 @error('esc_document') border-red-500 @enderror">
+                    <p class="text-xs text-gray-500 mt-1">
+                        Upload dokumen pendukung untuk seluruh kuesioner (PDF, DOC, DOCX, XLS, XLSX, maksimal 10MB)
+                    </p>
+                    @error('esc_document')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+        {{-- SECTION 7: KLASIFIKASI DATA --}}
+        <div class="bg-white rounded shadow-md">
+            <div class="bg-cyan-600 text-white px-6 py-3 font-semibold">
+                7. Klasifikasi Data
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded">
+                    <p class="text-sm text-gray-700">
+                        Klasifikasi data membantu menentukan tingkat perlindungan yang diperlukan berdasarkan dampak potensial terhadap <strong>Kerahasiaan</strong>, <strong>Integritas</strong>, dan <strong>Ketersediaan</strong> data.
+                    </p>
+                </div>
+
+                {{-- Nama Data --}}
+                <div>
+                    <label class="block font-semibold mb-2">
+                        Nama Data <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="dc_data_name" value="{{ old('dc_data_name') }}" required
+                        class="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-cyan-500 @error('dc_data_name') border-red-500 @enderror"
+                        placeholder="Contoh: Data Pribadi ASN, Data Keluarga ASN, Data Pangkat ASN, Data Jabatan ASN">
+                    @error('dc_data_name')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-lightbulb text-yellow-500"></i> Klik tombol (+) untuk menambahkan Pemilik Data
+                    </p>
+                </div>
+
+                {{-- Atribut Data --}}
+                <div>
+                    <label class="block font-semibold mb-2">
+                        Atribut Data (Sebagai Justifikasi) <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="dc_data_attributes" rows="3" required
+                        class="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-cyan-500 @error('dc_data_attributes') border-red-500 @enderror"
+                        placeholder="Contoh: Nama, NIK, Alamat, Tempat dan Tanggal Lahir, Agama, Pekerjaan, dll.">{{ old('dc_data_attributes') }}</textarea>
+                    @error('dc_data_attributes')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Petunjuk Dampak Potensial Button --}}
+                <div class="flex justify-center mb-2">
+                    <button type="button" onclick="showDcInfo()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg text-base font-medium shadow-md transition-all hover:shadow-lg">
+                        <i class="fas fa-info-circle mr-2"></i> Petunjuk Pengisian Dampak Potensial
+                    </button>
+                </div>
+
+                <div class="border-t pt-4">
+                    <h4 class="font-semibold text-lg mb-4 text-cyan-700">Area Dampak</h4>
+
+                    {{-- Kerahasiaan --}}
+                    <div class="mb-4 border-l-4 border-blue-500 pl-4 py-2">
+                        <label class="block font-semibold mb-3">
+                            Kerahasiaan (Confidentiality) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="space-y-3">
+                            <label class="flex items-start gap-2 cursor-pointer p-3 rounded border hover:bg-gray-50">
+                                <input type="radio" name="dc_confidentiality" value="Rendah" required class="mt-1 dc-radio" {{ old('dc_confidentiality') == 'Rendah' ? 'checked' : '' }}>
+                                <span class="text-sm">Pengungkapan informasi yang tidak sah berdampak <strong class="text-green-600">rendah</strong> pada aktivitas dan aset individu, organisasi, atau nasional.</span>
+                            </label>
+                            <label class="flex items-start gap-2 cursor-pointer p-3 rounded border hover:bg-gray-50">
+                                <input type="radio" name="dc_confidentiality" value="Sedang" class="mt-1 dc-radio" {{ old('dc_confidentiality') == 'Sedang' ? 'checked' : '' }}>
+                                <span class="text-sm">Pengungkapan informasi yang tidak sah berdampak <strong class="text-orange-600">sedang</strong> pada aktivitas dan aset individu, organisasi, atau nasional.</span>
+                            </label>
+                            <label class="flex items-start gap-2 cursor-pointer p-3 rounded border hover:bg-gray-50">
+                                <input type="radio" name="dc_confidentiality" value="Tinggi" class="mt-1 dc-radio" {{ old('dc_confidentiality') == 'Tinggi' ? 'checked' : '' }}>
+                                <span class="text-sm">Pengungkapan informasi yang tidak sah berdampak <strong class="text-red-600">tinggi</strong> pada aktivitas dan aset individu, organisasi, atau nasional.</span>
+                            </label>
+                        </div>
+                        @error('dc_confidentiality')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Integritas --}}
+                    <div class="mb-4 border-l-4 border-orange-500 pl-4 py-2">
+                        <label class="block font-semibold mb-3">
+                            Integritas (Integrity) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="space-y-3">
+                            <label class="flex items-start gap-2 cursor-pointer p-3 rounded border hover:bg-gray-50">
+                                <input type="radio" name="dc_integrity" value="Rendah" required class="mt-1 dc-radio" {{ old('dc_integrity') == 'Rendah' ? 'checked' : '' }}>
+                                <span class="text-sm">Perubahan atau perusakan informasi berdampak <strong class="text-green-600">rendah</strong> pada aktivitas dan aset individu, organisasi, atau nasional.</span>
+                            </label>
+                            <label class="flex items-start gap-2 cursor-pointer p-3 rounded border hover:bg-gray-50">
+                                <input type="radio" name="dc_integrity" value="Sedang" class="mt-1 dc-radio" {{ old('dc_integrity') == 'Sedang' ? 'checked' : '' }}>
+                                <span class="text-sm">Perubahan atau perusakan informasi berdampak <strong class="text-orange-600">sedang</strong> pada aktivitas dan aset individu, organisasi, atau nasional.</span>
+                            </label>
+                            <label class="flex items-start gap-2 cursor-pointer p-3 rounded border hover:bg-gray-50">
+                                <input type="radio" name="dc_integrity" value="Tinggi" class="mt-1 dc-radio" {{ old('dc_integrity') == 'Tinggi' ? 'checked' : '' }}>
+                                <span class="text-sm">Perubahan atau perusakan informasi berdampak <strong class="text-red-600">tinggi</strong> pada aktivitas dan aset individu, organisasi, atau nasional.</span>
+                            </label>
+                        </div>
+                        @error('dc_integrity')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Ketersediaan --}}
+                    <div class="mb-4 border-l-4 border-red-500 pl-4 py-2">
+                        <label class="block font-semibold mb-3">
+                            Ketersediaan (Availability) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="space-y-3">
+                            <label class="flex items-start gap-2 cursor-pointer p-3 rounded border hover:bg-gray-50">
+                                <input type="radio" name="dc_availability" value="Rendah" required class="mt-1 dc-radio" {{ old('dc_availability') == 'Rendah' ? 'checked' : '' }}>
+                                <span class="text-sm">Gangguan terhadap Akses untuk membuka atau menggunakan informasi berdampak <strong class="text-green-600">rendah</strong> pada aktivitas organisasi, aset organisasi, atau individu.</span>
+                            </label>
+                            <label class="flex items-start gap-2 cursor-pointer p-3 rounded border hover:bg-gray-50">
+                                <input type="radio" name="dc_availability" value="Sedang" class="mt-1 dc-radio" {{ old('dc_availability') == 'Sedang' ? 'checked' : '' }}>
+                                <span class="text-sm">Gangguan terhadap Akses untuk membuka atau menggunakan informasi berdampak <strong class="text-orange-600">sedang</strong> pada aktivitas organisasi, aset organisasi, atau individu.</span>
+                            </label>
+                            <label class="flex items-start gap-2 cursor-pointer p-3 rounded border hover:bg-gray-50">
+                                <input type="radio" name="dc_availability" value="Tinggi" class="mt-1 dc-radio" {{ old('dc_availability') == 'Tinggi' ? 'checked' : '' }}>
+                                <span class="text-sm">Gangguan terhadap Akses untuk membuka atau menggunakan informasi berdampak <strong class="text-red-600">tinggi</strong> pada aktivitas organisasi, aset organisasi, atau individu.</span>
+                            </label>
+                        </div>
+                        @error('dc_availability')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                {{-- Total Nilai Display --}}
+                <div class="bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-300 rounded-lg p-4">
+                    <div class="grid grid-cols-4 gap-4 text-center">
+                        <div>
+                            <p class="text-xs text-gray-600 mb-1">Kerahasiaan</p>
+                            <p class="text-2xl font-bold text-blue-700" id="dc-score-conf">0</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600 mb-1">Integritas</p>
+                            <p class="text-2xl font-bold text-orange-700" id="dc-score-int">0</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600 mb-1">Ketersediaan</p>
+                            <p class="text-2xl font-bold text-red-700" id="dc-score-avail">0</p>
+                        </div>
+                        <div class="border-l-2 border-cyan-400">
+                            <p class="text-xs text-gray-600 mb-1">Total Skor</p>
+                            <p class="text-3xl font-bold text-cyan-700" id="dc-total-score">0</p>
+                            <p class="text-xs text-gray-500">(dari 15)</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-cyan-200 text-center">
+                        <p class="text-xs text-gray-600 mb-1">Kategori:</p>
+                        <p class="text-lg font-bold" id="dc-category">-</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            ≥13: Tinggi | 9-12: Sedang | ≤8: Rendah
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- SECTION 8: PERSETUJUAN --}}
+        <div class="bg-white rounded shadow-md">
+            <div class="bg-green-600 text-white px-6 py-3 font-semibold">
+                8. Pernyataan & Persetujuan
             </div>
             <div class="p-6">
                 <div class="bg-yellow-50 border border-yellow-200 p-4 rounded mb-4">
@@ -843,6 +1280,221 @@ document.addEventListener('DOMContentLoaded', function() {
         showBackupGuide();
     }
 });
+
+// ESC Questionnaire - Real-time Score Calculation
+document.addEventListener('DOMContentLoaded', function() {
+    const scoreMap = { 'A': 5, 'B': 2, 'C': 1 };
+    const questionIds = ['1_1', '1_2', '1_3', '1_4', '1_5', '1_6', '1_7', '1_8', '1_9', '1_10'];
+
+    function calculateEscScore() {
+        let totalScore = 0;
+        let answeredCount = 0;
+
+        questionIds.forEach(qId => {
+            const selected = document.querySelector(`input[name="esc_answers[${qId}]"]:checked`);
+            if (selected) {
+                totalScore += scoreMap[selected.value];
+                answeredCount++;
+            }
+        });
+
+        // Update display
+        document.getElementById('esc-total-score').textContent = totalScore;
+
+        // Update category
+        let category = '-';
+        let categoryColor = 'text-gray-600';
+
+        if (answeredCount === 10) {
+            if (totalScore >= 36) {
+                category = 'Strategis';
+                categoryColor = 'text-red-600';
+            } else if (totalScore >= 16) {
+                category = 'Tinggi';
+                categoryColor = 'text-orange-600';
+            } else {
+                category = 'Rendah';
+                categoryColor = 'text-green-600';
+            }
+        }
+
+        const categoryEl = document.getElementById('esc-category');
+        categoryEl.textContent = category;
+        categoryEl.className = `text-2xl font-bold ${categoryColor}`;
+    }
+
+    // Attach listeners to all radio buttons
+    questionIds.forEach(qId => {
+        document.querySelectorAll(`input[name="esc_answers[${qId}]"]`).forEach(radio => {
+            radio.addEventListener('change', calculateEscScore);
+        });
+    });
+
+    // Calculate on page load (for old values)
+    calculateEscScore();
+
+    // Data Classification Score Calculation
+    function calculateDcScore() {
+        const scoreMap = { 'Rendah': 1, 'Sedang': 3, 'Tinggi': 5 };
+
+        const confValue = document.querySelector('input[name="dc_confidentiality"]:checked')?.value;
+        const intValue = document.querySelector('input[name="dc_integrity"]:checked')?.value;
+        const availValue = document.querySelector('input[name="dc_availability"]:checked')?.value;
+
+        const confScore = scoreMap[confValue] || 0;
+        const intScore = scoreMap[intValue] || 0;
+        const availScore = scoreMap[availValue] || 0;
+        const totalScore = confScore + intScore + availScore;
+
+        document.getElementById('dc-score-conf').textContent = confScore;
+        document.getElementById('dc-score-int').textContent = intScore;
+        document.getElementById('dc-score-avail').textContent = availScore;
+        document.getElementById('dc-total-score').textContent = totalScore;
+
+        // Update category based on total score
+        let category = '-';
+        let categoryColor = 'text-gray-600';
+
+        if (confValue && intValue && availValue) {
+            if (totalScore >= 13) {
+                category = 'Tinggi';
+                categoryColor = 'text-red-600';
+            } else if (totalScore >= 9) {
+                category = 'Sedang';
+                categoryColor = 'text-orange-600';
+            } else {
+                category = 'Rendah';
+                categoryColor = 'text-green-600';
+            }
+        }
+
+        const categoryEl = document.getElementById('dc-category');
+        categoryEl.textContent = category;
+        categoryEl.className = `text-lg font-bold ${categoryColor}`;
+    }
+
+    // Attach event listeners to DC radio buttons
+    document.querySelectorAll('.dc-radio').forEach(radio => {
+        radio.addEventListener('change', calculateDcScore);
+    });
+
+    // Calculate DC score on page load
+    calculateDcScore();
+});
+
+// Show Data Classification Info Modal
+function showDcInfo() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="bg-cyan-600 text-white px-6 py-4 flex justify-between items-center sticky top-0">
+                <h3 class="text-xl font-bold">Klasifikasi Dampak Potensial</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Rendah Column -->
+                    <div>
+                        <h4 class="text-lg font-bold text-green-700 mb-3 text-center">Rendah</h4>
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <p class="font-semibold text-blue-700 mb-2">Nasional</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Urusan pemerintahan sehari-hari, pemberian layanan, dan keuangan publik;</li>
+                                    <li>hubungan internasional rutin dan kegiatan diplomatik;</li>
+                                    <li>Keamanan publik, peradilan pidana dan kegiatan penegakan hukum;</li>
+                                    <li>Berefek pada aspek pertahanan, keamanan dan ketahanan;</li>
+                                    <li>Kepentingan finansial, termasuk informasi yang diberikan secara rahasia dan kekayaan intelektual</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-blue-700 mb-2">Organisasi</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Kerusakan terbatas pada operasi dan layanan bisnis rutin organisasi, termasuk: Kepentingan finansial, termasuk informasi yang diberikan secara rahasia dan kekayaan intelektual</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-blue-700 mb-2">Individu</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Informasi pribadi yang harus dilindungi berdasarkan undang-undang perlindungan data atau undang-undang lainnya</li>
+                                    <li>Mengancam kehidupan, kebebasan, atau keselamatan seseorang</li>
+                                    <li>Diskriminasi, perlakuan buruk, penghinaan, atau pelemahan martabat atau keselamatan seseorang yang menggarah pada potensi bahaya yang signifikan atau cedera yang berpotensi mengancam nyawa</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sedang Column -->
+                    <div>
+                        <h4 class="text-lg font-bold text-orange-700 mb-3 text-center">Sedang</h4>
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <p class="font-semibold text-blue-700 mb-2">Nasional</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Keselamatan, keamanan atau kemakmuran Indonesia atau negara sahabat dengan mempengaruhi kepentingan finansial, ekonomi dan keuangan;</li>
+                                    <li>Keamanan danketahanan aset Infrastruktur Nasional yang penting;</li>
+                                    <li>Efektivitas operasional dan keamanan, termasuk kemampuan untukmengginvestigasi atau menuntut kejahatan terorganisir yang serius</li>
+                                    <li>Hubungan denganpemerintah negara-negara sahabat atau protes atau sanksi formal yang mengakibatkan protes atau sanksi formal.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-blue-700 mb-2">Organisasi</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Kerusakan sedang pada operasi dan layanan rutin organisasi, termasuk: penurunan yang parah atau kehilangan kemampuan organisasi.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-blue-700 mb-2">Individu</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Mengancam kehidupan, kebebasan, atau keselamatan seseorang secara langsung</li>
+                                    <li>Diskriminasi, perlakuan buruk,penghinaan, atau pelemahan martabat atau keselamatan seseorang yang menggarah pada potensi bahaya yang signifikan atau cedera yang berpotensi mengancam nyawa.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tinggi Column -->
+                    <div>
+                        <h4 class="text-lg font-bold text-red-700 mb-3 text-center">Tinggi</h4>
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <p class="font-semibold text-blue-700 mb-2">Nasional</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Mengancam secara langsung stabilitas internal Indonesia atau negara sahabat;</li>
+                                    <li>Kerusakan jangka panjang bagi perekonomian Indonesia;</li>
+                                    <li>Runtuh, mati, atau gangguan besar terhadap aset Infrastruktur Nasional Penting yang signifikan;</li>
+                                    <li>Efek pada aspek pertahanan dan keamanan, termasuk kerusakan besar dalam jangka panjang terhadap kemampuan untuk menyelidiki atau menuntut kejahatan terorganisir yang serius;</li>
+                                    <li>Meningkatkan ketegangan internasional;</li>
+                                    <li>Kerusakan yang sangat parah pada hubungan dengan negara-negara sahabat.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-blue-700 mb-2">Organisasi</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Kerusakan fatal terhadap operasi dan layanan rutin organisasi sehingga memberikan efek kepada masyarakat dan pihak luar organisasi.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-blue-700 mb-2">Individu</p>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Menyebabkan langsung hilangnya nyawa secara luas</li>
+                                    <li>Diskriminasi,perlakuan buruk,penghinaan atau perendahan martabat atau keselamatan orang secara wajar dapat diharapkan untuk secara langsung menyebabkan kematian sejumlah besar orang.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-100 px-6 py-4 flex justify-end">
+                <button onclick="this.closest('.fixed').remove()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded">
+                    <i class="fas fa-times mr-2"></i> Tutup
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
 </script>
 @endpush
 @endsection

@@ -144,7 +144,8 @@ class SubdomainRequestAdminController extends Controller
                             'subdomain_request_id' => $item->id,
                             'subdomain' => $item->subdomain_requested,
                             'ip_address' => $item->ip_address,
-                            'nama_instansi' => optional($item->unitKerja)->nama ?? $item->instansi ?? '-',
+                            'instansi_id' => $item->unit_kerja_id,
+                            'nama_sistem' => $item->nama_aplikasi,
                             'nama_aplikasi' => $item->nama_aplikasi,
                             'jenis' => $item->jenis_website ?? 'Website Resmi',
 
@@ -170,6 +171,22 @@ class SubdomainRequestAdminController extends Controller
                             // Cloudflare
                             'cloudflare_record_id' => $item->cloudflare_record_id,
                             'is_proxied' => $item->is_proxied,
+
+                            // Electronic System Category
+                            'esc_answers' => $item->esc_answers,
+                            'esc_total_score' => $item->esc_total_score,
+                            'esc_category' => $item->esc_category,
+                            'esc_document_path' => $item->esc_document_path,
+                            'esc_filled_at' => $item->esc_filled_at,
+
+                            // Data Classification
+                            'dc_data_name' => $item->dc_data_name,
+                            'dc_data_attributes' => $item->dc_data_attributes,
+                            'dc_confidentiality' => $item->dc_confidentiality,
+                            'dc_integrity' => $item->dc_integrity,
+                            'dc_availability' => $item->dc_availability,
+                            'dc_total_score' => $item->dc_total_score,
+                            'dc_filled_at' => $item->dc_filled_at,
 
                             // Status
                             'status' => 'Aktif',

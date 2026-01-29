@@ -19,7 +19,7 @@ class WebMonitorController extends Controller
     {
         $showAll = $request->get('show_all', false); // Default: hide empty subdomains
 
-        $query = WebMonitor::orderBy('id'); // Order by ID ascending (sama dengan kolom No)
+        $query = WebMonitor::with('instansi')->orderBy('id'); // Order by ID ascending (sama dengan kolom No)
 
         // Filter out records without subdomain by default
         if (!$showAll) {
@@ -36,7 +36,7 @@ class WebMonitorController extends Controller
             ->pluck('count', 'jenis')
             ->toArray();
 
-        return view('web-monitor.index', compact('data', 'showAll', 'statistics'));
+        return view('admin.web-monitor.index', compact('data', 'showAll', 'statistics'));
     }
 
     public function show($id)
@@ -48,20 +48,21 @@ class WebMonitorController extends Controller
             'serverLocation'
         ])->findOrFail($id);
 
-        return view('web-monitor.show', compact('webMonitor'));
+        return view('admin.web-monitor.show', compact('webMonitor'));
     }
 
     public function create()
     {
         $jenisOptions = WebMonitor::jenisOptions();
         $unitKerjas = \App\Models\UnitKerja::active()->orderBy('tipe')->orderBy('nama')->get();
-        return view('web-monitor.create', compact('jenisOptions', 'unitKerjas'));
+        return view('admin.web-monitor.create', compact('jenisOptions', 'unitKerjas'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama_instansi' => 'nullable|string|max:255',
+            'instansi_id' => 'nullable|exists:unit_kerjas,id',
+            'nama_sistem' => 'nullable|string|max:255',
             'subdomain' => 'nullable|string|max:255',
             'ip_address' => 'required|ip',
             'is_proxied' => 'boolean',
@@ -75,7 +76,7 @@ class WebMonitorController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-                    'ip_address' => "IP Address {$request->ip_address} sudah digunakan oleh {$existingIp->nama_instansi}. Silakan gunakan IP lain atau cek IP yang tersedia."
+                    'ip_address' => "IP Address {$request->ip_address} sudah digunakan oleh {$existingIp->nama_sistem}. Silakan gunakan IP lain atau cek IP yang tersedia."
                 ]);
         }
 
@@ -121,7 +122,7 @@ class WebMonitorController extends Controller
         $databases = \App\Models\Database::orderBy('name')->get();
         $serverLocations = \App\Models\ServerLocation::orderBy('name')->get();
 
-        return view('web-monitor.edit', compact(
+        return view('admin.web-monitor.edit', compact(
             'webMonitor',
             'jenisOptions',
             'unitKerjas',
@@ -135,7 +136,8 @@ class WebMonitorController extends Controller
     public function update(Request $request, WebMonitor $webMonitor)
     {
         $request->validate([
-            'nama_instansi' => 'nullable|string|max:255',
+            'instansi_id' => 'nullable|exists:unit_kerjas,id',
+            'nama_sistem' => 'nullable|string|max:255',
             'subdomain' => 'nullable|string|max:255',
             'ip_address' => 'required|ip',
             'is_proxied' => 'boolean',
@@ -158,10 +160,23 @@ class WebMonitorController extends Controller
             'server_ownership' => 'nullable|in:Provinsi Kaltara,Pihak Ketiga',
             'server_owner_name' => 'nullable|string|max:200',
             'server_location_id' => 'nullable|exists:server_locations,id',
+            // Electronic System Category
+            'esc_answers' => 'nullable|array',
+            'esc_answers.1_1' => 'nullable|in:A,B,C',
+            'esc_answers.1_2' => 'nullable|in:A,B,C',
+            'esc_answers.1_3' => 'nullable|in:A,B,C',
+            'esc_answers.1_4' => 'nullable|in:A,B,C',
+            'esc_answers.1_5' => 'nullable|in:A,B,C',
+            'esc_answers.1_6' => 'nullable|in:A,B,C',
+            'esc_answers.1_7' => 'nullable|in:A,B,C',
+            'esc_answers.1_8' => 'nullable|in:A,B,C',
+            'esc_answers.1_9' => 'nullable|in:A,B,C',
+            'esc_answers.1_10' => 'nullable|in:A,B,C',
+            'esc_document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:10240',
         ]);
 
         $data = $request->only([
-            'nama_instansi', 'subdomain', 'ip_address', 'jenis', 'keterangan',
+            'instansi_id', 'nama_sistem', 'subdomain', 'ip_address', 'jenis', 'keterangan',
             'nama_aplikasi', 'developer', 'contact_person', 'contact_phone',
             'programming_language_id', 'programming_language_version',
             'framework_id', 'framework_version',
@@ -179,6 +194,64 @@ class WebMonitorController extends Controller
 
             if (!$success) {
                 return back()->with('error', 'Gagal update DNS record di Cloudflare');
+            }
+        }
+
+        // Handle ESC data if provided
+        if ($request->filled('esc_answers')) {
+            // Validate that all 10 questions are answered if any is filled
+            $answeredCount = count(array_filter($request->esc_answers));
+
+            if ($answeredCount > 0 && $answeredCount < 10) {
+                return back()->with('error', 'Kuesioner ESC harus diisi lengkap (10 pertanyaan) atau dikosongkan semua.');
+            }
+
+            if ($answeredCount === 10) {
+                $webMonitor->esc_answers = $request->esc_answers;
+
+                // Handle document upload
+                if ($request->hasFile('esc_document')) {
+                    // Delete old document if exists
+                    if ($webMonitor->esc_document_path && \Storage::disk('public')->exists($webMonitor->esc_document_path)) {
+                        \Storage::disk('public')->delete($webMonitor->esc_document_path);
+                    }
+
+                    $file = $request->file('esc_document');
+                    $filename = 'ESC_WM_' . $webMonitor->id . '_' . time() . '.' . $file->extension();
+                    $path = $file->storeAs('electronic-category-docs', $filename, 'public');
+                    $webMonitor->esc_document_path = $path;
+                }
+
+                $webMonitor->esc_updated_by = auth()->id();
+                $webMonitor->updateEscScoreAndCategory();
+            }
+        }
+
+        // Handle DC (Data Classification) data if provided
+        if ($request->filled('dc_data_name') || $request->filled('dc_confidentiality')) {
+            // Check if all required DC fields are filled
+            $dcFields = [
+                'dc_data_name' => $request->dc_data_name,
+                'dc_data_attributes' => $request->dc_data_attributes,
+                'dc_confidentiality' => $request->dc_confidentiality,
+                'dc_integrity' => $request->dc_integrity,
+                'dc_availability' => $request->dc_availability,
+            ];
+
+            $filledCount = count(array_filter($dcFields));
+
+            if ($filledCount > 0 && $filledCount < 5) {
+                return back()->with('error', 'Klasifikasi Data harus diisi lengkap (semua field) atau dikosongkan semua.');
+            }
+
+            if ($filledCount === 5) {
+                $webMonitor->dc_data_name = $request->dc_data_name;
+                $webMonitor->dc_data_attributes = $request->dc_data_attributes;
+                $webMonitor->dc_confidentiality = $request->dc_confidentiality;
+                $webMonitor->dc_integrity = $request->dc_integrity;
+                $webMonitor->dc_availability = $request->dc_availability;
+                $webMonitor->dc_updated_by = auth()->id();
+                $webMonitor->updateDcScore();
             }
         }
 
@@ -243,7 +316,7 @@ class WebMonitorController extends Controller
                 // Create new website from Cloudflare DNS record
                 $monitor = WebMonitor::create([
                     'cloudflare_record_id' => $record['id'],
-                    'nama_instansi' => $this->guessInstansiName($record['name']),
+                    'nama_sistem' => $this->guessInstansiName($record['name']),
                     'subdomain' => $record['name'],
                     'ip_address' => $record['content'],
                     'is_proxied' => $record['proxied'] ?? false,
@@ -327,7 +400,7 @@ class WebMonitorController extends Controller
         // Get all used IPs from database with WebMonitor ID
         $usedIpsData = WebMonitor::whereNotNull('ip_address')
             ->where('ip_address', 'like', $baseIp . '%')
-            ->get(['id', 'ip_address', 'nama_instansi', 'subdomain', 'keterangan']);
+            ->get(['id', 'ip_address', 'nama_sistem', 'subdomain', 'keterangan']);
 
         // Generate all possible IPs in range
         $allIps = [];
@@ -342,8 +415,8 @@ class WebMonitorController extends Controller
         // Organize used IPs with description and ID
         $usedIpsWithInstances = [];
         foreach ($usedIpsData as $monitor) {
-            // Use keterangan if available, otherwise use nama_instansi, or show subdomain if available
-            $description = $monitor->keterangan ?: $monitor->nama_instansi;
+            // Use keterangan if available, otherwise use nama_sistem, or show subdomain if available
+            $description = $monitor->keterangan ?: $monitor->nama_sistem;
             if ($monitor->subdomain) {
                 $description .= ' (' . $monitor->subdomain . ')';
             }
@@ -370,7 +443,7 @@ class WebMonitorController extends Controller
             'range' => $baseIp . '0/24'
         ];
 
-        return view('web-monitor.check-ip', $data);
+        return view('admin.web-monitor.check-ip', $data);
     }
 
     /**
@@ -389,11 +462,117 @@ class WebMonitorController extends Controller
         if ($existing) {
             return response()->json([
                 'used' => true,
-                'instance' => $existing->nama_instansi,
+                'instance' => $existing->nama_sistem,
                 'subdomain' => $existing->subdomain
             ]);
         }
 
         return response()->json(['used' => false]);
+    }
+
+    /**
+     * Generate TTE PDF for viewing in browser
+     */
+    public function generateTtePdf(WebMonitor $webMonitor)
+    {
+        // Load relationships needed for PDF
+        $webMonitor->load('instansi');
+
+        // ESC Questions
+        $escQuestions = [
+            '1_1' => 'Nilai investasi sistem elektronik yang terpasang',
+            '1_2' => 'Total anggaran operasional tahunan yang dialokasikan untuk pengelolaan Sistem Elektronik',
+            '1_3' => 'Memiliki kewajiban kepatuhan terhadap Peraturan atau Standar tertentu',
+            '1_4' => 'Menggunakan teknik kriptografi khusus untuk keamanan informasi dalam Sistem Elektronik',
+            '1_5' => 'Jumlah pengguna Sistem Elektronik',
+            '1_6' => 'Data pribadi yang dikelola Sistem Elektronik',
+            '1_7' => 'Tingkat klasifikasi/kekritisan Data yang ada dalam Sistem Elektronik, relatif terhadap ancaman upaya penyerangan atau peneroboson keamanan informasi',
+            '1_8' => 'Tingkat kekritisan proses yang ada dalam Sistem Elektronik, relatif terhadap ancaman upaya penyerangan atau peneroboson keamanan informasi',
+            '1_9' => 'Dampak dari kegagalan Sistem Elektronik',
+            '1_10' => 'Potensi kerugian atau dampak negatif dari insiden ditembusnya keamanan informasi Sistem Elektronik (sabotase, terorisme)',
+        ];
+
+        // DC Questions
+        $dcQuestions = [
+            'confidentiality' => 'Tingkat Kerahasiaan Data',
+            'integrity' => 'Tingkat Integritas Data',
+            'availability' => 'Tingkat Ketersediaan Data',
+        ];
+
+        $data = [
+            'webMonitor' => $webMonitor,
+            'escQuestions' => $escQuestions,
+            'dcQuestions' => $dcQuestions,
+            'tanggal' => now()->locale('id')->isoFormat('D MMMM YYYY'),
+        ];
+
+        // Configure Dompdf
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $html = view('admin.web-monitor.tte-pdf', $data)->render();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'TTE-' . $webMonitor->nama_sistem . '.pdf';
+
+        return $dompdf->stream($filename, ['Attachment' => false]);
+    }
+
+    /**
+     * Download TTE PDF
+     */
+    public function downloadTtePdf(WebMonitor $webMonitor)
+    {
+        // Load relationships needed for PDF
+        $webMonitor->load('instansi');
+
+        // ESC Questions
+        $escQuestions = [
+            '1_1' => 'Nilai investasi sistem elektronik yang terpasang',
+            '1_2' => 'Total anggaran operasional tahunan yang dialokasikan untuk pengelolaan Sistem Elektronik',
+            '1_3' => 'Memiliki kewajiban kepatuhan terhadap Peraturan atau Standar tertentu',
+            '1_4' => 'Menggunakan teknik kriptografi khusus untuk keamanan informasi dalam Sistem Elektronik',
+            '1_5' => 'Jumlah pengguna Sistem Elektronik',
+            '1_6' => 'Data pribadi yang dikelola Sistem Elektronik',
+            '1_7' => 'Tingkat klasifikasi/kekritisan Data yang ada dalam Sistem Elektronik, relatif terhadap ancaman upaya penyerangan atau peneroboson keamanan informasi',
+            '1_8' => 'Tingkat kekritisan proses yang ada dalam Sistem Elektronik, relatif terhadap ancaman upaya penyerangan atau peneroboson keamanan informasi',
+            '1_9' => 'Dampak dari kegagalan Sistem Elektronik',
+            '1_10' => 'Potensi kerugian atau dampak negatif dari insiden ditembusnya keamanan informasi Sistem Elektronik (sabotase, terorisme)',
+        ];
+
+        // DC Questions
+        $dcQuestions = [
+            'confidentiality' => 'Tingkat Kerahasiaan Data',
+            'integrity' => 'Tingkat Integritas Data',
+            'availability' => 'Tingkat Ketersediaan Data',
+        ];
+
+        $data = [
+            'webMonitor' => $webMonitor,
+            'escQuestions' => $escQuestions,
+            'dcQuestions' => $dcQuestions,
+            'tanggal' => now()->locale('id')->isoFormat('D MMMM YYYY'),
+        ];
+
+        // Configure Dompdf
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $html = view('admin.web-monitor.tte-pdf', $data)->render();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'TTE-' . $webMonitor->nama_sistem . '.pdf';
+
+        return $dompdf->stream($filename, ['Attachment' => true]);
     }
 }

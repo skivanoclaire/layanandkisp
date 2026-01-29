@@ -113,6 +113,27 @@ class SubdomainRequestController extends Controller
             'needs_ssl'                  => ['nullable', 'boolean'],
             'needs_proxy'                => ['nullable', 'boolean'],
 
+            // Electronic System Category
+            'esc_answers'                => ['required', 'array', 'size:10'],
+            'esc_answers.1_1'            => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_answers.1_2'            => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_answers.1_3'            => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_answers.1_4'            => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_answers.1_5'            => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_answers.1_6'            => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_answers.1_7'            => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_answers.1_8'            => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_answers.1_9'            => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_answers.1_10'           => ['required', Rule::in(['A', 'B', 'C'])],
+            'esc_document'               => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx', 'max:10240'],
+
+            // Data Classification
+            'dc_data_name'               => ['required', 'string', 'max:255'],
+            'dc_data_attributes'         => ['required', 'string'],
+            'dc_confidentiality'         => ['required', Rule::in(['Rendah', 'Sedang', 'Tinggi'])],
+            'dc_integrity'               => ['required', Rule::in(['Rendah', 'Sedang', 'Tinggi'])],
+            'dc_availability'            => ['required', Rule::in(['Rendah', 'Sedang', 'Tinggi'])],
+
             // Consent
             'consent_true'               => ['accepted'],
         ], [
@@ -123,6 +144,16 @@ class SubdomainRequestController extends Controller
             'other_programming_language.required_if' => 'Nama bahasa pemrograman wajib diisi jika memilih "Lainnya".',
             'backup_frequency.required'        => 'Frekuensi Backup wajib dipilih.',
             'backup_retention.required'        => 'Retensi Backup wajib dipilih.',
+            'esc_answers.required'             => 'Kuesioner Kategori Sistem Elektronik wajib diisi.',
+            'esc_answers.*.required'           => 'Semua pertanyaan kuesioner wajib dijawab.',
+            'esc_answers.*.in'                 => 'Jawaban harus berupa A, B, atau C.',
+            'esc_document.mimes'               => 'Dokumen pendukung harus berformat PDF, DOC, DOCX, XLS, atau XLSX.',
+            'esc_document.max'                 => 'Ukuran dokumen pendukung maksimal 10MB.',
+            'dc_data_name.required'            => 'Nama Data wajib diisi.',
+            'dc_data_attributes.required'      => 'Atribut Data wajib diisi.',
+            'dc_confidentiality.required'      => 'Tingkat Kerahasiaan wajib dipilih.',
+            'dc_integrity.required'            => 'Tingkat Integritas wajib dipilih.',
+            'dc_availability.required'         => 'Tingkat Ketersediaan wajib dipilih.',
             'consent_true.accepted'            => 'Anda harus menyetujui pernyataan dan persyaratan layanan.',
         ]);
 
@@ -148,6 +179,26 @@ class SubdomainRequestController extends Controller
         $req->submitted_at = now();
         $req->status       = 'menunggu';
         $req->save();
+
+        // Handle ESC document upload
+        if ($r->hasFile('esc_document')) {
+            $file = $r->file('esc_document');
+            $filename = 'ESC_' . $req->ticket_no . '_' . time() . '.' . $file->extension();
+            $path = $file->storeAs('electronic-category-docs', $filename, 'public');
+            $req->esc_document_path = $path;
+        }
+
+        // Set ESC data and calculate score
+        $req->esc_answers = $data['esc_answers'];
+        $req->updateEscScoreAndCategory();
+
+        // Set DC data and calculate score
+        $req->dc_data_name = $data['dc_data_name'];
+        $req->dc_data_attributes = $data['dc_data_attributes'];
+        $req->dc_confidentiality = $data['dc_confidentiality'];
+        $req->dc_integrity = $data['dc_integrity'];
+        $req->dc_availability = $data['dc_availability'];
+        $req->updateDcScore();
 
         // Create activity log
         SubdomainRequestLog::create([

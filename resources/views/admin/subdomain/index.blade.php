@@ -102,6 +102,7 @@
                         <th class="px-3 py-2 text-left">Subdomain</th>
                         <th class="px-3 py-2 text-left">IP Address</th>
                         <th class="px-3 py-2 text-left">Aplikasi</th>
+                        <th class="px-3 py-2 text-left">Kategori SE</th>
                         <th class="px-3 py-2 text-left">Tech Stack</th>
                         <th class="px-3 py-2 text-left">Status</th>
                         <th class="px-3 py-2 text-left">Diajukan</th>
@@ -124,6 +125,19 @@
                             <td class="px-3 py-2">
                                 <div class="font-medium">{{ $it->nama_aplikasi }}</div>
                                 <div class="text-xs text-gray-500">{{ $it->jenis_website }}</div>
+                            </td>
+                            <td class="px-3 py-2">
+                                @if($it->esc_category)
+                                    <span class="px-2 py-1 rounded text-xs font-semibold whitespace-nowrap
+                                        {{ $it->esc_category === 'Strategis' ? 'bg-red-100 text-red-800' : '' }}
+                                        {{ $it->esc_category === 'Tinggi' ? 'bg-orange-100 text-orange-800' : '' }}
+                                        {{ $it->esc_category === 'Rendah' ? 'bg-green-100 text-green-800' : '' }}">
+                                        {{ $it->esc_category }}
+                                    </span>
+                                    <div class="text-xs text-gray-500 mt-1">{{ $it->esc_total_score }}/50</div>
+                                @else
+                                    <span class="text-gray-400 text-xs">Belum diisi</span>
+                                @endif
                             </td>
                             <td class="px-3 py-2">
                                 <div class="text-xs">

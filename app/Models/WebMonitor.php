@@ -13,7 +13,8 @@ class WebMonitor extends Model
     protected $table = 'web_monitors';
 
     protected $fillable = [
-        'nama_instansi',
+        'instansi_id',
+        'nama_sistem',
         'subdomain',
         'cloudflare_record_id',
         'ip_address',
@@ -42,11 +43,30 @@ class WebMonitor extends Model
         'server_ownership',
         'server_owner_name',
         'server_location_id',
+        // Electronic System Category
+        'esc_answers',
+        'esc_total_score',
+        'esc_category',
+        'esc_document_path',
+        'esc_filled_at',
+        'esc_updated_by',
+        // Data Classification
+        'dc_data_name',
+        'dc_data_attributes',
+        'dc_confidentiality',
+        'dc_integrity',
+        'dc_availability',
+        'dc_total_score',
+        'dc_filled_at',
+        'dc_updated_by',
     ];
 
     protected $casts = [
         'is_proxied' => 'boolean',
         'last_checked_at' => 'datetime',
+        'esc_answers' => 'array',
+        'esc_filled_at' => 'datetime',
+        'dc_filled_at' => 'datetime',
     ];
 
     // Jenis options
@@ -66,6 +86,11 @@ class WebMonitor extends Model
     }
 
     // Relationships
+    public function instansi()
+    {
+        return $this->belongsTo(UnitKerja::class, 'instansi_id');
+    }
+
     public function subdomainRequest()
     {
         return $this->belongsTo(SubdomainRequest::class);
@@ -94,6 +119,16 @@ class WebMonitor extends Model
     public function techHistories()
     {
         return $this->hasMany(SubdomainTechHistory::class);
+    }
+
+    public function escUpdatedBy()
+    {
+        return $this->belongsTo(User::class, 'esc_updated_by');
+    }
+
+    public function dcUpdatedBy()
+    {
+        return $this->belongsTo(User::class, 'dc_updated_by');
     }
 
     // Status attribute accessor
@@ -187,5 +222,101 @@ class WebMonitor extends Model
         }
 
         return $success;
+    }
+
+    // Electronic System Category Methods
+
+    /**
+     * Calculate total score from ESC answers
+     */
+    public function calculateEscScore(): int
+    {
+        if (!$this->esc_answers) {
+            return 0;
+        }
+
+        $score = 0;
+        $scoreMap = ['A' => 5, 'B' => 2, 'C' => 1];
+
+        foreach ($this->esc_answers as $answer) {
+            $score += $scoreMap[$answer] ?? 0;
+        }
+
+        return $score;
+    }
+
+    /**
+     * Get ESC category based on score
+     */
+    public function getEscCategoryFromScore(int $score): string
+    {
+        if ($score >= 36) return 'Strategis';
+        if ($score >= 16) return 'Tinggi';
+        return 'Rendah';
+    }
+
+    /**
+     * Update ESC score and category
+     */
+    public function updateEscScoreAndCategory(): void
+    {
+        $score = $this->calculateEscScore();
+        $this->esc_total_score = $score;
+        $this->esc_category = $this->getEscCategoryFromScore($score);
+        $this->esc_filled_at = now();
+        $this->save();
+    }
+
+    /**
+     * Check if ESC questionnaire is completed
+     */
+    public function hasCompletedEsc(): bool
+    {
+        return !empty($this->esc_answers) && count($this->esc_answers) === 10;
+    }
+
+    /**
+     * Get formatted ESC document name
+     */
+    public function getEscDocumentNameAttribute(): ?string
+    {
+        return $this->esc_document_path ? basename($this->esc_document_path) : null;
+    }
+
+    // Data Classification Methods
+
+    /**
+     * Calculate total score from Data Classification
+     */
+    public function calculateDcScore(): int
+    {
+        $scoreMap = ['Rendah' => 1, 'Sedang' => 3, 'Tinggi' => 5];
+
+        $confidentiality = $scoreMap[$this->dc_confidentiality] ?? 0;
+        $integrity = $scoreMap[$this->dc_integrity] ?? 0;
+        $availability = $scoreMap[$this->dc_availability] ?? 0;
+
+        return $confidentiality + $integrity + $availability;
+    }
+
+    /**
+     * Update DC score
+     */
+    public function updateDcScore(): void
+    {
+        $this->dc_total_score = $this->calculateDcScore();
+        $this->dc_filled_at = now();
+        $this->save();
+    }
+
+    /**
+     * Check if Data Classification is completed
+     */
+    public function hasCompletedDc(): bool
+    {
+        return !empty($this->dc_data_name)
+            && !empty($this->dc_confidentiality)
+            && !empty($this->dc_integrity)
+            && !empty($this->dc_availability);
     }
 }

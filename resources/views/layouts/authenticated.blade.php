@@ -71,7 +71,7 @@
             @endif
 
             {{-- Kelola Permohonan (Accordion untuk Admin) --}}
-            @if (auth()->user()->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE']))
+            @if (auth()->user()->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Permohonan PSE']))
                 @php
                     $atPermohonan = request()->routeIs('admin.permohonan');
                     $atEmail = request()->routeIs('admin.email.*') || request()->routeIs('admin.email-password-reset.*');
@@ -82,7 +82,8 @@
                     $atAdminVpn = request()->routeIs('admin.vpn.*');
                     $atAdminDatacenter = request()->routeIs('admin.datacenter.*');
                     $atAdminTte = request()->routeIs('admin.tte.*');
-                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte;
+                    $atAdminPse = request()->routeIs('admin.pse-update.*');
+                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse;
                 @endphp
                 <div x-data="{ openAdminPermohonan: {{ $openPermohonan ? 'true' : 'false' }} }">
                     <button @click="openAdminPermohonan = !openAdminPermohonan"
@@ -383,6 +384,15 @@
                                 </div>
                             </div>
                         @endif
+
+                        {{-- Manajemen PSE (Admin) --}}
+                        @if (auth()->user()->hasPermission('Kelola Permohonan PSE'))
+                            <a href="{{ route('admin.pse-update.index') }}"
+                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ $atAdminPse ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Manajemen PSE
+                            </a>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -410,6 +420,7 @@
                         'Akses Reset Passphrase TTE',
                         'Akses Pembaruan Sertifikat TTE',
                         'Akses Konsultasi SPBE AI',
+                        'Akses Update Data PSE',
                     ]))
                 @php
                     $atEmailDigital = request()->routeIs('user.email.*');
@@ -425,8 +436,9 @@
                     $atDatacenterUser = request()->routeIs('user.datacenter.*');
                     $atKonsultasiSpbeAi = request()->routeIs('user.konsultasi-spbe-ai.*');
                     $atTteUser = request()->routeIs('user.tte.*');
+                    $atPseUser = request()->routeIs('user.pse-update.*');
                     $openUserPermohonan =
-                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser;
+                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser;
                 @endphp
                 <div x-data="{ openPermohonan: {{ $openUserPermohonan ? 'true' : 'false' }} }">
                     <button @click="openPermohonan = !openPermohonan"
@@ -505,6 +517,15 @@
                                     </a>
                                 </div>
                             </div>
+                        @endif
+
+                        {{-- Pendaftaran Sistem Elektronik (PSE) (User) --}}
+                        @if (auth()->user()->hasPermission('Akses Update Data PSE'))
+                            <a href="{{ route('user.pse-update.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ $atPseUser ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Pendaftaran Sistem Elektronik (PSE)
+                            </a>
                         @endif
 
                         {{-- Rekomendasi Aplikasi V2 Submenu (User) --}}

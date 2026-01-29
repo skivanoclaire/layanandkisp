@@ -237,7 +237,207 @@
                 </div>
             </div>
 
-            {{-- Section 6: Status Monitoring --}}
+            {{-- Section 6: Kategori Sistem Elektronik --}}
+            @if($item->hasCompletedEsc())
+            <div class="bg-white rounded shadow border-l-4 border-purple-500">
+                <div class="bg-purple-600 text-white px-4 py-2 font-semibold flex items-center justify-between">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Kategori Sistem Elektronik
+                    </span>
+                </div>
+                <div class="p-4">
+                    {{-- Category Badge --}}
+                    <div class="mb-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Kategori:</p>
+                                <span class="text-2xl font-bold px-4 py-2 rounded-full inline-block
+                                    {{ $item->esc_category === 'Strategis' ? 'bg-red-100 text-red-800' : '' }}
+                                    {{ $item->esc_category === 'Tinggi' ? 'bg-orange-100 text-orange-800' : '' }}
+                                    {{ $item->esc_category === 'Rendah' ? 'bg-green-100 text-green-800' : '' }}">
+                                    {{ $item->esc_category }}
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-600 mb-1">Total Skor:</p>
+                                <p class="text-3xl font-bold text-purple-700">{{ $item->esc_total_score }}</p>
+                                <p class="text-xs text-gray-500">dari 50 poin</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Questionnaire Answers --}}
+                    <div class="space-y-3">
+                        <h4 class="font-semibold text-sm text-gray-700 mb-3">Hasil Kuesioner:</h4>
+
+                        <div class="grid md:grid-cols-2 gap-3 text-sm">
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.1. Nilai investasi sistem elektronik</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_1'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_1']))
+                                        @if($item->esc_answers['1_1'] == 'A') > Rp.30 Miliar
+                                        @elseif($item->esc_answers['1_1'] == 'B') Rp.3M - Rp.30M
+                                        @else < Rp.3 Miliar
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.2. Anggaran operasional tahunan</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_2'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_2']))
+                                        @if($item->esc_answers['1_2'] == 'A') > Rp.10 Miliar
+                                        @elseif($item->esc_answers['1_2'] == 'B') Rp.1M - Rp.10M
+                                        @else < Rp.1 Miliar
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.3. Kepatuhan terhadap Peraturan</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_3'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_3']))
+                                        @if($item->esc_answers['1_3'] == 'A') Nasional & Internasional
+                                        @elseif($item->esc_answers['1_3'] == 'B') Nasional
+                                        @else Tidak ada
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.4. Teknik kriptografi</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_4'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_4']))
+                                        @if($item->esc_answers['1_4'] == 'A') Disertifikasi Negara
+                                        @elseif($item->esc_answers['1_4'] == 'B') Standar industri
+                                        @else Tidak ada
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.5. Jumlah pengguna</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_5'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_5']))
+                                        @if($item->esc_answers['1_5'] == 'A') > 5.000
+                                        @elseif($item->esc_answers['1_5'] == 'B') 1.000 - 5.000
+                                        @else < 1.000
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.6. Data pribadi yang dikelola</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_6'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_6']))
+                                        @if($item->esc_answers['1_6'] == 'A') Dengan hubungan
+                                        @elseif($item->esc_answers['1_6'] == 'B') Individual
+                                        @else Tidak ada
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.7. Klasifikasi Data</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_7'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_7']))
+                                        @if($item->esc_answers['1_7'] == 'A') Sangat Rahasia
+                                        @elseif($item->esc_answers['1_7'] == 'B') Rahasia/Terbatas
+                                        @else Biasa
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.8. Kekritisan proses</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_8'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_8']))
+                                        @if($item->esc_answers['1_8'] == 'A') Hajat hidup langsung
+                                        @elseif($item->esc_answers['1_8'] == 'B') Tidak langsung
+                                        @else Bisnis only
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.9. Dampak kegagalan</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_9'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_9']))
+                                        @if($item->esc_answers['1_9'] == 'A') Nasional
+                                        @elseif($item->esc_answers['1_9'] == 'B') 1+ provinsi
+                                        @else 1 kabupaten/kota
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 rounded p-3">
+                                <p class="font-medium text-gray-700 mb-1">1.10. Potensi kerugian insiden</p>
+                                <p class="text-gray-900">
+                                    <span class="font-bold">[{{ $item->esc_answers['1_10'] ?? '-' }}]</span>
+                                    @if(isset($item->esc_answers['1_10']))
+                                        @if($item->esc_answers['1_10'] == 'A') Korban jiwa
+                                        @elseif($item->esc_answers['1_10'] == 'B') Finansial
+                                        @else Gangguan operasional
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Supporting Document --}}
+                    @if($item->esc_document_path)
+                    <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                        <p class="text-sm font-semibold text-blue-800 mb-1">Dokumen Pendukung:</p>
+                        <a href="{{ asset('storage/' . $item->esc_document_path) }}"
+                           target="_blank"
+                           class="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            {{ $item->esc_document_name }}
+                        </a>
+                    </div>
+                    @endif
+
+                    <p class="text-xs text-gray-500 mt-3">
+                        Diisi pada: {{ $item->esc_filled_at->format('d M Y H:i') }}
+                    </p>
+                </div>
+            </div>
+            @else
+            <div class="bg-yellow-50 border border-yellow-200 rounded shadow p-4">
+                <p class="text-yellow-800 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    Kuesioner Kategori Sistem Elektronik belum diisi oleh pemohon.
+                </p>
+            </div>
+            @endif
+
+            {{-- Section 7: Status Monitoring --}}
             @if($item->webMonitor)
             <div class="bg-white rounded shadow border-l-4 border-blue-500">
                 <div class="bg-blue-600 text-white px-4 py-2 font-semibold flex items-center justify-between">

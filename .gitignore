@@ -23,6 +23,9 @@ yarn-error.log
 /.zed
 Dockerfile
 .yaml
+.yml
+.dev
+.env.example
 
 # Google Sheets Service Account credentials
 /storage/app/google/

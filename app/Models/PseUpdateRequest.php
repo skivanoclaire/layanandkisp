@@ -7,69 +7,106 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
-class SubdomainRequest extends Model
+class PseUpdateRequest extends Model
 {
     protected $fillable = [
-        'ticket_no', 'user_id', 'nama', 'nip', 'unit_kerja_id', 'email_pemohon', 'no_hp',
-        'subdomain_requested', 'ip_address', 'jenis_website', 'purpose', 'description',
-        'nama_aplikasi', 'latar_belakang', 'manfaat_aplikasi', 'tahun_pembuatan', 'developer', 'contact_person', 'contact_phone',
-        'programming_language_id', 'other_programming_language', 'programming_language_version',
-        'framework_id', 'other_framework', 'framework_version',
-        'database_id', 'database_version', 'frontend_tech',
-        'backup_frequency', 'backup_retention', 'has_bcp', 'has_drp', 'rto', 'maintenance_schedule', 'has_https',
-        'server_ownership', 'server_owner_name', 'server_location_id',
-        'needs_ssl', 'needs_proxy', 'cloudflare_record_id', 'is_proxied',
-        'web_monitor_id', 'status', 'submitted_at', 'processing_at', 'rejected_at', 'completed_at',
-        'admin_notes', 'rejection_reason', 'consent_true',
-        'esc_answers', 'esc_total_score', 'esc_category', 'esc_document_path', 'esc_filled_at',
-        'dc_data_name', 'dc_data_attributes', 'dc_confidentiality', 'dc_integrity', 'dc_availability', 'dc_total_score', 'dc_filled_at'
+        'ticket_no',
+        'user_id',
+        'web_monitor_id',
+        'update_esc',
+        'update_dc',
+        // ESC fields
+        'esc_answers',
+        'esc_total_score',
+        'esc_category',
+        'esc_document_path',
+        // DC fields
+        'dc_data_name',
+        'dc_data_attributes',
+        'dc_confidentiality',
+        'dc_integrity',
+        'dc_availability',
+        'dc_total_score',
+        // Status & workflow
+        'status',
+        'submitted_at',
+        'processing_at',
+        'approved_at',
+        'rejected_at',
+        // Admin tracking
+        'processed_by',
+        'approved_by',
+        'rejected_by',
+        // Revision mechanism
+        'revision_notes',
+        'revision_requested_by',
+        'revision_requested_at',
+        // Admin notes
+        'admin_notes',
+        'rejection_reason',
     ];
 
     protected $casts = [
-        'consent_true' => 'boolean',
-        'has_https' => 'boolean',
-        'needs_ssl' => 'boolean',
-        'needs_proxy' => 'boolean',
-        'is_proxied' => 'boolean',
+        'update_esc' => 'boolean',
+        'update_dc' => 'boolean',
+        'esc_answers' => 'array',
         'submitted_at' => 'datetime',
         'processing_at' => 'datetime',
+        'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
-        'completed_at' => 'datetime',
-        'tahun_pembuatan' => 'integer',
-        'esc_answers' => 'array',
-        'esc_filled_at' => 'datetime',
-        'dc_filled_at' => 'datetime',
+        'revision_requested_at' => 'datetime',
     ];
 
-    // Relations
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
-    public function unitKerja(): BelongsTo { return $this->belongsTo(UnitKerja::class); }
-    public function programmingLanguage(): BelongsTo { return $this->belongsTo(ProgrammingLanguage::class); }
-    public function framework(): BelongsTo { return $this->belongsTo(Framework::class); }
-    public function database(): BelongsTo { return $this->belongsTo(Database::class); }
-    public function serverLocation(): BelongsTo { return $this->belongsTo(ServerLocation::class); }
-    public function webMonitor(): BelongsTo { return $this->belongsTo(WebMonitor::class); }
-    public function logs(): HasMany { return $this->hasMany(SubdomainRequestLog::class); }
+    // Relationships
 
-    // Scopes
-    public function scopeByStatus($query, string $status) { return $query->where('status', $status); }
-    public function scopePending($query) { return $query->where('status', 'menunggu'); }
-    public function scopeCompleted($query) { return $query->where('status', 'selesai'); }
-
-    // Accessor
-    public function getFullDomainAttribute(): string
+    public function user(): BelongsTo
     {
-        return $this->subdomain_requested . '.kaltaraprov.go.id';
+        return $this->belongsTo(User::class);
+    }
+
+    public function webMonitor(): BelongsTo
+    {
+        return $this->belongsTo(WebMonitor::class);
+    }
+
+    public function processedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function rejectedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    public function revisionRequestedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'revision_requested_by');
+    }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(PseUpdateRequestLog::class);
     }
 
     // Ticket Generator
-    public static function nextTicket(string $prefix = 'SUB'): string
+
+    /**
+     * Generate next ticket number with format PSE-YYYYMM-0001
+     */
+    public static function nextTicket(): string
     {
-        $ym = now()->format('ym');
+        $ym = now()->format('Ym');
+        $prefix = 'PSE';
         $base = $prefix . '-' . $ym . '-';
 
-        return DB::transaction(function () use ($base, $prefix) {
-            $last = self::where('ticket_no', 'like', $prefix . '-' . now()->format('ym') . '-%')
+        return DB::transaction(function () use ($base, $prefix, $ym) {
+            $last = self::where('ticket_no', 'like', $prefix . '-' . $ym . '-%')
                 ->orderByDesc('ticket_no')
                 ->lockForUpdate()
                 ->first();
@@ -82,7 +119,7 @@ class SubdomainRequest extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (SubdomainRequest $model) {
+        static::creating(function (PseUpdateRequest $model) {
             if (empty($model->ticket_no)) {
                 $model->ticket_no = self::nextTicket();
             }
@@ -128,7 +165,6 @@ class SubdomainRequest extends Model
         $score = $this->calculateEscScore();
         $this->esc_total_score = $score;
         $this->esc_category = $this->getEscCategoryFromScore($score);
-        $this->esc_filled_at = now();
         $this->save();
     }
 
@@ -170,7 +206,6 @@ class SubdomainRequest extends Model
     public function updateDcScore(): void
     {
         $this->dc_total_score = $this->calculateDcScore();
-        $this->dc_filled_at = now();
         $this->save();
     }
 
@@ -183,5 +218,31 @@ class SubdomainRequest extends Model
             && !empty($this->dc_confidentiality)
             && !empty($this->dc_integrity)
             && !empty($this->dc_availability);
+    }
+
+    // Status Helper Methods
+
+    /**
+     * Check if request can be edited (draft or perlu_revisi)
+     */
+    public function canBeEdited(): bool
+    {
+        return in_array($this->status, ['draft', 'perlu_revisi']);
+    }
+
+    /**
+     * Check if request can be submitted (draft only)
+     */
+    public function canBeSubmitted(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    /**
+     * Check if request needs revision
+     */
+    public function needsRevision(): bool
+    {
+        return $this->status === 'perlu_revisi';
     }
 }

@@ -182,6 +182,10 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
         Route::delete('/{webMonitor}', [WebMonitorController::class, 'destroy'])->name('destroy');
         Route::post('/{webMonitor}/check-status', [WebMonitorController::class, 'checkStatus'])->name('check-status');
 
+        // TTE PDF Routes
+        Route::get('/{webMonitor}/generate-tte-pdf', [WebMonitorController::class, 'generateTtePdf'])->name('generate-tte-pdf');
+        Route::get('/{webMonitor}/download-tte-pdf', [WebMonitorController::class, 'downloadTtePdf'])->name('download-tte-pdf');
+
         // IP Terpakai CRUD (alias untuk web-monitor CRUD dengan konteks IP)
         Route::prefix('ip-terpakai')->name('ip-terpakai.')->group(function () {
             Route::get('/create', [WebMonitorController::class, 'create'])->name('create');
@@ -369,6 +373,22 @@ Route::middleware(['auth','verified.user','permission:user.subdomain.index,user.
         });
     });
 
+// PSE Update Data - User Routes
+Route::middleware(['auth','verified.user','permission:Akses Update Data PSE'])
+    ->prefix('digital/pse-update')
+    ->name('user.pse-update.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\User\PseUpdateController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\User\PseUpdateController::class, 'create'])->name('create');
+        Route::get('/create/subdomain/{webMonitorId}', [\App\Http\Controllers\User\PseUpdateController::class, 'createForm'])->name('create-form');
+        Route::post('/store', [\App\Http\Controllers\User\PseUpdateController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\User\PseUpdateController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\User\PseUpdateController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\User\PseUpdateController::class, 'update'])->name('update');
+        Route::post('/{id}/submit', [\App\Http\Controllers\User\PseUpdateController::class, 'submit'])->name('submit');
+        Route::delete('/{id}', [\App\Http\Controllers\User\PseUpdateController::class, 'destroy'])->name('destroy');
+    });
+
 // Form Permohonan Subdomain level Admin
 Route::middleware(['auth','role:Admin'])->prefix('admin/digital/subdomain')->name('admin.subdomain.')->group(function () {
     Route::get('/',           [\App\Http\Controllers\Admin\SubdomainRequestAdminController::class, 'index'])->name('index');
@@ -399,6 +419,16 @@ Route::middleware(['auth','role:Admin'])->prefix('admin/digital/subdomain')->nam
     Route::post('/{id}/status', [\App\Http\Controllers\Admin\SubdomainRequestAdminController::class, 'updateStatus'])->name('status');
     Route::patch('/{id}/update-ip', [\App\Http\Controllers\Admin\SubdomainRequestAdminController::class, 'updateIpAddress'])->name('update-ip');
 });
+
+// PSE Update Data - Admin Routes
+Route::middleware(['auth','role:Admin','permission:Kelola Permohonan PSE'])
+    ->prefix('admin/digital/pse-update')
+    ->name('admin.pse-update.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PseUpdateAdminController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\PseUpdateAdminController::class, 'show'])->name('show');
+        Route::post('/{id}/update-status', [\App\Http\Controllers\Admin\PseUpdateAdminController::class, 'updateStatus'])->name('update-status');
+    });
 
 // Unified Subdomain Management - Admin Routes
 Route::middleware(['auth','role:Admin'])->prefix('admin/unified-subdomain')->name('admin.unified-subdomain.')->group(function () {
