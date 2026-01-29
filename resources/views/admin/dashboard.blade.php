@@ -145,11 +145,9 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                @if($problematicWebsites->count() > 5)
-                                    <a href="{{ route('admin.unified-subdomain.index', ['status' => 'down']) }}" class="text-xs text-red-600 hover:text-red-700 font-medium mt-2 inline-block">
-                                        Lihat {{ $problematicWebsites->count() - 5 }} lainnya →
-                                    </a>
-                                @endif
+                                <a href="{{ route('admin.unified-subdomain.index', ['source' => 'all', 'status_monitoring' => 'active']) }}" class="text-xs text-red-600 hover:text-red-700 font-medium mt-2 inline-block">
+                                    Lihat Semua →
+                                </a>
                             </div>
                         </div>
                     </div>
