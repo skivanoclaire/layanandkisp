@@ -30,3 +30,7 @@ Dockerfile
 # Google Sheets Service Account credentials
 /storage/app/google/
 nul
+
+# local docker dev
+Dockerfile.dev
+docker-compose.yml
