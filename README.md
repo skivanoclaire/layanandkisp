@@ -81,6 +81,9 @@ Lihat file `LICENSE` untuk detail.
 - Backup
 - Cloud Storage
 
+### 📃 PSE
+- Pengisian Kategori Sistem Elektronik dan Klasifikasi Data
+
 ## Fitur Admin
 
 ### Dashboard
@@ -91,7 +94,7 @@ Lihat file `LICENSE` untuk detail.
 - Pelaporan per layanan
 
 ### Master Data
-- Master Data Subdomain
+- Master Data Subdomain dan PSE
 - Master Data Instansi
 - Master Data Email
 - Master Data IP Public
@@ -269,5 +272,5 @@ Lihat file `LICENSE` untuk detail.
 ---
 
 <p align="center">
-  <i>Melayani dengan Teknologi untuk Kalimantan Utara yang Lebih Baik</i>
+  <i>Membangun Teknologi untuk Kalimantan Utara yang Lebih Baik</i>
 </p>

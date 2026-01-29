@@ -43,3 +43,5 @@ docker-compose.yml
 *.zip
 
 MYSQL_CONFIG_FOR_LARGE_IMPORT.md
+
+setup-production-db.sh
