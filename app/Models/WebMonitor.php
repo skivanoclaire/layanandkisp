@@ -131,6 +131,11 @@ class WebMonitor extends Model
         return $this->belongsTo(User::class, 'dc_updated_by');
     }
 
+    public function surveiKepuasan()
+    {
+        return $this->hasMany(SurveiKepuasanLayanan::class);
+    }
+
     // Status attribute accessor
     public function getIsActiveAttribute(): bool
     {
