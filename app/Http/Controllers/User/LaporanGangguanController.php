@@ -22,7 +22,7 @@ class LaporanGangguanController extends Controller
 
     public function create()
     {
-        $unitKerjaList = UnitKerja::orderBy('nama')->get();
+        $unitKerjaList = UnitKerja::forLayananDigital()->orderBy('nama')->get();
         return view('user.internet.laporan-gangguan.create', compact('unitKerjaList'));
     }
 

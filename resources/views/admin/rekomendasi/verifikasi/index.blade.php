@@ -143,9 +143,6 @@
                                     Verifikasi
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Dokumen
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Aksi
                                 </th>
                             </tr>
@@ -202,17 +199,20 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="text-xs text-gray-600">
-                                            {{ $proposal->dokumenUsulan->count() }} / 3 dokumen
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
                                         <div class="flex space-x-2">
                                             <a href="{{ route('admin.rekomendasi.verifikasi.show', $proposal->id) }}"
                                                 class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                                 Detail
                                             </a>
                                             @if($proposal->verifikasi && $proposal->verifikasi->status === 'menunggu')
+                                                <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.start', $proposal->id) }}" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                                        Mulai Verifikasi
+                                                    </button>
+                                                </form>
+                                            @elseif(!$proposal->verifikasi && $proposal->status === 'diajukan')
+                                                <!-- Fallback for proposals without verifikasi record -->
                                                 <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.start', $proposal->id) }}" class="inline">
                                                     @csrf
                                                     <button type="submit" class="text-green-600 hover:text-green-800 text-sm font-medium">

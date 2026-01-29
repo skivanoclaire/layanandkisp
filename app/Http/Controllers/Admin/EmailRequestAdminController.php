@@ -77,7 +77,9 @@ class EmailRequestAdminController extends Controller
                     'email' => $fullEmail
                 ]);
 
-                $cpanelResult = $whmApi->createEmailAccount($fullEmail, $plainPassword, 0);
+                // Set email quota to 100MB
+                // cPanel API expects MB, database stores bytes (100 MB = 104,857,600 bytes)
+                $cpanelResult = $whmApi->createEmailAccount($fullEmail, $plainPassword, 100);
 
                 if ($cpanelResult['success']) {
                     Log::info('Email account created successfully', [
@@ -103,9 +105,9 @@ class EmailRequestAdminController extends Controller
                                 'user' => $item->username,
                                 'nip' => $item->nip,
                                 'disk_used' => 0,
-                                'disk_quota' => 0, // Unlimited quota
+                                'disk_quota' => 104857600, // 100 MB quota (in bytes)
                                 'diskused_readable' => '0 MB',
-                                'diskquota_readable' => 'Unlimited',
+                                'diskquota_readable' => '100 MB',
                                 'suspended' => 0,
                                 'last_synced_at' => now(),
                             ]

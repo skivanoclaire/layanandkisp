@@ -157,14 +157,14 @@ class RekomendasiDocumentService
 
     /**
      * Check if all required documents are uploaded.
+     * V2 Note: Document upload is no longer required as all data is now filled digitally.
+     * This function now returns true to allow submission without PDF documents.
      */
     public function hasAllRequiredDocuments(int $rekomendasiId): bool
     {
-        $documents = $this->getDocuments($rekomendasiId);
-
-        return $documents['analisis_kebutuhan'] !== null
-            && $documents['perencanaan'] !== null
-            && $documents['manajemen_risiko'] !== null;
+        // V2: All information is now filled through digital forms
+        // No PDF documents are required for submission
+        return true;
     }
 
     /**

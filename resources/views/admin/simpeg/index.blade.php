@@ -165,22 +165,64 @@
                 </ul>
 
                 {{-- Form untuk simpan manual ke user --}}
-                @if ($isValid && !empty($result['user']))
+                @if ($isValid)
                     <div class="mt-6 pt-4 border-t border-gray-300">
                         <h3 class="text-md font-semibold mb-3">Simpan Data ke User</h3>
-                        <p class="text-sm text-gray-600 mb-3">
-                            Pilih data yang ingin disimpan ke akun: <strong>{{ $result['user']->name }}</strong> ({{ $result['user']->email }})
-                        </p>
+
+                        @if(!empty($result['user']))
+                            <p class="text-sm text-gray-600 mb-3">
+                                User ditemukan berdasarkan NIK: <strong>{{ $result['user']->name }}</strong> ({{ $result['user']->email }})
+                            </p>
+                        @else
+                            <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                <p class="text-sm text-yellow-800">
+                                    ⚠ User dengan NIK ini belum terdaftar. Silakan pilih user yang akan diupdate dengan data SIMPEG ini.
+                                </p>
+                            </div>
+                        @endif
 
                         <form method="POST" action="{{ route('admin.simpeg.saveToUser') }}">
                             @csrf
-                            <input type="hidden" name="user_id" value="{{ $result['user']->id }}">
+
+                            @if(empty($result['user']))
+                                {{-- Dropdown untuk pilih user jika tidak ditemukan berdasarkan NIK --}}
+                                <div class="mb-4">
+                                    <label for="user_id_select" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Pilih User <span class="text-red-600">*</span>
+                                    </label>
+                                    <select name="user_id" id="user_id_select" required
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">-- Pilih User --</option>
+                                        @foreach(\App\Models\User::orderBy('name')->get() as $u)
+                                            <option value="{{ $u->id }}">
+                                                {{ $u->name }} ({{ $u->email }})
+                                                @if(!empty($u->nip)) - NIP: {{ $u->nip }} @endif
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @else
+                                <input type="hidden" name="user_id" value="{{ $result['user']->id }}">
+                            @endif
+
                             <input type="hidden" name="nik" value="{{ $input_nik ?? '' }}">
                             @if(!empty($result['instansi']))
                                 <input type="hidden" name="instansi_simpeg" value="{{ $result['instansi'] }}">
                             @endif
 
                             <div class="space-y-2 mb-4">
+                                {{-- NIK --}}
+                                <label class="flex items-start gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                    <input type="checkbox" name="fields[]" value="nik" class="mt-1" checked>
+                                    <div class="flex-1">
+                                        <span class="font-medium">NIK:</span>
+                                        <span class="text-gray-700">{{ $input_nik ?? '' }}</span>
+                                        @if(!empty($result['user']) && !empty($result['user']->nik))
+                                            <span class="text-xs text-gray-500 block">(Saat ini: {{ $result['user']->nik }})</span>
+                                        @endif
+                                    </div>
+                                </label>
+
                                 @if(!empty($result['nip']))
                                 <label class="flex items-start gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
                                     <input type="checkbox" name="fields[]" value="nip" class="mt-1">
@@ -202,7 +244,9 @@
                                         <span class="font-medium">Nama:</span>
                                         <span class="text-gray-700">{{ $result['nama'] }}</span>
                                         <input type="hidden" name="nama" value="{{ $result['nama'] }}">
-                                        <span class="text-xs text-gray-500 block">(Saat ini: {{ $result['user']->name }})</span>
+                                        @if(!empty($result['user']->name))
+                                            <span class="text-xs text-gray-500 block">(Saat ini: {{ $result['user']->name }})</span>
+                                        @endif
                                     </div>
                                 </label>
                                 @endif
@@ -228,7 +272,9 @@
                                         <span class="font-medium">Email:</span>
                                         <span class="text-gray-700">{{ $result['email'] }}</span>
                                         <input type="hidden" name="email_simpeg" value="{{ $result['email'] }}">
-                                        <span class="text-xs text-gray-500 block">(Saat ini: {{ $result['user']->email }})</span>
+                                        @if(!empty($result['user']->email))
+                                            <span class="text-xs text-gray-500 block">(Saat ini: {{ $result['user']->email }})</span>
+                                        @endif
                                     </div>
                                 </label>
                                 @endif

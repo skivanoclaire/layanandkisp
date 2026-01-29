@@ -76,14 +76,16 @@
                     $atPermohonan = request()->routeIs('admin.permohonan');
                     $atEmail = request()->routeIs('admin.email.*') || request()->routeIs('admin.email-password-reset.*');
                     $atSubdomain = request()->routeIs('admin.subdomain.*');
-                    $atRekomendasiV2 = request()->routeIs('admin.rekomendasi.verifikasi.*') || request()->routeIs('admin.rekomendasi.surat.*') || request()->routeIs('admin.rekomendasi.monitoring.*');
+                    $atRekomendasiV2 = request()->routeIs('admin.rekomendasi.verifikasi.*') || request()->routeIs('admin.rekomendasi.surat.*') || request()->routeIs('admin.rekomendasi.monitoring.*') || request()->routeIs('admin.fase-pengembangan.*');
                     $atAdminVidcon = request()->routeIs('admin.vidcon.*');
                     $atAdminInternet = request()->routeIs('admin.internet.*');
                     $atAdminVpn = request()->routeIs('admin.vpn.*');
                     $atAdminDatacenter = request()->routeIs('admin.datacenter.*');
                     $atAdminTte = request()->routeIs('admin.tte.*');
                     $atAdminPse = request()->routeIs('admin.pse-update.*');
-                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse;
+                    $atAdminSurveiKepuasan = request()->routeIs('admin.survei-kepuasan.*');
+                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan;
+                   
                 @endphp
                 <div x-data="{ openAdminPermohonan: {{ $openPermohonan ? 'true' : 'false' }} }">
                     <button @click="openAdminPermohonan = !openAdminPermohonan"
@@ -176,12 +178,13 @@
                         @endif
 
                         {{-- Rekomendasi Aplikasi V2 Submenu (Admin) --}}
-                        @if (auth()->user()->hasAnyPermission(['admin.rekomendasi.verifikasi.index', 'admin.rekomendasi.surat.generate', 'admin.rekomendasi.monitoring.index']))
+                        @if (auth()->user()->hasAnyPermission(['admin.rekomendasi.verifikasi.index', 'admin.rekomendasi.surat.generate', 'admin.rekomendasi.monitoring.index', 'admin.fase-pengembangan.view']))
                             @php
                                 $atRekomendasiVerifikasi = request()->routeIs('admin.rekomendasi.verifikasi.*');
                                 $atRekomendasiSurat = request()->routeIs('admin.rekomendasi.surat.*');
                                 $atRekomendasiMonitoring = request()->routeIs('admin.rekomendasi.monitoring.*');
-                                $openRekomendasiV2 = $atRekomendasiVerifikasi || $atRekomendasiSurat || $atRekomendasiMonitoring;
+                                $atAdminFasePengembangan = request()->routeIs('admin.fase-pengembangan.*');
+                                $openRekomendasiV2 = $atRekomendasiVerifikasi || $atRekomendasiSurat || $atRekomendasiMonitoring || $atAdminFasePengembangan;
                             @endphp
                             <div x-data="{ openRekomendasiV2: {{ $openRekomendasiV2 ? 'true' : 'false' }} }">
                                 <button @click="openRekomendasiV2 = !openRekomendasiV2"
@@ -200,13 +203,21 @@
                                             Verifikasi Usulan
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('admin.rekomendasi.surat.generate'))
+                                    @if (auth()->user()->hasPermission('admin.fase-pengembangan.view'))
+                                        <a href="{{ route('admin.fase-pengembangan.index') }}"
+                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                           {{ request()->routeIs('admin.fase-pengembangan.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Fase Pengembangan
+                                        </a>
+                                    @endif
+                                    {{-- Menu Surat Rekomendasi sudah tidak diperlukan karena dipindahkan ke Verifikasi --}}
+                                    {{-- @if (auth()->user()->hasPermission('admin.rekomendasi.surat.generate'))
                                         <a href="{{ route('admin.rekomendasi.surat.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atRekomendasiSurat ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Surat Rekomendasi
                                         </a>
-                                    @endif
+                                    @endif --}}
                                     @if (auth()->user()->hasPermission('admin.rekomendasi.monitoring.index'))
                                         <a href="{{ route('admin.rekomendasi.monitoring.dashboard') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
@@ -225,9 +236,43 @@
                           {{ request()->routeIs('admin.vidcon.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Video Conference
                             </a>
+                        @endif
 
-                            {{-- Internet Submenu (Admin) --}}
+                        {{-- Survei Kepuasan Layanan Admin --}}
+                        @if (auth()->user()->hasPermission('Kelola Survei Kepuasan'))
                             @php
+                                $atAdminSurveiIndex = request()->routeIs('admin.survei-kepuasan.index') || request()->routeIs('admin.survei-kepuasan.show');
+                                $atAdminSurveiStats = request()->routeIs('admin.survei-kepuasan.statistics');
+                                $openAdminSurvei = $atAdminSurveiKepuasan;
+                            @endphp
+                            <div x-data="{ openAdminSurvei: {{ $openAdminSurvei ? 'true' : 'false' }} }">
+                                <button @click="openAdminSurvei = !openAdminSurvei"
+                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminSurvei ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Survei Kepuasan Layanan</span>
+                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminSurvei }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div x-show="openAdminSurvei" class="ml-4 mt-1 space-y-1">
+                                    <a href="{{ route('admin.survei-kepuasan.index') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                      {{ $atAdminSurveiIndex ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Monitoring Survei
+                                    </a>
+                                    <a href="{{ route('admin.survei-kepuasan.statistics') }}"
+                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                      {{ $atAdminSurveiStats ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Statistik & Analitik
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Internet Submenu (Admin) --}}
+                        @php
                                 $atAdminLaporanGangguan = request()->routeIs('admin.internet.laporan-gangguan.*');
                                 $atAdminStarlink = request()->routeIs('admin.internet.starlink.*');
                                 $openAdminInternet = $atAdminLaporanGangguan || $atAdminStarlink;
@@ -395,7 +440,6 @@
                         @endif
                     </div>
                 </div>
-            @endif
 
 
 
@@ -405,6 +449,8 @@
                         'Akses Reset Password Email',
                         'Akses Permohonan Subdomain',
                         'Akses Rekomendasi Aplikasi',
+                        'user.rekomendasi.usulan.create',
+                        'user.fase-pengembangan',
                         'Akses Video Conference',
                         'Akses Lapor Gangguan Internet',
                         'Akses Starlink Jelajah',
@@ -421,15 +467,15 @@
                         'Akses Pembaruan Sertifikat TTE',
                         'Akses Konsultasi SPBE AI',
                         'Akses Update Data PSE',
+                        'Akses Survei Kepuasan',
                     ]))
                 @php
                     $atEmailDigital = request()->routeIs('user.email.*');
                     $atEmailPasswordReset = request()->routeIs('user.email-password-reset.*');
                     $atSubdomainDigital = request()->routeIs('user.subdomain.*');
                     $atRekomendasiUsulan = request()->routeIs('user.rekomendasi.usulan.*');
-                    $atRekomendasiFase = request()->routeIs('user.rekomendasi.fase.*');
-                    $atRekomendasiEvaluasi = request()->routeIs('user.rekomendasi.evaluasi.*');
-                    $atRekomendasiUser = $atRekomendasiUsulan || $atRekomendasiFase || $atRekomendasiEvaluasi;
+                    $atFasePengembangan = request()->routeIs('fase-pengembangan.*');
+                    $atRekomendasiUser = $atRekomendasiUsulan || $atFasePengembangan;
                     $atVidconUser = request()->routeIs('user.vidcon.*');
                     $atInternetUser = request()->routeIs('user.internet.*');
                     $atVpnUser = request()->routeIs('user.vpn.*');
@@ -437,8 +483,11 @@
                     $atKonsultasiSpbeAi = request()->routeIs('user.konsultasi-spbe-ai.*');
                     $atTteUser = request()->routeIs('user.tte.*');
                     $atPseUser = request()->routeIs('user.pse-update.*');
+                    $atSurveiKepuasan = request()->routeIs('survei-kepuasan.*');
                     $openUserPermohonan =
-                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser;
+                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan;
+                    
+    
                 @endphp
                 <div x-data="{ openPermohonan: {{ $openUserPermohonan ? 'true' : 'false' }} }">
                     <button @click="openPermohonan = !openPermohonan"
@@ -529,9 +578,9 @@
                         @endif
 
                         {{-- Rekomendasi Aplikasi V2 Submenu (User) --}}
-                        @if (auth()->user()->hasAnyPermission(['user.rekomendasi.usulan.create', 'user.rekomendasi.fase.update', 'user.rekomendasi.evaluasi.create']))
+                        @if (auth()->user()->hasAnyPermission(['user.rekomendasi.usulan.create', 'user.fase-pengembangan']))
                             @php
-                                $openRekomendasiUserV2 = $atRekomendasiUsulan || $atRekomendasiFase || $atRekomendasiEvaluasi;
+                                $openRekomendasiUserV2 = $atRekomendasiUsulan || $atFasePengembangan;
                             @endphp
                             <div x-data="{ openRekomendasiUserV2: {{ $openRekomendasiUserV2 ? 'true' : 'false' }} }">
                                 <button @click="openRekomendasiUserV2 = !openRekomendasiUserV2"
@@ -550,18 +599,11 @@
                                             Usulan Pertimbangan
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('user.rekomendasi.fase.update'))
-                                        <a href="#"
+                                    @if (auth()->user()->hasPermission('user.fase-pengembangan'))
+                                        <a href="{{ route('fase-pengembangan.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
-                                           {{ $atRekomendasiFase ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                           {{ request()->routeIs('fase-pengembangan.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Fase Pengembangan
-                                        </a>
-                                    @endif
-                                    @if (auth()->user()->hasPermission('user.rekomendasi.evaluasi.create'))
-                                        <a href="#"
-                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
-                                           {{ $atRekomendasiEvaluasi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Evaluasi Aplikasi
                                         </a>
                                     @endif
                                 </div>
@@ -574,6 +616,15 @@
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atKonsultasiSpbeAi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Konsultasi SPBE Berbasis AI
+                            </a>
+                        @endif
+
+                        {{-- Survei Kepuasan Layanan --}}
+                        @if (auth()->user()->hasPermission('Akses Survei Kepuasan'))
+                            <a href="{{ route('survei-kepuasan.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ $atSurveiKepuasan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Survei Kepuasan Layanan
                             </a>
                         @endif
 

@@ -33,7 +33,7 @@ class TtePassphraseResetController extends Controller
         }
 
         // Get active unit kerjas for dropdown
-        $unitKerjas = \App\Models\UnitKerja::where('is_active', true)->orderBy('nama')->get();
+        $unitKerjas = \App\Models\UnitKerja::forLayananDigital()->where('is_active', true)->orderBy('nama')->get();
 
         return view('user.tte.passphrase-reset.create', compact('user', 'emailAccount', 'unitKerjas'));
     }

@@ -24,13 +24,19 @@ yarn-error.log
 Dockerfile
 .yaml
 .yml
+<<<<<<< HEAD
 .dev
 .env.example
+=======
+.claude
+.devcontainer
+>>>>>>> origin/rekomendasiv2
 
 # Google Sheets Service Account credentials
 /storage/app/google/
 nul
 
+<<<<<<< HEAD
 # local docker dev
 Dockerfile.dev
 docker-compose.yml
@@ -45,3 +51,5 @@ docker-compose.yml
 MYSQL_CONFIG_FOR_LARGE_IMPORT.md
 
 setup-production-db.sh
+=======
+>>>>>>> origin/rekomendasiv2

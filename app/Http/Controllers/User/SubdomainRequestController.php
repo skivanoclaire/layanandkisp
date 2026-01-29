@@ -37,7 +37,7 @@ class SubdomainRequestController extends Controller
         }
 
         // Get master data for dropdowns
-        $unitKerjaList = UnitKerja::active()->orderBy('nama')->get();
+        $unitKerjaList = UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
         $programmingLanguages = ProgrammingLanguage::orderBy('name')->get();
         $databases = Database::orderBy('name')->get();
         $serverLocations = ServerLocation::orderBy('name')->get();
@@ -227,7 +227,7 @@ class SubdomainRequestController extends Controller
         }
 
         // Get master data for dropdowns
-        $unitKerjaList = UnitKerja::active()->orderBy('nama')->get();
+        $unitKerjaList = UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
         $programmingLanguages = ProgrammingLanguage::orderBy('name')->get();
         $frameworks = Framework::orderBy('name')->get();
         $databases = Database::orderBy('name')->get();

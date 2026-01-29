@@ -13,6 +13,7 @@ class RekomendasiStatusKementerian extends Model
     protected $table = 'rekomendasi_status_kementerian';
 
     protected $fillable = [
+        'rekomendasi_aplikasi_form_id',
         'rekomendasi_surat_id',
         'status',
         'file_respons_path',
@@ -32,7 +33,15 @@ class RekomendasiStatusKementerian extends Model
     ];
 
     /**
-     * Get the surat that owns this status.
+     * Get the rekomendasi aplikasi form.
+     */
+    public function rekomendasiAplikasiForm(): BelongsTo
+    {
+        return $this->belongsTo(RekomendasiAplikasiForm::class, 'rekomendasi_aplikasi_form_id');
+    }
+
+    /**
+     * Get the surat that owns this status (legacy relation).
      */
     public function surat(): BelongsTo
     {
