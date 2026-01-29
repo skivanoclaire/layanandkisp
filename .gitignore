@@ -41,3 +41,5 @@ docker-compose.yml
 
 # never commit archives
 *.zip
+
+MYSQL_CONFIG_FOR_LARGE_IMPORT.md
