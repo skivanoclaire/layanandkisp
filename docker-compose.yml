@@ -1,0 +1,65 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:80"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: laravel
+      DB_USERNAME: laravel
+      DB_PASSWORD: laravelpass
+      TZ: Asia/Makassar
+    volumes:
+      - ./:/var/www/html:delegated
+      - vendor:/var/www/html/vendor
+      - node_modules:/var/www/html/node_modules
+      - ./storage:/var/www/html/storage
+    depends_on:
+      - db
+    restart: unless-stopped
+    command: >
+      bash -lc "
+      mkdir -p storage/app/public storage/framework/{views,cache,sessions} bootstrap/cache &&
+      rm -f public/storage &&
+      php artisan storage:link &&
+      chown -R www-data:www-data storage bootstrap/cache &&
+      chmod -R 775 storage bootstrap/cache &&
+      apache2-foreground
+      "
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravelpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: rootpass
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  dbdata:
+  vendor:
+  node_modules:
