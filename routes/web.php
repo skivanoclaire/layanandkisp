@@ -201,6 +201,12 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/check-ip-publik', [WebMonitorController::class, 'checkIpPublik'])->name('check-ip-publik');
         Route::get('/check-ip-availability', [WebMonitorController::class, 'checkIpAvailability'])->name('check-ip-availability');
 
+        // Traffic Report routes
+        Route::get('/traffic-report', [WebMonitorController::class, 'trafficReport'])->name('traffic-report');
+        Route::post('/traffic-report/sync', [WebMonitorController::class, 'syncTrafficData'])->name('traffic-report.sync');
+        Route::get('/traffic-report/export-pdf', [WebMonitorController::class, 'exportTrafficPdf'])->name('traffic-report.export-pdf');
+        Route::get('/traffic-report/security-details', [WebMonitorController::class, 'securityDetails'])->name('traffic-report.security-details');
+
         // PARAMETERIZED ROUTES LAST (with {webMonitor} parameter)
         Route::get('/{webMonitor}', [WebMonitorController::class, 'show'])->name('show');
         Route::get('/{webMonitor}/edit', [WebMonitorController::class, 'edit'])->name('edit');

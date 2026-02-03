@@ -136,6 +136,53 @@
                     </div>
 
                     <div>
+                        <label for="tahun_pembuatan" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Tahun Pembuatan
+                        </label>
+                        <input type="number"
+                               id="tahun_pembuatan"
+                               name="tahun_pembuatan"
+                               value="{{ old('tahun_pembuatan', $webMonitor->tahun_pembuatan) }}"
+                               min="2000"
+                               max="{{ date('Y') + 1 }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Contoh: 2024">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Deskripsi Website/Aplikasi
+                        </label>
+                        <textarea id="description"
+                                  name="description"
+                                  rows="5"
+                                  class="ckeditor-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Deskripsi singkat tentang website/aplikasi">{{ old('description', $webMonitor->description) }}</textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label for="latar_belakang" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Latar Belakang Pembuatan
+                        </label>
+                        <textarea id="latar_belakang"
+                                  name="latar_belakang"
+                                  rows="5"
+                                  class="ckeditor-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Jelaskan alasan dan latar belakang pembuatan aplikasi ini">{{ old('latar_belakang', $webMonitor->latar_belakang) }}</textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label for="manfaat_aplikasi" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Manfaat Aplikasi
+                        </label>
+                        <textarea id="manfaat_aplikasi"
+                                  name="manfaat_aplikasi"
+                                  rows="5"
+                                  class="ckeditor-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Jelaskan manfaat dan kegunaan aplikasi ini">{{ old('manfaat_aplikasi', $webMonitor->manfaat_aplikasi) }}</textarea>
+                    </div>
+
+                    <div>
                         <label for="developer" class="block text-sm font-semibold text-gray-700 mb-2">
                             Developer / Pengembang
                         </label>
@@ -1005,5 +1052,47 @@ function showDcInfoModal() {
     `;
     document.body.appendChild(modal);
 }
+</script>
+
+<!-- CKEditor 5 CDN -->
+<script src="https://cdn.ckeditor.com/ckeditor5/40.2.0/classic/ckeditor.js"></script>
+
+<script>
+// CKEditor Initialization
+document.addEventListener('DOMContentLoaded', function() {
+    const ckeditorFields = document.querySelectorAll('.ckeditor-field');
+    const editorInstances = {};
+
+    ckeditorFields.forEach(function(textarea) {
+        ClassicEditor
+            .create(textarea, {
+                toolbar: {
+                    items: [
+                        'heading', '|',
+                        'bold', 'italic', 'underline', '|',
+                        'bulletedList', 'numberedList', '|',
+                        'outdent', 'indent', '|',
+                        'link', '|',
+                        'undo', 'redo'
+                    ]
+                },
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                        { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                        { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+                    ]
+                }
+            })
+            .then(editor => {
+                editorInstances[textarea.id] = editor;
+                console.log('CKEditor initialized for:', textarea.id);
+            })
+            .catch(error => {
+                console.error('Error initializing CKEditor for', textarea.id, error);
+            });
+    });
+});
 </script>
 @endpush

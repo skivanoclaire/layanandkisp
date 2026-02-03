@@ -47,6 +47,7 @@ return [
 
     'cloudflare' => [
         'api_token' => env('CLOUDFLARE_API_TOKEN'),
+        'analytics_token' => env('CLOUDFLARE_ANALYTICS_TOKEN'),
         'zone_id' => env('CLOUDFLARE_ZONE_ID'),
         'zone_name' => env('CLOUDFLARE_ZONE_NAME', 'kaltaraprov.go.id'),
     ],

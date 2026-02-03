@@ -28,6 +28,10 @@ class WebMonitor extends Model
         'subdomain_request_id',
         // Informasi Aplikasi
         'nama_aplikasi',
+        'description',
+        'latar_belakang',
+        'manfaat_aplikasi',
+        'tahun_pembuatan',
         'developer',
         'contact_person',
         'contact_phone',

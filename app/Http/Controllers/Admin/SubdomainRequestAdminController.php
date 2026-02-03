@@ -167,6 +167,10 @@ class SubdomainRequestAdminController extends Controller
                             'developer' => $item->developer,
                             'contact_person' => $item->contact_person,
                             'contact_phone' => $item->contact_phone,
+                            'description' => $item->description,
+                            'latar_belakang' => $item->latar_belakang,
+                            'manfaat_aplikasi' => $item->manfaat_aplikasi,
+                            'tahun_pembuatan' => $item->tahun_pembuatan,
 
                             // Cloudflare
                             'cloudflare_record_id' => $item->cloudflare_record_id,

@@ -145,6 +145,10 @@ class WebMonitorController extends Controller
             'keterangan' => 'nullable|string',
             // Informasi Aplikasi
             'nama_aplikasi' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'latar_belakang' => 'nullable|string',
+            'manfaat_aplikasi' => 'nullable|string',
+            'tahun_pembuatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 1),
             'developer' => 'nullable|string|max:255',
             'contact_person' => 'nullable|string|max:255',
             'contact_phone' => 'nullable|string|max:50',
@@ -177,7 +181,8 @@ class WebMonitorController extends Controller
 
         $data = $request->only([
             'instansi_id', 'nama_sistem', 'subdomain', 'ip_address', 'jenis', 'keterangan',
-            'nama_aplikasi', 'developer', 'contact_person', 'contact_phone',
+            'nama_aplikasi', 'description', 'latar_belakang', 'manfaat_aplikasi', 'tahun_pembuatan',
+            'developer', 'contact_person', 'contact_phone',
             'programming_language_id', 'programming_language_version',
             'framework_id', 'framework_version',
             'database_id', 'database_version', 'frontend_tech',
@@ -574,5 +579,491 @@ class WebMonitorController extends Controller
         $filename = 'TTE-' . $webMonitor->nama_sistem . '.pdf';
 
         return $dompdf->stream($filename, ['Attachment' => true]);
+    }
+
+    /**
+     * Display traffic report page
+     */
+    public function trafficReport(Request $request)
+    {
+        // Default to current month
+        $month = $request->get('month', now()->format('Y-m'));
+        $startDate = \Carbon\Carbon::createFromFormat('Y-m', $month)->startOfMonth()->format('Y-m-d');
+        $endDate = \Carbon\Carbon::createFromFormat('Y-m', $month)->endOfMonth()->format('Y-m-d');
+
+        // Get cached data if available
+        $cacheKey = "traffic_report_{$month}";
+        $trafficData = cache()->get($cacheKey);
+
+        // Get all subdomains for filtering
+        $subdomains = WebMonitor::whereNotNull('subdomain')
+            ->where('subdomain', '!=', '')
+            ->orderBy('subdomain')
+            ->pluck('subdomain')
+            ->toArray();
+
+        $monthName = \Carbon\Carbon::createFromFormat('Y-m', $month)->locale('id')->isoFormat('MMMM YYYY');
+
+        return view('admin.web-monitor.traffic-report', [
+            'month' => $month,
+            'monthName' => $monthName,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'trafficData' => $trafficData,
+            'subdomains' => $subdomains,
+            'zoneName' => config('services.cloudflare.zone_name'),
+        ]);
+    }
+
+    /**
+     * Sync traffic data from Cloudflare API
+     */
+    public function syncTrafficData(Request $request)
+    {
+        $month = $request->get('month', now()->format('Y-m'));
+        $startDate = \Carbon\Carbon::createFromFormat('Y-m', $month)->startOfMonth()->format('Y-m-d');
+        $endDate = \Carbon\Carbon::createFromFormat('Y-m', $month)->endOfMonth()->format('Y-m-d');
+
+        // Get analytics data from Cloudflare
+        \Log::info("Fetching Cloudflare analytics for period: {$startDate} to {$endDate}");
+
+        $zoneAnalytics = $this->cloudflare->getZoneAnalytics($startDate, $endDate);
+        $securityEvents = $this->cloudflare->getSecurityEvents($startDate, $endDate);
+        $hostnameAnalytics = $this->cloudflare->getHostnameAnalytics($startDate, $endDate);
+
+        \Log::info("Zone Analytics result: " . ($zoneAnalytics !== null ? 'OK (' . count($zoneAnalytics) . ' records)' : 'NULL'));
+        \Log::info("Hostname Analytics result: " . ($hostnameAnalytics !== null ? 'OK' : 'NULL'));
+
+        if ($zoneAnalytics === null && $hostnameAnalytics === null) {
+            \Log::error("Both zone and hostname analytics failed");
+            return redirect()->route('admin.web-monitor.traffic-report', ['month' => $month])
+                ->with('error', 'Gagal mengambil data dari Cloudflare API. Periksa konfigurasi API token dan log untuk detail error.');
+        }
+
+        // Process and aggregate data
+        $trafficData = [
+            'synced_at' => now()->toDateTimeString(),
+            'period' => [
+                'start' => $startDate,
+                'end' => $endDate,
+                'month' => $month,
+            ],
+            'summary' => $this->processZoneAnalytics($zoneAnalytics),
+            'security' => $this->processSecurityEvents($securityEvents),
+            'hostnames' => $this->processHostnameAnalytics($hostnameAnalytics),
+            'daily' => $this->processDailyAnalytics($zoneAnalytics),
+        ];
+
+        // Generate insights and recommendations
+        $trafficData['insights'] = $this->generateInsights($trafficData);
+
+        // Cache the data for 24 hours
+        $cacheKey = "traffic_report_{$month}";
+        cache()->put($cacheKey, $trafficData, now()->addHours(24));
+
+        return redirect()->route('admin.web-monitor.traffic-report', ['month' => $month])
+            ->with('success', 'Data traffic berhasil disinkronkan dari Cloudflare.');
+    }
+
+    /**
+     * Export traffic report as PDF
+     */
+    public function exportTrafficPdf(Request $request)
+    {
+        $month = $request->get('month', now()->format('Y-m'));
+        $cacheKey = "traffic_report_{$month}";
+        $trafficData = cache()->get($cacheKey);
+
+        if (!$trafficData) {
+            return redirect()->route('admin.web-monitor.traffic-report', ['month' => $month])
+                ->with('error', 'Data tidak tersedia. Silakan sinkronkan data terlebih dahulu.');
+        }
+
+        $data = [
+            'trafficData' => $trafficData,
+            'month' => $month,
+            'monthName' => \Carbon\Carbon::createFromFormat('Y-m', $month)->locale('id')->isoFormat('MMMM YYYY'),
+            'zoneName' => config('services.cloudflare.zone_name'),
+            'generatedAt' => now()->locale('id')->isoFormat('D MMMM YYYY HH:mm'),
+        ];
+
+        // Configure Dompdf
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $html = view('admin.web-monitor.traffic-report-pdf', $data)->render();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'Laporan-Traffic-' . $month . '.pdf';
+
+        return $dompdf->stream($filename, ['Attachment' => false]);
+    }
+
+    /**
+     * Display security events details page
+     */
+    public function securityDetails(Request $request)
+    {
+        $month = $request->get('month', now()->format('Y-m'));
+        $cacheKey = "traffic_report_{$month}";
+        $trafficData = cache()->get($cacheKey);
+
+        if (!$trafficData || empty($trafficData['security'])) {
+            return redirect()->route('admin.web-monitor.traffic-report', ['month' => $month])
+                ->with('error', 'Data security tidak tersedia. Silakan sinkronkan data terlebih dahulu.');
+        }
+
+        return view('admin.web-monitor.security-details', [
+            'month' => $month,
+            'monthName' => \Carbon\Carbon::createFromFormat('Y-m', $month)->locale('id')->isoFormat('MMMM YYYY'),
+            'security' => $trafficData['security'],
+            'syncedAt' => $trafficData['synced_at'] ?? null,
+            'zoneName' => config('services.cloudflare.zone_name'),
+        ]);
+    }
+
+    /**
+     * Process zone analytics data
+     */
+    private function processZoneAnalytics(?array $analytics): array
+    {
+        if (!$analytics) {
+            return [
+                'total_requests' => 0,
+                'total_bandwidth' => 0,
+                'cached_requests' => 0,
+                'cached_bandwidth' => 0,
+                'page_views' => 0,
+                'unique_visitors' => 0,
+                'threats_blocked' => 0,
+            ];
+        }
+
+        $summary = [
+            'total_requests' => 0,
+            'total_bandwidth' => 0,
+            'cached_requests' => 0,
+            'cached_bandwidth' => 0,
+            'page_views' => 0,
+            'unique_visitors' => 0,
+            'threats_blocked' => 0,
+        ];
+
+        foreach ($analytics as $day) {
+            $summary['total_requests'] += $day['sum']['requests'] ?? 0;
+            $summary['total_bandwidth'] += $day['sum']['bytes'] ?? 0;
+            $summary['cached_requests'] += $day['sum']['cachedRequests'] ?? 0;
+            $summary['cached_bandwidth'] += $day['sum']['cachedBytes'] ?? 0;
+            $summary['page_views'] += $day['sum']['pageViews'] ?? 0;
+            $summary['unique_visitors'] += $day['uniq']['uniques'] ?? 0;
+            $summary['threats_blocked'] += $day['sum']['threats'] ?? 0;
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Process security events data
+     */
+    private function processSecurityEvents(?array $events): array
+    {
+        if (!$events) {
+            return [
+                'total_events' => 0,
+                'by_action' => [],
+                'by_country' => [],
+                'by_source' => [],
+            ];
+        }
+
+        $security = [
+            'total_events' => 0,
+            'by_action' => [],
+            'by_country' => [],
+            'by_source' => [],
+        ];
+
+        foreach ($events as $event) {
+            $count = $event['count'] ?? 0;
+            $security['total_events'] += $count;
+
+            $action = $event['dimensions']['action'] ?? 'unknown';
+            $country = $event['dimensions']['clientCountryName'] ?? 'Unknown';
+            $source = $event['dimensions']['source'] ?? 'unknown';
+
+            $security['by_action'][$action] = ($security['by_action'][$action] ?? 0) + $count;
+            $security['by_country'][$country] = ($security['by_country'][$country] ?? 0) + $count;
+            $security['by_source'][$source] = ($security['by_source'][$source] ?? 0) + $count;
+        }
+
+        // Sort by count descending
+        arsort($security['by_action']);
+        arsort($security['by_country']);
+        arsort($security['by_source']);
+
+        return $security;
+    }
+
+    /**
+     * Process hostname analytics data
+     */
+    private function processHostnameAnalytics(?array $analytics): array
+    {
+        if (!$analytics || !isset($analytics['httpRequestsAdaptiveGroups'])) {
+            return [];
+        }
+
+        $hostnames = [];
+        foreach ($analytics['httpRequestsAdaptiveGroups'] as $item) {
+            $hostname = $item['dimensions']['clientRequestHTTPHost'] ?? 'unknown';
+            $count = $item['count'] ?? 0;
+
+            // Normalize hostname: remove port number
+            if (str_contains($hostname, ':')) {
+                $hostname = explode(':', $hostname)[0];
+            }
+
+            // Normalize hostname: remove www. prefix
+            if (str_starts_with($hostname, 'www.')) {
+                $hostname = substr($hostname, 4);
+            }
+
+            // Aggregate counts for normalized hostname
+            $hostnames[$hostname] = ($hostnames[$hostname] ?? 0) + $count;
+        }
+
+        arsort($hostnames);
+        return $hostnames;
+    }
+
+    /**
+     * Process daily analytics for charts
+     */
+    private function processDailyAnalytics(?array $analytics): array
+    {
+        if (!$analytics) {
+            return [];
+        }
+
+        $daily = [];
+        foreach ($analytics as $day) {
+            $date = $day['dimensions']['date'] ?? null;
+            if ($date) {
+                $daily[$date] = [
+                    'requests' => $day['sum']['requests'] ?? 0,
+                    'bandwidth' => $day['sum']['bytes'] ?? 0,
+                    'page_views' => $day['sum']['pageViews'] ?? 0,
+                    'unique_visitors' => $day['uniq']['uniques'] ?? 0,
+                ];
+            }
+        }
+
+        ksort($daily);
+        return $daily;
+    }
+
+    /**
+     * Generate insights and recommendations based on traffic data
+     */
+    private function generateInsights(array $trafficData): array
+    {
+        $insights = [];
+        $recommendations = [];
+        $summary = $trafficData['summary'] ?? [];
+        $daily = $trafficData['daily'] ?? [];
+        $hostnames = $trafficData['hostnames'] ?? [];
+        $security = $trafficData['security'] ?? [];
+
+        // 1. Traffic Volume Analysis
+        $totalRequests = $summary['total_requests'] ?? 0;
+        if ($totalRequests > 0) {
+            if ($totalRequests > 1000000) {
+                $insights[] = [
+                    'type' => 'success',
+                    'icon' => 'chart-up',
+                    'title' => 'Traffic Tinggi',
+                    'message' => 'Website Anda memiliki traffic yang sangat tinggi dengan ' . number_format($totalRequests) . ' requests bulan ini. Ini menunjukkan tingkat penggunaan yang baik.'
+                ];
+            } elseif ($totalRequests > 100000) {
+                $insights[] = [
+                    'type' => 'info',
+                    'icon' => 'chart',
+                    'title' => 'Traffic Moderate',
+                    'message' => 'Traffic website berada di level moderate dengan ' . number_format($totalRequests) . ' requests. Pertimbangkan strategi untuk meningkatkan engagement.'
+                ];
+            } else {
+                $insights[] = [
+                    'type' => 'warning',
+                    'icon' => 'chart-down',
+                    'title' => 'Traffic Rendah',
+                    'message' => 'Traffic website relatif rendah dengan ' . number_format($totalRequests) . ' requests. Evaluasi strategi promosi dan SEO untuk meningkatkan kunjungan.'
+                ];
+            }
+        }
+
+        // 2. Cache Performance Analysis
+        $cacheRatio = $summary['total_requests'] > 0
+            ? ($summary['cached_requests'] / $summary['total_requests']) * 100
+            : 0;
+
+        if ($cacheRatio >= 80) {
+            $insights[] = [
+                'type' => 'success',
+                'icon' => 'cache',
+                'title' => 'Cache Optimal',
+                'message' => 'Cache hit ratio sangat baik di ' . number_format($cacheRatio, 1) . '%. Cloudflare berhasil melayani sebagian besar konten dari cache.'
+            ];
+        } elseif ($cacheRatio >= 50) {
+            $insights[] = [
+                'type' => 'info',
+                'icon' => 'cache',
+                'title' => 'Cache Moderate',
+                'message' => 'Cache hit ratio di ' . number_format($cacheRatio, 1) . '%. Ada ruang untuk optimasi caching.'
+            ];
+            $recommendations[] = 'Pertimbangkan untuk mengaktifkan Page Rules atau Cache Rules di Cloudflare untuk meningkatkan cache hit ratio.';
+        } else {
+            $insights[] = [
+                'type' => 'warning',
+                'icon' => 'cache',
+                'title' => 'Cache Perlu Optimasi',
+                'message' => 'Cache hit ratio rendah di ' . number_format($cacheRatio, 1) . '%. Banyak request yang harus dilayani langsung dari server origin.'
+            ];
+            $recommendations[] = 'Evaluasi pengaturan cache headers di server dan aktifkan caching untuk static assets (CSS, JS, images).';
+            $recommendations[] = 'Gunakan Browser Cache TTL yang lebih lama untuk mengurangi repeat requests.';
+        }
+
+        // 3. Bandwidth Analysis
+        $totalBandwidth = $summary['total_bandwidth'] ?? 0;
+        $cachedBandwidth = $summary['cached_bandwidth'] ?? 0;
+        $bandwidthSaved = $totalBandwidth > 0 ? ($cachedBandwidth / $totalBandwidth) * 100 : 0;
+
+        if ($bandwidthSaved >= 70) {
+            $insights[] = [
+                'type' => 'success',
+                'icon' => 'bandwidth',
+                'title' => 'Penghematan Bandwidth Baik',
+                'message' => 'Cloudflare menghemat ' . number_format($bandwidthSaved, 1) . '% bandwidth server Anda. Ini mengurangi beban server dan biaya hosting.'
+            ];
+        } else {
+            $recommendations[] = 'Aktifkan kompresi (Brotli/Gzip) di Cloudflare untuk mengurangi ukuran transfer.';
+        }
+
+        // 4. Security Analysis
+        $totalThreats = $summary['threats_blocked'] ?? 0;
+        $securityEvents = $security['total_events'] ?? 0;
+
+        if ($totalThreats > 0 || $securityEvents > 0) {
+            $threatCount = max($totalThreats, $securityEvents);
+            if ($threatCount > 100) {
+                $insights[] = [
+                    'type' => 'danger',
+                    'icon' => 'shield',
+                    'title' => 'Aktivitas Ancaman Tinggi',
+                    'message' => 'Terdeteksi ' . number_format($threatCount) . ' security events bulan ini. Website Anda menjadi target serangan yang cukup intensif.'
+                ];
+                $recommendations[] = 'Pertimbangkan untuk mengaktifkan Cloudflare WAF (Web Application Firewall) jika belum aktif.';
+                $recommendations[] = 'Review firewall rules dan pastikan rate limiting sudah dikonfigurasi dengan baik.';
+            } elseif ($threatCount > 10) {
+                $insights[] = [
+                    'type' => 'warning',
+                    'icon' => 'shield',
+                    'title' => 'Aktivitas Ancaman Moderate',
+                    'message' => 'Terdeteksi ' . number_format($threatCount) . ' security events. Cloudflare berhasil memblokir ancaman-ancaman ini.'
+                ];
+            } else {
+                $insights[] = [
+                    'type' => 'success',
+                    'icon' => 'shield',
+                    'title' => 'Keamanan Baik',
+                    'message' => 'Hanya ' . number_format($threatCount) . ' security events terdeteksi. Website dalam kondisi aman.'
+                ];
+            }
+        }
+
+        // 5. Top Subdomain Analysis
+        if (!empty($hostnames)) {
+            $topHostnames = array_slice($hostnames, 0, 3, true);
+            $totalHostnameRequests = array_sum($hostnames);
+            $topHostnamesList = [];
+
+            foreach ($topHostnames as $hostname => $count) {
+                $percentage = $totalHostnameRequests > 0 ? ($count / $totalHostnameRequests) * 100 : 0;
+                $topHostnamesList[] = $hostname . ' (' . number_format($percentage, 1) . '%)';
+            }
+
+            $insights[] = [
+                'type' => 'info',
+                'icon' => 'globe',
+                'title' => 'Subdomain Terpopuler',
+                'message' => 'Subdomain dengan traffic tertinggi: ' . implode(', ', $topHostnamesList)
+            ];
+
+            // Check for concentration
+            if (!empty($topHostnames)) {
+                $topCount = reset($topHostnames);
+                $topPercentage = $totalHostnameRequests > 0 ? ($topCount / $totalHostnameRequests) * 100 : 0;
+                if ($topPercentage > 70) {
+                    $recommendations[] = 'Traffic sangat terkonsentrasi di satu subdomain. Pertimbangkan load balancing atau CDN tambahan untuk subdomain tersebut.';
+                }
+            }
+        }
+
+        // 6. Daily Trend Analysis
+        if (count($daily) >= 7) {
+            $dailyValues = array_values($daily);
+            $firstWeek = array_slice($dailyValues, 0, 7);
+            $lastWeek = array_slice($dailyValues, -7);
+
+            $firstWeekAvg = array_sum(array_column($firstWeek, 'requests')) / count($firstWeek);
+            $lastWeekAvg = array_sum(array_column($lastWeek, 'requests')) / count($lastWeek);
+
+            if ($lastWeekAvg > $firstWeekAvg * 1.2) {
+                $insights[] = [
+                    'type' => 'success',
+                    'icon' => 'trending-up',
+                    'title' => 'Trend Naik',
+                    'message' => 'Traffic menunjukkan trend naik sepanjang bulan ini. Rata-rata minggu terakhir lebih tinggi dari minggu pertama.'
+                ];
+            } elseif ($lastWeekAvg < $firstWeekAvg * 0.8) {
+                $insights[] = [
+                    'type' => 'warning',
+                    'icon' => 'trending-down',
+                    'title' => 'Trend Turun',
+                    'message' => 'Traffic menunjukkan trend menurun. Rata-rata minggu terakhir lebih rendah dari minggu pertama.'
+                ];
+                $recommendations[] = 'Investigasi penyebab penurunan traffic dan pertimbangkan strategi untuk meningkatkan engagement.';
+            }
+        }
+
+        // 7. Unique Visitors Analysis
+        $uniqueVisitors = $summary['unique_visitors'] ?? 0;
+        if ($uniqueVisitors > 0 && $totalRequests > 0) {
+            $requestsPerVisitor = $totalRequests / $uniqueVisitors;
+            if ($requestsPerVisitor > 10) {
+                $insights[] = [
+                    'type' => 'success',
+                    'icon' => 'users',
+                    'title' => 'Engagement Tinggi',
+                    'message' => 'Rata-rata ' . number_format($requestsPerVisitor, 1) . ' requests per visitor menunjukkan user engagement yang baik.'
+                ];
+            }
+        }
+
+        // Add general recommendations if list is empty
+        if (empty($recommendations)) {
+            $recommendations[] = 'Pertahankan konfigurasi saat ini karena performa sudah optimal.';
+            $recommendations[] = 'Monitor secara berkala untuk mendeteksi anomali atau perubahan pola traffic.';
+        }
+
+        return [
+            'insights' => $insights,
+            'recommendations' => $recommendations,
+            'generated_at' => now()->toDateTimeString(),
+        ];
     }
 }

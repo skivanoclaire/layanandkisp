@@ -272,106 +272,6 @@
                             </div>
                         @endif
                     </div>
-                </div>
-
-                {{-- Right Column --}}
-                <div class="space-y-6">
-                    {{-- Informasi Aplikasi --}}
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h2 class="text-lg font-bold mb-3 text-gray-800 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                            </svg>
-                            Informasi Aplikasi
-                        </h2>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Nama Aplikasi:</span>
-                                <span class="font-semibold">{{ $webMonitor->nama_aplikasi ?: '-' }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Developer:</span>
-                                <span class="font-semibold">{{ $webMonitor->developer ?: '-' }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Contact Person:</span>
-                                <span class="font-semibold">{{ $webMonitor->contact_person ?: '-' }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">No. HP:</span>
-                                <span class="font-semibold">{{ $webMonitor->contact_phone ?: '-' }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Teknologi yang Digunakan --}}
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h2 class="text-lg font-bold mb-3 text-gray-800 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                            </svg>
-                            Teknologi yang Digunakan
-                        </h2>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Bahasa Pemrograman:</span>
-                                <span class="font-semibold">
-                                    {{ $webMonitor->programmingLanguage->name ?? '-' }}
-                                    @if($webMonitor->programming_language_version)
-                                        <span class="text-gray-500">({{ $webMonitor->programming_language_version }})</span>
-                                    @endif
-                                </span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Framework:</span>
-                                <span class="font-semibold">
-                                    {{ $webMonitor->framework->name ?? '-' }}
-                                    @if($webMonitor->framework_version)
-                                        <span class="text-gray-500">({{ $webMonitor->framework_version }})</span>
-                                    @endif
-                                </span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Database:</span>
-                                <span class="font-semibold">
-                                    {{ $webMonitor->database->name ?? '-' }}
-                                    @if($webMonitor->database_version)
-                                        <span class="text-gray-500">({{ $webMonitor->database_version }})</span>
-                                    @endif
-                                </span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Frontend:</span>
-                                <span class="font-semibold">{{ $webMonitor->frontend_tech ?: '-' }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Server --}}
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h2 class="text-lg font-bold mb-3 text-gray-800 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
-                            </svg>
-                            Server
-                        </h2>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Kepemilikan:</span>
-                                <span class="font-semibold">{{ $webMonitor->server_ownership ?: '-' }}</span>
-                            </div>
-                            @if($webMonitor->server_ownership === 'Pihak Ketiga' && $webMonitor->server_owner_name)
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Nama Pemilik:</span>
-                                <span class="font-semibold">{{ $webMonitor->server_owner_name }}</span>
-                            </div>
-                            @endif
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Lokasi Server:</span>
-                                <span class="font-semibold">{{ $webMonitor->serverLocation->name ?? '-' }}</span>
-                            </div>
-                        </div>
-                    </div>
 
                     {{-- Klasifikasi Data --}}
                     <div class="bg-gradient-to-br from-cyan-50 to-blue-50 p-4 rounded-lg border-2 border-cyan-200">
@@ -503,6 +403,131 @@
                             </div>
                         @endif
                     </div>
+                </div>
+
+                {{-- Right Column --}}
+                <div class="space-y-6">
+                    {{-- Informasi Aplikasi --}}
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h2 class="text-lg font-bold mb-3 text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            Informasi Aplikasi
+                        </h2>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Nama Aplikasi:</span>
+                                <span class="font-semibold">{{ $webMonitor->nama_aplikasi ?: '-' }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tahun Pembuatan:</span>
+                                <span class="font-semibold">{{ $webMonitor->tahun_pembuatan ?: '-' }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Developer:</span>
+                                <span class="font-semibold">{{ $webMonitor->developer ?: '-' }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Contact Person:</span>
+                                <span class="font-semibold">{{ $webMonitor->contact_person ?: '-' }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">No. HP:</span>
+                                <span class="font-semibold">{{ $webMonitor->contact_phone ?: '-' }}</span>
+                            </div>
+                        </div>
+
+                        @if($webMonitor->description)
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <span class="text-gray-600 block mb-2 font-semibold">Deskripsi Website/Aplikasi:</span>
+                            <div class="text-gray-800 prose prose-sm max-w-none ck-content">{!! $webMonitor->description !!}</div>
+                        </div>
+                        @endif
+
+                        @if($webMonitor->latar_belakang)
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <span class="text-gray-600 block mb-2 font-semibold">Latar Belakang Pembuatan:</span>
+                            <div class="text-gray-800 prose prose-sm max-w-none ck-content">{!! $webMonitor->latar_belakang !!}</div>
+                        </div>
+                        @endif
+
+                        @if($webMonitor->manfaat_aplikasi)
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <span class="text-gray-600 block mb-2 font-semibold">Manfaat Aplikasi:</span>
+                            <div class="text-gray-800 prose prose-sm max-w-none ck-content">{!! $webMonitor->manfaat_aplikasi !!}</div>
+                        </div>
+                        @endif
+                    </div>
+
+                    {{-- Teknologi yang Digunakan --}}
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h2 class="text-lg font-bold mb-3 text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                            </svg>
+                            Teknologi yang Digunakan
+                        </h2>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Bahasa Pemrograman:</span>
+                                <span class="font-semibold">
+                                    {{ $webMonitor->programmingLanguage->name ?? '-' }}
+                                    @if($webMonitor->programming_language_version)
+                                        <span class="text-gray-500">({{ $webMonitor->programming_language_version }})</span>
+                                    @endif
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Framework:</span>
+                                <span class="font-semibold">
+                                    {{ $webMonitor->framework->name ?? '-' }}
+                                    @if($webMonitor->framework_version)
+                                        <span class="text-gray-500">({{ $webMonitor->framework_version }})</span>
+                                    @endif
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Database:</span>
+                                <span class="font-semibold">
+                                    {{ $webMonitor->database->name ?? '-' }}
+                                    @if($webMonitor->database_version)
+                                        <span class="text-gray-500">({{ $webMonitor->database_version }})</span>
+                                    @endif
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Frontend:</span>
+                                <span class="font-semibold">{{ $webMonitor->frontend_tech ?: '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Server --}}
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h2 class="text-lg font-bold mb-3 text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
+                            </svg>
+                            Server
+                        </h2>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Kepemilikan:</span>
+                                <span class="font-semibold">{{ $webMonitor->server_ownership ?: '-' }}</span>
+                            </div>
+                            @if($webMonitor->server_ownership === 'Pihak Ketiga' && $webMonitor->server_owner_name)
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Nama Pemilik:</span>
+                                <span class="font-semibold">{{ $webMonitor->server_owner_name }}</span>
+                            </div>
+                            @endif
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Lokasi Server:</span>
+                                <span class="font-semibold">{{ $webMonitor->serverLocation->name ?? '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
 
                     {{-- Link ke Permohonan --}}
                     @if($webMonitor->subdomain_request_id)
@@ -564,6 +589,18 @@
     .animate-pulse {
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
+
+    /* CKEditor Content Styling */
+    .ck-content h1 { font-size: 1.5em; font-weight: bold; margin: 0.5em 0; }
+    .ck-content h2 { font-size: 1.3em; font-weight: bold; margin: 0.5em 0; }
+    .ck-content h3 { font-size: 1.1em; font-weight: bold; margin: 0.5em 0; }
+    .ck-content p { margin: 0.5em 0; line-height: 1.6; }
+    .ck-content ul, .ck-content ol { margin: 0.5em 0; padding-left: 2em; }
+    .ck-content li { margin: 0.25em 0; }
+    .ck-content strong { font-weight: 600; }
+    .ck-content em { font-style: italic; }
+    .ck-content u { text-decoration: underline; }
+    .ck-content a { color: #2563eb; text-decoration: underline; }
 </style>
 @endpush
 
