@@ -591,7 +591,7 @@ Route::middleware(['auth', 'verified.user', 'permission:Akses Starlink Jelajah']
     });
 
 // Laporan Gangguan Internet - Admin Routes
-Route::middleware(['auth', 'role:Admin'])
+Route::middleware(['auth', 'role:Admin', 'permission:Kelola Laporan Gangguan Internet'])
     ->prefix('admin/digital/internet/laporan-gangguan')
     ->name('admin.internet.laporan-gangguan.')
     ->group(function () {
@@ -604,7 +604,7 @@ Route::middleware(['auth', 'role:Admin'])
     });
 
 // Starlink Jelajah - Admin Routes
-Route::middleware(['auth', 'role:Admin'])
+Route::middleware(['auth', 'role:Admin', 'permission:Kelola Starlink Jelajah'])
     ->prefix('admin/digital/internet/starlink')
     ->name('admin.internet.starlink.')
     ->group(function () {
@@ -651,7 +651,7 @@ Route::middleware(['auth','verified.user','permission:Akses JIP PDNS'])
     });
 
 // VPN Registration - Admin
-Route::middleware(['auth','role:Admin'])
+Route::middleware(['auth','role:Admin', 'permission:Kelola Pendaftaran VPN'])
     ->prefix('admin/digital/vpn/registration')
     ->name('admin.vpn.registration.')
     ->group(function () {
@@ -664,7 +664,7 @@ Route::middleware(['auth','role:Admin'])
     });
 
 // VPN Reset - Admin
-Route::middleware(['auth','role:Admin'])
+Route::middleware(['auth','role:Admin', 'permission:Kelola Reset Akun VPN'])
     ->prefix('admin/digital/vpn/reset')
     ->name('admin.vpn.reset.')
     ->group(function () {
@@ -677,7 +677,7 @@ Route::middleware(['auth','role:Admin'])
     });
 
 // JIP PDNS - Admin
-Route::middleware(['auth','role:Admin'])
+Route::middleware(['auth','role:Admin', 'permission:Kelola Akses JIP PDNS'])
     ->prefix('admin/digital/vpn/jip-pdns')
     ->name('admin.vpn.jip-pdns.')
     ->group(function () {
@@ -841,7 +841,7 @@ Route::middleware(['auth','verified.user','permission:Akses Pembaruan Sertifikat
     });
 
 // TTE - Pendampingan Aktivasi dan Penggunaan TTE (Admin)
-Route::middleware(['auth','role:Admin,Operator-Sandi'])
+Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Bantuan TTE'])
     ->prefix('admin/tte/assistance')
     ->name('admin.tte.assistance.')
     ->group(function () {
@@ -852,7 +852,7 @@ Route::middleware(['auth','role:Admin,Operator-Sandi'])
     });
 
 // TTE - Pendaftaran Akun TTE (Admin)
-Route::middleware(['auth','role:Admin,Operator-Sandi'])
+Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Registrasi TTE'])
     ->prefix('admin/tte/registration')
     ->name('admin.tte.registration.')
     ->group(function () {
@@ -865,7 +865,7 @@ Route::middleware(['auth','role:Admin,Operator-Sandi'])
     });
 
 // TTE - Reset Passphrase TTE (Admin)
-Route::middleware(['auth','role:Admin,Operator-Sandi'])
+Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Reset Passphrase TTE'])
     ->prefix('admin/tte/passphrase-reset')
     ->name('admin.tte.passphrase-reset.')
     ->group(function () {
@@ -878,7 +878,7 @@ Route::middleware(['auth','role:Admin,Operator-Sandi'])
     });
 
 // TTE - Pembaruan Sertifikat TTE (Admin)
-Route::middleware(['auth','role:Admin,Operator-Sandi'])
+Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Pembaruan Sertifikat TTE'])
     ->prefix('admin/tte/certificate-update')
     ->name('admin.tte.certificate-update.')
     ->group(function () {

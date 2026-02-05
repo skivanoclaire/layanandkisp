@@ -272,7 +272,8 @@
                         @endif
 
                         {{-- Internet Submenu (Admin) --}}
-                        @php
+                        @if (auth()->user()->hasAnyPermission(['Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah']))
+                            @php
                                 $atAdminLaporanGangguan = request()->routeIs('admin.internet.laporan-gangguan.*');
                                 $atAdminStarlink = request()->routeIs('admin.internet.starlink.*');
                                 $openAdminInternet = $atAdminLaporanGangguan || $atAdminStarlink;
@@ -287,53 +288,66 @@
                                     </svg>
                                 </button>
                                 <div x-show="openAdminInternet" class="ml-4 space-y-1 mt-1">
-                                    <a href="{{ route('admin.internet.laporan-gangguan.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-                                       {{ $atAdminLaporanGangguan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Laporan Gangguan
-                                    </a>
-                                    <a href="{{ route('admin.internet.starlink.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-                                       {{ $atAdminStarlink ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Starlink Jelajah
-                                    </a>
+                                    @if (auth()->user()->hasPermission('Kelola Laporan Gangguan Internet'))
+                                        <a href="{{ route('admin.internet.laporan-gangguan.index') }}"
+                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                           {{ $atAdminLaporanGangguan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Laporan Gangguan
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('Kelola Starlink Jelajah'))
+                                        <a href="{{ route('admin.internet.starlink.index') }}"
+                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                           {{ $atAdminStarlink ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Starlink Jelajah
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
+                        @endif
 
                             {{-- VPN/Jaringan Privat Submenu (Admin) --}}
-                            @php
-                                $atAdminVpnRegistration = request()->routeIs('admin.vpn.registration.*');
-                                $atAdminVpnReset = request()->routeIs('admin.vpn.reset.*');
-                                $atAdminJipPdns = request()->routeIs('admin.vpn.jip-pdns.*');
-                                $openAdminVpn = $atAdminVpnRegistration || $atAdminVpnReset || $atAdminJipPdns;
-                            @endphp
-                            <div x-data="{ openAdminVpn: {{ $openAdminVpn ? 'true' : 'false' }} }">
-                                <button @click="openAdminVpn = !openAdminVpn"
-                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminVpn ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                    <span>Jaringan Privat/VPN</span>
-                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminVpn }"
-                                        fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                                <div x-show="openAdminVpn" class="ml-4 space-y-1 mt-1">
-                                    <a href="{{ route('admin.vpn.registration.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-                                       {{ $atAdminVpnRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Pendaftaran VPN
-                                    </a>
-                                    <a href="{{ route('admin.vpn.reset.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-                                       {{ $atAdminVpnReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Reset Akun VPN
-                                    </a>
-                                    <a href="{{ route('admin.vpn.jip-pdns.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-                                       {{ $atAdminJipPdns ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Akses JIP PDNS
-                                    </a>
+                            @if (auth()->user()->hasAnyPermission(['Kelola Pendaftaran VPN', 'Kelola Reset Akun VPN', 'Kelola Akses JIP PDNS']))
+                                @php
+                                    $atAdminVpnRegistration = request()->routeIs('admin.vpn.registration.*');
+                                    $atAdminVpnReset = request()->routeIs('admin.vpn.reset.*');
+                                    $atAdminJipPdns = request()->routeIs('admin.vpn.jip-pdns.*');
+                                    $openAdminVpn = $atAdminVpnRegistration || $atAdminVpnReset || $atAdminJipPdns;
+                                @endphp
+                                <div x-data="{ openAdminVpn: {{ $openAdminVpn ? 'true' : 'false' }} }">
+                                    <button @click="openAdminVpn = !openAdminVpn"
+                                        class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminVpn ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        <span>Jaringan Privat/VPN</span>
+                                        <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminVpn }"
+                                            fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </button>
+                                    <div x-show="openAdminVpn" class="ml-4 space-y-1 mt-1">
+                                        @if (auth()->user()->hasPermission('Kelola Pendaftaran VPN'))
+                                            <a href="{{ route('admin.vpn.registration.index') }}"
+                                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                               {{ $atAdminVpnRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                                Pendaftaran VPN
+                                            </a>
+                                        @endif
+                                        @if (auth()->user()->hasPermission('Kelola Reset Akun VPN'))
+                                            <a href="{{ route('admin.vpn.reset.index') }}"
+                                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                               {{ $atAdminVpnReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                                Reset Akun VPN
+                                            </a>
+                                        @endif
+                                        @if (auth()->user()->hasPermission('Kelola Akses JIP PDNS'))
+                                            <a href="{{ route('admin.vpn.jip-pdns.index') }}"
+                                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                               {{ $atAdminJipPdns ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                                Akses JIP PDNS
+                                            </a>
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
                         @endif
 
                         {{-- Pusat Data/Komputasi Submenu (Admin) --}}

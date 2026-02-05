@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "anhskohbo/no-captcha": "^3.7",
+        "doctrine/dbal": "^4.4",
         "dompdf/dompdf": "^2.0",
         "firebase/php-jwt": "^6.11",
         "google/apiclient": "^2.16",

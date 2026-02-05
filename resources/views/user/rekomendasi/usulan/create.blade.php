@@ -2308,6 +2308,19 @@ document.getElementById('integrasi_sistem_lain').addEventListener('change', func
     detailWrapper.style.display = this.value === 'ya' ? 'block' : 'none';
 });
 
+// Helper function to get field data from CKEditor or FormData
+function getFieldData(fieldId, formData) {
+    // Check if field has CKEditor instance
+    if (editorInstances[fieldId]) {
+        const editorData = editorInstances[fieldId].getData().trim();
+        // Remove HTML tags and check if there's actual content
+        const textContent = editorData.replace(/<[^>]*>/g, '').trim();
+        return textContent;
+    }
+    // Otherwise get from formData
+    return formData.get(fieldId);
+}
+
 function populateReview() {
     const form = document.getElementById('usulan-form');
     const formData = new FormData(form);
@@ -2328,31 +2341,31 @@ function populateReview() {
     // Step 2: Analisis Kebutuhan
     reviewHTML += '<div class="border-b pb-4"><h3 class="font-semibold text-lg mb-3">2. Analisis Kebutuhan</h3>';
     reviewHTML += `<div class="text-gray-600">`;
-    reviewHTML += `<p class="mb-2"><strong>Dasar Hukum:</strong> ${formData.get('dasar_hukum') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Uraian Permasalahan:</strong> ${formData.get('uraian_permasalahan') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Pihak Terkait:</strong> ${formData.get('pihak_terkait') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Ruang Lingkup:</strong> ${formData.get('ruang_lingkup') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Analisis Biaya Manfaat:</strong> ${formData.get('analisis_biaya_manfaat') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Dasar Hukum:</strong> ${getFieldData('dasar_hukum', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Uraian Permasalahan:</strong> ${getFieldData('uraian_permasalahan', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Pihak Terkait:</strong> ${getFieldData('pihak_terkait', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Ruang Lingkup:</strong> ${getFieldData('ruang_lingkup', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Analisis Biaya Manfaat:</strong> ${getFieldData('analisis_biaya_manfaat', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
     reviewHTML += `<p class="mb-2"><strong>Lokasi Implementasi:</strong> ${formData.get('lokasi_implementasi') || '-'}</p>`;
     reviewHTML += `</div></div>`;
 
     // Step 3: Perencanaan
     reviewHTML += '<div class="border-b pb-4"><h3 class="font-semibold text-lg mb-3">3. Perencanaan</h3>';
     reviewHTML += `<div class="text-gray-600">`;
-    reviewHTML += `<p class="mb-2"><strong>Uraian Ruang Lingkup:</strong> ${formData.get('uraian_ruang_lingkup') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Proses Bisnis:</strong> ${formData.get('proses_bisnis') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Kerangka Kerja:</strong> ${formData.get('kerangka_kerja') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Uraian Ruang Lingkup:</strong> ${getFieldData('uraian_ruang_lingkup', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Proses Bisnis:</strong> ${getFieldData('proses_bisnis', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Kerangka Kerja:</strong> ${getFieldData('kerangka_kerja', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
     reviewHTML += `<p class="mb-2"><strong>Pelaksana Pembangunan:</strong> ${formData.get('pelaksana_pembangunan') || 'Belum dipilih'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Peran Tanggung Jawab:</strong> ${formData.get('peran_tanggung_jawab') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Jadwal Pelaksanaan:</strong> ${formData.get('jadwal_pelaksanaan') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Rencana Aksi:</strong> ${formData.get('rencana_aksi') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Keamanan Informasi:</strong> ${formData.get('keamanan_informasi') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Sumber Daya Manusia:</strong> ${formData.get('sumber_daya_manusia') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Sumber Daya Anggaran:</strong> ${formData.get('sumber_daya_anggaran') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Sumber Daya Sarana:</strong> ${formData.get('sumber_daya_sarana') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Indikator Keberhasilan:</strong> ${formData.get('indikator_keberhasilan') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Alih Pengetahuan:</strong> ${formData.get('alih_pengetahuan') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
-    reviewHTML += `<p class="mb-2"><strong>Pemantauan Pelaporan:</strong> ${formData.get('pemantauan_pelaporan') ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Peran Tanggung Jawab:</strong> ${getFieldData('peran_tanggung_jawab', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Jadwal Pelaksanaan:</strong> ${getFieldData('jadwal_pelaksanaan', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Rencana Aksi:</strong> ${getFieldData('rencana_aksi', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Keamanan Informasi:</strong> ${getFieldData('keamanan_informasi', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Sumber Daya Manusia:</strong> ${getFieldData('sumber_daya_manusia', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Sumber Daya Anggaran:</strong> ${getFieldData('sumber_daya_anggaran', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Sumber Daya Sarana:</strong> ${getFieldData('sumber_daya_sarana', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Indikator Keberhasilan:</strong> ${getFieldData('indikator_keberhasilan', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Alih Pengetahuan:</strong> ${getFieldData('alih_pengetahuan', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
+    reviewHTML += `<p class="mb-2"><strong>Pemantauan Pelaporan:</strong> ${getFieldData('pemantauan_pelaporan', formData) ? 'Diisi ✓' : 'Belum diisi'}</p>`;
     reviewHTML += `</div></div>`;
 
     // Step 4: Manajemen Risiko
