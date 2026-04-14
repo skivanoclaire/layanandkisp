@@ -289,13 +289,27 @@
                 </svg>
             </div>
             <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4 text-center">Minta Revisi</h3>
-            <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.revision', $proposal->id) }}" class="mt-4">
+            <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.revision', $proposal->id) }}" class="mt-4" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Catatan Revisi <span class="text-red-500">*</span></label>
                     <textarea name="catatan_verifikasi" rows="4" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                         placeholder="Jelaskan apa yang perlu direvisi oleh pemohon"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        File Kajian (PDF)
+                        <span class="text-gray-400 font-normal text-xs ml-1">Opsional</span>
+                    </label>
+                    <input type="file" name="file_kajian" accept=".pdf"
+                        class="w-full text-sm text-gray-500
+                               file:mr-3 file:py-2 file:px-4
+                               file:rounded-lg file:border-0
+                               file:text-sm file:font-medium
+                               file:bg-orange-50 file:text-orange-700
+                               hover:file:bg-orange-100 cursor-pointer" />
+                    <p class="text-xs text-gray-400 mt-1">Format PDF, maksimal 10MB.</p>
                 </div>
                 <div class="flex space-x-3">
                     <button type="button" onclick="closeRevisionModal()"

@@ -95,9 +95,13 @@ class RekomendasiUsulanController extends Controller
 
             \DB::commit();
 
+            $message = $request->input('action') === 'draft'
+                ? 'Draft berhasil disimpan. Anda dapat melanjutkan pengisian kapan saja.'
+                : 'Usulan berhasil dibuat. Silakan upload dokumen pendukung.';
+
             return redirect()
                 ->route('user.rekomendasi.usulan.show', $form->id)
-                ->with('success', 'Usulan berhasil dibuat. Silakan upload dokumen pendukung.');
+                ->with('success', $message);
 
         } catch (\Exception $e) {
             \DB::rollBack();
@@ -187,9 +191,13 @@ class RekomendasiUsulanController extends Controller
 
             \DB::commit();
 
+            $message = $request->input('action') === 'draft'
+                ? 'Draft berhasil disimpan. Anda dapat melanjutkan pengisian kapan saja.'
+                : 'Usulan berhasil diperbarui.';
+
             return redirect()
                 ->route('user.rekomendasi.usulan.show', $proposal->id)
-                ->with('success', 'Usulan berhasil diperbarui.');
+                ->with('success', $message);
 
         } catch (\Exception $e) {
             \DB::rollBack();
@@ -418,6 +426,44 @@ class RekomendasiUsulanController extends Controller
                 : 'Surat_Respons_Kementerian';
 
             $filename = $statusLabel . '_' . $proposal->ticket_number . '.pdf';
+
+            return response()->download($filePath, $filename);
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download file kajian revisi dari verifikator.
+     */
+    public function downloadKajian($id)
+    {
+        try {
+            // Verify ownership
+            $proposal = RekomendasiAplikasiForm::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+
+            $verifikasi = $proposal->verifikasi;
+
+            if (!$verifikasi || !$verifikasi->file_kajian) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'File kajian tidak ditemukan.');
+            }
+
+            $filePath = storage_path('app/public/' . $verifikasi->file_kajian);
+
+            if (!file_exists($filePath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'File tidak ditemukan di server.');
+            }
+
+            $filename = 'Kajian_Revisi_' . $proposal->ticket_number . '.pdf';
 
             return response()->download($filePath, $filename);
 

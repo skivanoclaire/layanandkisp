@@ -174,6 +174,90 @@
             </div>
         </div>
 
+        <!-- Progress Formulir Digital -->
+        <div class="max-w-full mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Progress Formulir Digital</h2>
+            <div class="max-w-full bg-white p-6 rounded-lg shadow">
+                <div class="max-w-full overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Formulir</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Menunggu</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Proses</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ditolak</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Selesai</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($digitalFormStats as $key => $stats)
+                                @php
+                                    $progressPercent = $stats['total'] > 0 ? round(($stats['selesai'] / $stats['total']) * 100) : 0;
+                                @endphp
+                                <tr class="{{ $stats['total'] > 0 ? 'hover:bg-gray-50' : 'opacity-50' }}">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="text-sm font-medium text-gray-900">{{ $stats['label'] }}</div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="text-sm font-semibold text-gray-900">{{ $stats['total'] }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        @if($stats['menunggu'] > 0)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                {{ $stats['menunggu'] }}
+                                            </span>
+                                        @else
+                                            <span class="text-sm text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        @if($stats['proses'] > 0)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ $stats['proses'] }}
+                                            </span>
+                                        @else
+                                            <span class="text-sm text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        @if($stats['ditolak'] > 0)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                {{ $stats['ditolak'] }}
+                                            </span>
+                                        @else
+                                            <span class="text-sm text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        @if($stats['selesai'] > 0)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                {{ $stats['selesai'] }}
+                                            </span>
+                                        @else
+                                            <span class="text-sm text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                                <div class="bg-green-600 h-2.5 rounded-full" style="width: {{ $progressPercent }}%"></div>
+                                            </div>
+                                            <span class="text-xs font-medium text-gray-700">{{ $progressPercent }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @if(false)
         <!-- Progress Permohonan per Jenis Layanan -->
         <div class="max-w-full mb-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Progress Permohonan Berdasarkan Jenis Layanan</h2>
@@ -263,89 +347,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- Progress Formulir Digital -->
-        <div class="max-w-full mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Progress Formulir Digital</h2>
-            <div class="max-w-full bg-white p-6 rounded-lg shadow">
-                <div class="max-w-full overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Formulir</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Menunggu</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Proses</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ditolak</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Selesai</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($digitalFormStats as $key => $stats)
-                                @php
-                                    $progressPercent = $stats['total'] > 0 ? round(($stats['selesai'] / $stats['total']) * 100) : 0;
-                                @endphp
-                                <tr class="{{ $stats['total'] > 0 ? 'hover:bg-gray-50' : 'opacity-50' }}">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="text-sm font-medium text-gray-900">{{ $stats['label'] }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <span class="text-sm font-semibold text-gray-900">{{ $stats['total'] }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['menunggu'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                {{ $stats['menunggu'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['proses'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {{ $stats['proses'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['ditolak'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                {{ $stats['ditolak'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['selesai'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {{ $stats['selesai'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                                <div class="bg-green-600 h-2.5 rounded-full" style="width: {{ $progressPercent }}%"></div>
-                                            </div>
-                                            <span class="text-xs font-medium text-gray-700">{{ $progressPercent }}%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        @endif
 
         <!-- Grafik Kinerja -->
         <div class="max-w-full bg-white p-6 rounded-lg shadow mb-10">
@@ -361,6 +363,7 @@
                 <span class="block sm:inline">{{ session('success') }}</span>
             </div>
         @endif
+        @if(false)
         <!-- Tabel Permohonan -->
         <div class="max-w-full bg-white shadow p-6 rounded-lg">
             <div class="max-w-full overflow-x-auto">
@@ -398,6 +401,7 @@
             </table>
             </div>
         </div>
+        @endif
     </div>
 @endsection
 

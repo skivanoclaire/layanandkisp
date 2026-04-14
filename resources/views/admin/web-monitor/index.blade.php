@@ -77,7 +77,71 @@
                 </svg>
                 Laporan Traffic
             </a>
+
         </div>
+
+        <!-- Filter Form -->
+        <form id="filterForm" method="GET" action="{{ route('admin.web-monitor.index') }}" class="mb-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
+            @if($showAll)
+                <input type="hidden" name="show_all" value="true">
+            @endif
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Instansi</label>
+                    <select name="instansi_id" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">-- Semua Instansi --</option>
+                        @foreach($unitKerjas as $uk)
+                            <option value="{{ $uk->id }}" {{ (string)($filters['instansi_id'] ?? '') === (string)$uk->id ? 'selected' : '' }}>
+                                {{ $uk->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Jenis</label>
+                    <select name="jenis" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">-- Semua Jenis --</option>
+                        @foreach(App\Models\WebMonitor::jenisOptions() as $jenisOpt)
+                            <option value="{{ $jenisOpt }}" {{ ($filters['jenis'] ?? '') === $jenisOpt ? 'selected' : '' }}>{{ $jenisOpt }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">-- Semua Status --</option>
+                        <option value="active" {{ ($filters['status'] ?? '') === 'active' ? 'selected' : '' }}>Aktif</option>
+                        <option value="inactive" {{ ($filters['status'] ?? '') === 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Lingkup IP</label>
+                    <select name="ip_scope" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">-- Semua IP --</option>
+                        <option value="pemprov" {{ ($filters['ip_scope'] ?? '') === 'pemprov' ? 'selected' : '' }}>IP Pemprov (103.156.110.0/24)</option>
+                        <option value="luar" {{ ($filters['ip_scope'] ?? '') === 'luar' ? 'selected' : '' }}>Luar Pemprov</option>
+                    </select>
+                </div>
+                <div class="flex flex-wrap items-end gap-2">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm font-semibold">
+                        Terapkan Filter
+                    </button>
+                    <button type="submit"
+                            formaction="{{ route('admin.web-monitor.export-pdf') }}"
+                            formtarget="_blank"
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold inline-flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Ekspor PDF
+                    </button>
+                    <a href="{{ route('admin.web-monitor.index', $showAll ? ['show_all' => 'true'] : []) }}"
+                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm font-semibold">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
 
         @if(isset($statistics) && count($statistics) > 0)
         <div class="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -160,7 +224,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="border border-gray-300 px-4 py-2">{{ $loop->iteration }}</td>
                         <td class="border border-gray-300 px-4 py-2 font-semibold">{{ $item->instansi->nama ?? '-' }}</td>
-                        <td class="border border-gray-300 px-4 py-2">{{ $item->nama_sistem }}</td>
+                        <td class="border border-gray-300 px-4 py-2">{{ $item->nama_aplikasi ?: $item->nama_sistem }}</td>
                         <td class="border border-gray-300 px-4 py-2">
                             <a href="https://{{ $item->subdomain }}" target="_blank" class="text-blue-600 hover:underline">
                                 {{ $item->subdomain }}
@@ -324,6 +388,7 @@
         @if($data->count() > 0)
         $('#monitorTable').DataTable({
             pageLength: 25,
+            stateSave: true,
             order: [[0, 'asc']], // Sort by No (ID) ascending
             language: {
                 search: "Cari:",

@@ -401,7 +401,14 @@
                 </div>
 
                 <!-- Navigation -->
-                <div class="flex justify-end mt-6 pt-4 border-t">
+                <div class="flex justify-between mt-6 pt-4 border-t">
+                    <button type="submit" name="action" value="draft" onclick="syncEditorData()"
+                        class="bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                        </svg>
+                        Simpan Draft
+                    </button>
                     <button type="button" onclick="nextStep(2)" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
                         Selanjutnya
                     </button>
@@ -573,9 +580,18 @@
                     <button type="button" onclick="previousStep(1)" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition">
                         Kembali
                     </button>
-                    <button type="button" onclick="nextStep(3)" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                        Selanjutnya
-                    </button>
+                    <div class="flex gap-3">
+                        <button type="submit" name="action" value="draft" onclick="syncEditorData()"
+                            class="bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                            </svg>
+                            Simpan Draft
+                        </button>
+                        <button type="button" onclick="nextStep(3)" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                            Selanjutnya
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1392,9 +1408,18 @@
                     <button type="button" onclick="previousStep(2)" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition">
                         Kembali
                     </button>
-                    <button type="button" onclick="nextStep(4)" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                        Selanjutnya
-                    </button>
+                    <div class="flex gap-3">
+                        <button type="submit" name="action" value="draft" onclick="syncEditorData()"
+                            class="bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                            </svg>
+                            Simpan Draft
+                        </button>
+                        <button type="button" onclick="nextStep(4)" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                            Selanjutnya
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1540,9 +1565,18 @@
                     <button type="button" onclick="previousStep(3)" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition">
                         Kembali
                     </button>
-                    <button type="button" onclick="nextStep(5)" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                        Selanjutnya
-                    </button>
+                    <div class="flex gap-3">
+                        <button type="submit" name="action" value="draft" onclick="syncEditorData()"
+                            class="bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600 transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                            </svg>
+                            Simpan Draft
+                        </button>
+                        <button type="button" onclick="nextStep(5)" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                            Selanjutnya
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1575,7 +1609,7 @@
                         Kembali
                     </button>
                     <div class="space-x-3">
-                        <button type="submit" name="action" value="draft" class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition">
+                        <button type="submit" name="action" value="draft" onclick="syncEditorData()" class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition">
                             Simpan sebagai Draft
                         </button>
                         <button type="submit" name="action" value="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">

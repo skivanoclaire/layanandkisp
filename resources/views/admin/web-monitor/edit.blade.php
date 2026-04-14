@@ -799,40 +799,6 @@
                 </div>
             </div>
 
-            <div class="mb-4 p-4 bg-blue-50 rounded-lg">
-                <label class="flex items-start gap-3">
-                    <input type="checkbox"
-                           name="is_proxied"
-                           class="mt-1"
-                           {{ old('is_proxied', $webMonitor->is_proxied) ? 'checked' : '' }}>
-                    <div>
-                        <span class="font-semibold text-gray-800">Aktifkan Cloudflare Proxy</span>
-                        <p class="text-sm text-gray-600 mt-1">
-                            Jika dicentang, traffic akan melalui Cloudflare untuk keamanan dan performa lebih baik
-                        </p>
-                    </div>
-                </label>
-            </div>
-
-            @if($webMonitor->cloudflare_record_id)
-                <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                    <label class="flex items-start gap-3">
-                        <input type="checkbox"
-                               name="update_cloudflare"
-                               class="mt-1"
-                               {{ old('update_cloudflare') ? 'checked' : '' }}>
-                        <div>
-                            <span class="font-semibold text-orange-800">Update DNS Record di Cloudflare</span>
-                            <p class="text-sm text-orange-700 mt-1">
-                                Jika dicentang, perubahan akan diterapkan ke Cloudflare DNS record
-                            </p>
-                            <p class="text-xs text-orange-600 mt-1">
-                                Cloudflare Record ID: <code class="bg-white px-2 py-1 rounded">{{ $webMonitor->cloudflare_record_id }}</code>
-                            </p>
-                        </div>
-                    </label>
-                </div>
-            @endif
 
             @if($webMonitor->last_checked_at)
                 <div class="mb-4 p-4 bg-gray-50 rounded-lg">

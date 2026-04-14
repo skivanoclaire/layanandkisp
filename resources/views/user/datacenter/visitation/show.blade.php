@@ -57,7 +57,14 @@
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Instansi:</label>
-                    <p class="text-gray-800">{{ $visitation->unitKerja->nama ?? '-' }}</p>
+                    @if($visitation->is_kabupaten_kota)
+                        <p class="text-gray-800">{{ $visitation->unit_kerja_manual ?? '-' }}</p>
+                        <p class="text-xs mt-1">
+                            <span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded font-semibold">Kab/Kota: {{ $visitation->kabupaten_kota ?? '-' }}</span>
+                        </p>
+                    @else
+                        <p class="text-gray-800">{{ $visitation->unitKerja->nama ?? '-' }}</p>
+                    @endif
                 </div>
             </div>
         </div>

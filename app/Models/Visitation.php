@@ -14,6 +14,9 @@ class Visitation extends Model
         'user_id',
         'nama',
         'nip',
+        'is_kabupaten_kota',
+        'kabupaten_kota',
+        'unit_kerja_manual',
         'unit_kerja_id',
         'tujuan_kunjungan',
         'nama_aset',
@@ -33,6 +36,7 @@ class Visitation extends Model
     ];
 
     protected $casts = [
+        'is_kabupaten_kota' => 'boolean',
         'tanggal_kunjungan' => 'date',
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',

@@ -230,7 +230,7 @@ class WebMonitor extends Model
             $this->save();
         }
 
-        return $success;
+        return $success !== null;
     }
 
     // Electronic System Category Methods

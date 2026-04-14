@@ -42,6 +42,10 @@ class TechStackSeeder extends Seeder
             'name' => 'Yii',
             'programming_language_id' => $php->id
         ]);
+        Framework::firstOrCreate([
+            'name' => 'WordPress',
+            'programming_language_id' => $php->id
+        ]);
 
         // Frameworks for Python
         Framework::firstOrCreate([
@@ -74,10 +78,6 @@ class TechStackSeeder extends Seeder
         // Frameworks for TypeScript
         Framework::firstOrCreate([
             'name' => 'Angular',
-            'programming_language_id' => $typescript->id
-        ]);
-        Framework::firstOrCreate([
-            'name' => 'Next.js',
             'programming_language_id' => $typescript->id
         ]);
 

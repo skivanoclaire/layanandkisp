@@ -88,7 +88,7 @@
                 </svg>
                 <div class="text-sm text-blue-800">
                     <p class="font-semibold mb-1">Informasi Penting:</p>
-                    <p>Setelah submit, Apabila belum melakukan verifikasi no Whatsapp silahkan cek Whatsapp terlebih dahulu setelah itu link reset passphrase akan dikirimkan ke email @kaltaraprov.go.id dan No. Whatsapp yang telah didaftarkan di BSrE (Balai Sertifikasi Elektronik). Konfirmasi silahkan join helpdesk <a href="https://chat.whatsapp.com/DbcCNvweGp0IPTvvYL0hm5" target="_blank" class="text-blue-600 underline hover:text-blue-800">https://chat.whatsapp.com/DbcCNvweGp0IPTvvYL0hm5</a></p>
+                    <p>Setelah submit, Apabila belum melakukan verifikasi no Whatsapp silahkan cek Whatsapp terlebih dahulu setelah itu link reset passphrase akan dikirimkan ke email @kaltaraprov.go.id dan No. Whatsapp yang telah didaftarkan di BSrE (Balai Sertifikasi Elektronik). Konfirmasi silahkan join helpdesk <a href="https://wa.me/message/F6KX5FLILOCSF1" target="_blank" class="text-blue-600 underline hover:text-blue-800">https://wa.me/message/F6KX5FLILOCSF1</a></p>
                 </div>
             </div>
         </div>

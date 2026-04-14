@@ -122,6 +122,9 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
 
             // Download surat persetujuan/respons Kementerian
             Route::get('/{id}/download-surat-kementerian', [RekomendasiUsulanController::class, 'downloadSuratKementerian'])->name('download-surat-kementerian');
+
+            // Download file kajian revisi dari verifikator
+            Route::get('/{id}/download-kajian', [RekomendasiUsulanController::class, 'downloadKajian'])->name('download-kajian');
         });
 
     // FASE PENGEMBANGAN: Simple Document Upload (3 Phases)
@@ -207,6 +210,9 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/traffic-report/export-pdf', [WebMonitorController::class, 'exportTrafficPdf'])->name('traffic-report.export-pdf');
         Route::get('/traffic-report/security-details', [WebMonitorController::class, 'securityDetails'])->name('traffic-report.security-details');
 
+        // Export filtered Master Data Subdomain to PDF
+        Route::get('/export-pdf', [WebMonitorController::class, 'exportPdf'])->name('export-pdf');
+
         // PARAMETERIZED ROUTES LAST (with {webMonitor} parameter)
         Route::get('/{webMonitor}', [WebMonitorController::class, 'show'])->name('show');
         Route::get('/{webMonitor}/edit', [WebMonitorController::class, 'edit'])->name('edit');
@@ -243,6 +249,7 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
             Route::post('/{id}/reject', [RekomendasiVerifikasiController::class, 'reject'])->name('reject');
             Route::post('/{id}/revision', [RekomendasiVerifikasiController::class, 'requestRevision'])->name('revision');
             Route::get('/{id}/dokumen/{dokumenId}', [RekomendasiVerifikasiController::class, 'downloadDokumen'])->name('dokumen.download');
+            Route::get('/{id}/kajian', [RekomendasiVerifikasiController::class, 'downloadKajian'])->name('kajian.download');
 
             // Update status Kementerian
             Route::post('/{id}/ministry-status', [RekomendasiVerifikasiController::class, 'updateMinistryStatus'])->name('ministry-status');
@@ -365,6 +372,7 @@ Route::middleware(['auth','verified.user','permission:user.email.index,user.emai
         Route::get('/create',     [EmailRequestController::class, 'create'])->name('create'); // form
         Route::post('/submit',    [EmailRequestController::class, 'store'])->name('store');   // submit
         Route::get('/thanks/{ticket}', [EmailRequestController::class, 'thanks'])->name('thanks');
+        Route::get('/survey/{ticket}', [EmailRequestController::class, 'survey'])->name('survey');
         Route::get('/{id}/edit',    [EmailRequestController::class, 'edit'])->name('edit');
         Route::put('/{id}',         [EmailRequestController::class, 'update'])->name('update');
         Route::delete('/{id}',      [EmailRequestController::class, 'destroy'])->name('destroy');

@@ -70,27 +70,9 @@
                             'link' =>
                                 'https://lookerstudio.google.com/u/1/reporting/f768fb19-c4d8-4cb3-9373-81752c9deadc/page/p_8p0vzpu3ad',
                         ],
-                        [
-                            'icon' => '📹',
-                            'label' => 'Peliputan',
-                            'slug' => 'peliputan',
-                            'image' => 'peliputan.png',
-                            'link' => '/login',
-                        ],
-                        [
-                            'icon' => '📰',
-                            'label' => 'Publikasi',
-                            'slug' => 'publikasi',
-                            'image' => 'publikasi.png',
-                            'link' => '/login',
-                        ],
-                        [
-                            'icon' => '🎞️',
-                            'label' => 'Konten Multimedia',
-                            'slug' => 'konten-multimedia',
-                            'image' => 'konten-multimedia.png',
-                            'link' => '/login',
-                        ],
+                        // ['icon' => '📹', 'label' => 'Peliputan', 'slug' => 'peliputan', 'image' => 'peliputan.png', 'link' => '/login'],
+                        // ['icon' => '📰', 'label' => 'Publikasi', 'slug' => 'publikasi', 'image' => 'publikasi.png', 'link' => '/login'],
+                        // ['icon' => '🎞️', 'label' => 'Konten Multimedia', 'slug' => 'konten-multimedia', 'image' => 'konten-multimedia.png', 'link' => '/login'],
                         [
                             'icon' => '🏛️',
                             'label' => 'Pengaduan',
@@ -99,7 +81,7 @@
                             'link' => 'https://www.lapor.go.id/',
                         ],
 
-                        ['icon' => '🖧', 'label' => 'SPLP', 'slug' => 'splp', 'image' => 'splp.png', 'link' => '/login'],
+                        // ['icon' => '🖧', 'label' => 'SPLP', 'slug' => 'splp', 'image' => 'splp.png', 'link' => '/login'],
 
                         [
                             'icon' => '📘',
@@ -307,13 +289,7 @@
                                             investasi TIK dalam dokumen Rencana Kerja dan Anggaran.
                                         </li>
 
-                                        <li>
-                                            <strong>Formulir Permohonan</strong><br>
-                                            Permohonan disusun menggunakan format surat sesuai Lampiran II Permen Komdigi 6/2025 dan
-                                            ditujukan kepada:
-                                            <em>Menteri Komunikasi dan Digital c.q. Direktur Jenderal Teknologi Pemerintah
-                                                Digital</em>.
-                                        </li>
+                     
 
                                     </ol>
                                 @break

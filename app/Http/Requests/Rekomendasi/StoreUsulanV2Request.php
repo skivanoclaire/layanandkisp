@@ -67,6 +67,15 @@ class StoreUsulanV2Request extends FormRequest
      */
     public function rules(): array
     {
+        if ($this->input('action') === 'draft') {
+            return $this->draftRules();
+        }
+
+        return $this->fullRules();
+    }
+
+    private function fullRules(): array
+    {
         return [
             'nama_aplikasi' => 'required|string|max:255',
             'deskripsi' => 'required|string',
@@ -117,6 +126,70 @@ class StoreUsulanV2Request extends FormRequest
             'lokasi_implementasi' => 'nullable|string|max:255',
 
             // Permenkomdigi No. 6 Tahun 2025 - Perencanaan
+            'uraian_ruang_lingkup' => 'nullable|string',
+            'proses_bisnis' => 'nullable|string',
+            'proses_bisnis_file' => 'nullable|file|mimes:pdf,doc,docx,png,jpg,jpeg,svg,zip,rar,7z,vsdx,vsd,drawio,bpmn|max:10240',
+            'kerangka_kerja' => 'nullable|string',
+            'pelaksana_pembangunan' => 'nullable|in:menteri,swakelola,pihak_ketiga',
+            'peran_tanggung_jawab' => 'nullable|string',
+            'jadwal_pelaksanaan' => 'nullable|string',
+            'rencana_aksi' => 'nullable|string',
+            'keamanan_informasi' => 'nullable|string',
+            'sumber_daya_manusia' => 'nullable|string',
+            'sumber_daya_anggaran' => 'nullable|string',
+            'sumber_daya_sarana' => 'nullable|string',
+            'indikator_keberhasilan' => 'nullable|string',
+            'alih_pengetahuan' => 'nullable|string',
+            'pemantauan_pelaporan' => 'nullable|string',
+        ];
+    }
+
+    private function draftRules(): array
+    {
+        return [
+            'nama_aplikasi' => 'nullable|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'tujuan' => 'nullable|string',
+            'manfaat' => 'nullable|string',
+            'pemilik_proses_bisnis_id' => 'nullable|exists:unit_kerjas,id',
+            'jenis_layanan' => 'nullable|in:publik,internal',
+            'target_pengguna' => 'nullable|string|max:255',
+            'estimasi_pengguna' => 'nullable|integer|min:1',
+            'lingkup_aplikasi' => 'nullable|in:lokal,regional,nasional',
+            'platform' => 'nullable|array',
+            'platform.*' => 'in:web,mobile,desktop',
+            'teknologi_diusulkan' => 'nullable|string|max:500',
+            'estimasi_waktu_pengembangan' => 'nullable|integer|min:1',
+            'estimasi_biaya' => 'nullable|numeric|min:0',
+            'sumber_pendanaan' => 'nullable|in:apbd,apbn,hibah,swasta,lainnya',
+            'integrasi_sistem_lain' => 'nullable|in:ya,tidak',
+            'detail_integrasi' => 'nullable|string',
+            'kebutuhan_khusus' => 'nullable|string',
+            'dampak_tidak_dibangun' => 'nullable|string',
+            'prioritas' => 'nullable|in:rendah,sedang,tinggi,sangat_tinggi',
+            'risiko_items' => 'nullable|array',
+            'risiko_items.*.jenis_risiko' => 'nullable|in:positif,negatif',
+            'risiko_items.*.kategori_risiko' => 'nullable|string',
+            'risiko_items.*.area_dampak' => 'nullable|string',
+            'risiko_items.*.uraian_kejadian' => 'nullable|string',
+            'risiko_items.*.penyebab' => 'nullable|string',
+            'risiko_items.*.dampak' => 'nullable|string',
+            'risiko_items.*.level_kemungkinan' => 'nullable|integer|min:1|max:5',
+            'risiko_items.*.level_dampak' => 'nullable|integer|min:1|max:5',
+            'risiko_items.*.besaran_risiko' => 'nullable|string',
+            'risiko_items.*.besaran_risiko_nilai' => 'nullable|integer|min:1|max:25',
+            'risiko_items.*.perlu_penanganan' => 'nullable|in:ya,tidak',
+            'risiko_items.*.opsi_penanganan' => 'nullable|string',
+            'risiko_items.*.rencana_aksi' => 'nullable|string',
+            'risiko_items.*.jadwal_implementasi' => 'nullable|string',
+            'risiko_items.*.penanggung_jawab' => 'nullable|string',
+            'risiko_items.*.risiko_residual' => 'nullable|in:ya,tidak',
+            'dasar_hukum' => 'nullable|string',
+            'uraian_permasalahan' => 'nullable|string',
+            'pihak_terkait' => 'nullable|string',
+            'ruang_lingkup' => 'nullable|string',
+            'analisis_biaya_manfaat' => 'nullable|string',
+            'lokasi_implementasi' => 'nullable|string|max:255',
             'uraian_ruang_lingkup' => 'nullable|string',
             'proses_bisnis' => 'nullable|string',
             'proses_bisnis_file' => 'nullable|file|mimes:pdf,doc,docx,png,jpg,jpeg,svg,zip,rar,7z,vsdx,vsd,drawio,bpmn|max:10240',

@@ -30,10 +30,27 @@ class VpnResetController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'nip' => 'required|string|max:255',
-            'unit_kerja_id' => 'required|exists:unit_kerjas,id',
+            'is_kabupaten_kota' => 'required|boolean',
+            'kabupaten_kota' => 'nullable|in:Bulungan,Malinau,Tana Tidung,Tarakan,Nunukan',
+            'unit_kerja_manual' => 'nullable|string|max:255',
+            'unit_kerja_id' => 'nullable|exists:unit_kerjas,id',
             'username_vpn_lama' => 'nullable|string|max:255',
             'alasan' => 'required|string',
         ]);
+
+        if ($validated['is_kabupaten_kota']) {
+            $request->validate([
+                'kabupaten_kota' => 'required|in:Bulungan,Malinau,Tana Tidung,Tarakan,Nunukan',
+                'unit_kerja_manual' => 'required|string|max:255',
+            ]);
+            $validated['unit_kerja_id'] = null;
+        } else {
+            $request->validate([
+                'unit_kerja_id' => 'required|exists:unit_kerjas,id',
+            ]);
+            $validated['kabupaten_kota'] = null;
+            $validated['unit_kerja_manual'] = null;
+        }
 
         $validated['user_id'] = Auth::id();
         $validated['status'] = 'menunggu';

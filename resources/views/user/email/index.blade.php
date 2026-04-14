@@ -79,6 +79,12 @@
         <div class="flex gap-2">
           <span class="px-3 py-1 rounded bg-gray-200 text-gray-500 text-sm cursor-not-allowed" title="Tidak dapat diedit setelah diproses">Edit</span>
           <span class="px-3 py-1 rounded bg-gray-200 text-gray-500 text-sm cursor-not-allowed" title="Tidak dapat dihapus setelah diproses">Hapus</span>
+            @if ($it->status === 'selesai')
+            <a href="{{ route('user.email.survey', $it->ticket_no) }}"
+               class="px-3 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-sm">
+               Beri Penilaian
+            </a>
+          @endif
         </div>
       @endif
     </td>

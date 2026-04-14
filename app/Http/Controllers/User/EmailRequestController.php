@@ -107,6 +107,30 @@ class EmailRequestController extends Controller
         return view('user.email.thanks', ['ticket' => $ticket]);
     }
 
+    /**
+     * Display survey page for completed email request
+     */
+    public function survey(string $ticket)
+    {
+        // Find the email request by ticket number and ensure it belongs to current user
+        $emailRequest = EmailRequest::where('ticket_no', $ticket)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        // Only allow survey for completed requests
+        if ($emailRequest->status !== 'selesai') {
+            abort(403, 'Survey hanya tersedia untuk permohonan yang sudah selesai.');
+        }
+
+        // Construct the survey URL
+        $surveyUrl = 'https://surveidigital.spbe.go.id/embed/survey/eyJzdXJ2ZXlfaWQiOjIsInNlcnZpY2VfaWQiOjE2MCwiaG9zdCI6ImxheWFuYW4uZGlza29taW5mby5rYWx0YXJhcHJvdi5nby5pZCxsb2NhbGhvc3Q6ODA4MCxsb2NhbGhvc3QsaHR0cHM6Ly9sYXlhbmFuLmRpc2tvbWluZm8ua2FsdGFyYXByb3YuZ28uaWQiLCJrZXkiOiJBeEUyNGVkdSJ9/embed/view/';
+
+        return view('user.email.survey', [
+            'emailRequest' => $emailRequest,
+            'surveyUrl' => $surveyUrl,
+            'ticket' => $ticket
+        ]);
+    }
 
     public function edit($id)
     {

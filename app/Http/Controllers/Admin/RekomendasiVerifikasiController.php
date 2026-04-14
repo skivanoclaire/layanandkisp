@@ -314,6 +314,7 @@ class RekomendasiVerifikasiController extends Controller
     {
         $request->validate([
             'catatan_verifikasi' => 'required|string|max:1000',
+            'file_kajian' => 'nullable|file|mimes:pdf|max:10240',
         ]);
 
         try {
@@ -328,11 +329,24 @@ class RekomendasiVerifikasiController extends Controller
                     ->with('error', 'Data verifikasi tidak ditemukan.');
             }
 
-            $verifikasi->update([
+            $updateData = [
                 'status' => 'perlu_revisi',
                 'tanggal_verifikasi' => now(),
                 'catatan_verifikasi' => $request->catatan_verifikasi,
-            ]);
+            ];
+
+            if ($request->hasFile('file_kajian')) {
+                // Hapus file lama jika ada
+                if ($verifikasi->file_kajian) {
+                    Storage::disk('public')->delete($verifikasi->file_kajian);
+                }
+                $file = $request->file('file_kajian');
+                $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $file->getClientOriginalName());
+                $filename = 'kajian_revisi_' . time() . '_' . $sanitizedName;
+                $updateData['file_kajian'] = $file->storeAs('rekomendasi/kajian_revisi', $filename, 'public');
+            }
+
+            $verifikasi->update($updateData);
 
             $proposal->update([
                 'status' => 'perlu_revisi',
@@ -380,6 +394,38 @@ class RekomendasiVerifikasiController extends Controller
             }
 
             return response()->download($filePath, basename($dokumen->file_path));
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download file kajian revisi (admin).
+     */
+    public function downloadKajian($id)
+    {
+        try {
+            $proposal = RekomendasiAplikasiForm::findOrFail($id);
+            $verifikasi = $proposal->verifikasi;
+
+            if (!$verifikasi || !$verifikasi->file_kajian) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'File kajian tidak ditemukan.');
+            }
+
+            $filePath = storage_path('app/public/' . $verifikasi->file_kajian);
+
+            if (!file_exists($filePath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'File tidak ditemukan.');
+            }
+
+            return response()->download($filePath, basename($verifikasi->file_kajian));
 
         } catch (\Exception $e) {
             return redirect()

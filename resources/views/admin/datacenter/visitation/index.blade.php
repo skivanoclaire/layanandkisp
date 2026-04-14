@@ -62,7 +62,7 @@
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900">
                         {{ $item->nama }}<br>
-                        <span class="text-xs text-gray-500">{{ $item->unitKerja->nama ?? '-' }}</span>
+                        <span class="text-xs text-gray-500">{{ $item->is_kabupaten_kota ? ($item->unit_kerja_manual . ' (' . $item->kabupaten_kota . ')') : ($item->unitKerja->nama ?? '-') }}</span>
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900">
                         {{ $item->tujuan_kunjungan }}

@@ -21,35 +21,36 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-Dockerfile
-.yaml
-.yml
-<<<<<<< HEAD
-.dev
-.env.example
-=======
-.claude
-.devcontainer
->>>>>>> origin/rekomendasiv2
 
 # Google Sheets Service Account credentials
 /storage/app/google/
-nul
 
-<<<<<<< HEAD
-# local docker dev
+# Local Docker dev (do not commit)
+Dockerfile
 Dockerfile.dev
 docker-compose.yml
+docker-compose*.yml
+*.env
 
-# local docker dev (do not commit)
-Dockerfile.dev
-docker-compose.yml
-
-# never commit archives
+# Never commit archives
 *.zip
 
+# Scripts & docs yang sensitif
 MYSQL_CONFIG_FOR_LARGE_IMPORT.md
-
 setup-production-db.sh
-=======
->>>>>>> origin/rekomendasiv2
+
+# Database dumps - JANGAN PERNAH COMMIT
+*.sql
+public/*.sql
+
+# PHP info - security risk
+public/phpinfo.php
+
+# Backup files
+*.backup
+._backupenv
+
+# Temp files
+_nul
+tmpclaude-*
+index.nginx-debian.html

@@ -1,6 +1,6 @@
 @extends('layouts.authenticated')
 @section('title','- Permohonan Video Conference')
-@section('header-title', 'Permohonan Video Conference')
+@section('header-title', 'Permohonan Fasilitasi Rapat Virtual/Webinar/Streaming (Zoom/YT)')
 
 @section('content')
 <div class="max-w-6xl mx-auto">
@@ -21,7 +21,7 @@
   </div>
 
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-purple-700">Permohonan Video Conference – Pengajuan Anda</h1>
+    <h1 class="text-2xl font-bold text-purple-700">Permohonan Fasilitasi Rapat Virtual/Webinar/Streaming (Zoom/YT) – Pengajuan Anda</h1>
     <a href="{{ route('user.vidcon.create') }}"
        class="inline-flex items-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
        + Buat Permohonan Baru

@@ -22,10 +22,10 @@
         @csrf
 
         <div class="space-y-6">
-            <!-- Nama Perangkat Daerah -->
+            <!-- Nama Pemohon -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Nama Perangkat Daerah <span class="text-red-500">*</span>
+                    Nama Pemohon <span class="text-red-500">*</span>
                 </label>
                 <input type="text" name="nama" value="{{ $user->name }}" readonly
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600">
@@ -113,7 +113,7 @@
                 </div>
                 <p class="text-xs text-gray-600 mt-2">
                     Setelah input silahkan lapor ke grup Helpdesk Layanan TTE Prov Kaltara
-                    <a href="https://chat.whatsapp.com/DbcCNvweGp0IPTvvYL0hm5" target="_blank" class="text-purple-600 hover:underline">https://chat.whatsapp.com/DbcCNvweGp0IPTvvYL0hm5</a>
+                    <a href="https://wa.me/message/F6KX5FLILOCSF1" target="_blank" class="text-purple-600 hover:underline">https://wa.me/message/F6KX5FLILOCSF1</a>
                     kemudian pilih helpdesk dan join grup nya
                 </p>
             </div>

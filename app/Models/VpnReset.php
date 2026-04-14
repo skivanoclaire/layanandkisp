@@ -14,6 +14,9 @@ class VpnReset extends Model
         'user_id',
         'nama',
         'nip',
+        'is_kabupaten_kota',
+        'kabupaten_kota',
+        'unit_kerja_manual',
         'unit_kerja_id',
         'username_vpn_lama',
         'alasan',
@@ -29,6 +32,7 @@ class VpnReset extends Model
     ];
 
     protected $casts = [
+        'is_kabupaten_kota' => 'boolean',
         'processing_at' => 'datetime',
         'completed_at' => 'datetime',
         'rejected_at' => 'datetime',

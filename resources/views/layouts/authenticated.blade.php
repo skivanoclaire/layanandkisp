@@ -234,7 +234,7 @@
                             <a href="{{ route('admin.vidcon.index') }}"
                                 class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                           {{ request()->routeIs('admin.vidcon.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                Video Conference
+                                Zoom/Youtube Live
                             </a>
                         @endif
 
@@ -698,7 +698,7 @@
                             <a href="{{ route('user.vidcon.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ request()->routeIs('user.vidcon.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                Video Conference
+                                Zoom/Youtube Live
                             </a>
                         @endif
 

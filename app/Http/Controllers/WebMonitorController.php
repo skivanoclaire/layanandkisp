@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UnitKerja;
 use App\Models\WebMonitor;
 use App\Services\CloudflareService;
 use Illuminate\Http\Request;
@@ -19,15 +20,7 @@ class WebMonitorController extends Controller
     {
         $showAll = $request->get('show_all', false); // Default: hide empty subdomains
 
-        $query = WebMonitor::with('instansi')->orderBy('id'); // Order by ID ascending (sama dengan kolom No)
-
-        // Filter out records without subdomain by default
-        if (!$showAll) {
-            $query->whereNotNull('subdomain')
-                  ->where('subdomain', '!=', '');
-        }
-
-        $data = $query->get();
+        $data = $this->applyFilters($request, $showAll)->get();
 
         // Calculate statistics by jenis
         $statistics = WebMonitor::selectRaw('jenis, COUNT(*) as count')
@@ -36,7 +29,97 @@ class WebMonitorController extends Controller
             ->pluck('count', 'jenis')
             ->toArray();
 
-        return view('admin.web-monitor.index', compact('data', 'showAll', 'statistics'));
+        $unitKerjas = UnitKerja::orderBy('nama')->get(['id', 'nama']);
+        $filters = [
+            'instansi_id' => $request->get('instansi_id'),
+            'jenis' => $request->get('jenis'),
+            'status' => $request->get('status'),
+            'ip_scope' => $request->get('ip_scope'),
+        ];
+
+        return view('admin.web-monitor.index', compact('data', 'showAll', 'statistics', 'unitKerjas', 'filters'));
+    }
+
+    /**
+     * Build a filtered WebMonitor query based on request params.
+     */
+    private function applyFilters(Request $request, bool $showAll)
+    {
+        $query = WebMonitor::with('instansi')->orderBy('id');
+
+        if (!$showAll) {
+            $query->whereNotNull('subdomain')->where('subdomain', '!=', '');
+        }
+
+        if ($request->filled('instansi_id')) {
+            $query->where('instansi_id', $request->get('instansi_id'));
+        }
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->get('jenis'));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+
+        if ($request->filled('ip_scope')) {
+            $scope = $request->get('ip_scope');
+            if ($scope === 'pemprov') {
+                $query->where('ip_address', 'like', '103.156.110.%');
+            } elseif ($scope === 'luar') {
+                $query->whereNotNull('ip_address')
+                      ->where('ip_address', '!=', '')
+                      ->where('ip_address', 'not like', '103.156.110.%');
+            }
+        }
+
+        return $query;
+    }
+
+    /**
+     * Export filtered Master Data Subdomain to PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $showAll = $request->get('show_all', false);
+        $data = $this->applyFilters($request, $showAll)->get();
+
+        $filterLabels = [];
+        if ($request->filled('instansi_id')) {
+            $instansi = UnitKerja::find($request->get('instansi_id'));
+            if ($instansi) {
+                $filterLabels['Instansi'] = $instansi->nama;
+            }
+        }
+        if ($request->filled('jenis')) {
+            $filterLabels['Jenis'] = $request->get('jenis');
+        }
+        if ($request->filled('status')) {
+            $filterLabels['Status'] = $request->get('status') === 'active' ? 'Aktif' : 'Tidak Aktif';
+        }
+        if ($request->filled('ip_scope')) {
+            $filterLabels['Lingkup IP'] = $request->get('ip_scope') === 'pemprov' ? 'IP Pemprov (103.156.110.0/24)' : 'Luar Pemprov';
+        }
+
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $html = view('admin.web-monitor.export-pdf', [
+            'data' => $data,
+            'filterLabels' => $filterLabels,
+            'tanggal' => now()->locale('id')->isoFormat('D MMMM YYYY, HH:mm') . ' WITA',
+        ])->render();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'Master-Data-Subdomain-' . now()->format('Ymd-His') . '.pdf';
+
+        return $dompdf->stream($filename, ['Attachment' => false]);
     }
 
     public function show($id)
@@ -118,7 +201,7 @@ class WebMonitorController extends Controller
         $jenisOptions = WebMonitor::jenisOptions();
         $unitKerjas = \App\Models\UnitKerja::active()->orderBy('tipe')->orderBy('nama')->get();
         $programmingLanguages = \App\Models\ProgrammingLanguage::orderBy('name')->get();
-        $frameworks = \App\Models\Framework::orderBy('name')->get();
+        $frameworks = \App\Models\Framework::orderBy('name')->get()->unique('name')->values();
         $databases = \App\Models\Database::orderBy('name')->get();
         $serverLocations = \App\Models\ServerLocation::orderBy('name')->get();
 
@@ -188,20 +271,6 @@ class WebMonitorController extends Controller
             'database_id', 'database_version', 'frontend_tech',
             'server_ownership', 'server_owner_name', 'server_location_id'
         ]);
-        $data['is_proxied'] = $request->has('is_proxied');
-
-        // Update Cloudflare if record exists and update is requested
-        if ($request->has('update_cloudflare') && $webMonitor->cloudflare_record_id) {
-            $success = $webMonitor->updateCloudflareRecord(
-                $request->ip_address,
-                $data['is_proxied']
-            );
-
-            if (!$success) {
-                return back()->with('error', 'Gagal update DNS record di Cloudflare');
-            }
-        }
-
         // Handle ESC data if provided
         if ($request->filled('esc_answers')) {
             // Validate that all 10 questions are answered if any is filled
@@ -264,11 +333,12 @@ class WebMonitorController extends Controller
         $webMonitor->checkStatus();
 
         // Determine redirect based on return_to parameter
-        $redirectRoute = $request->input('return_to') === 'check-ip'
-            ? route('admin.web-monitor.check-ip-publik')
-            : route('admin.web-monitor.index');
+        if ($request->input('return_to') === 'check-ip') {
+            return redirect()->route('admin.web-monitor.check-ip-publik')
+                ->with('success', 'Data berhasil diperbarui');
+        }
 
-        return redirect($redirectRoute)
+        return redirect()->route('admin.web-monitor.index')
             ->with('success', 'Data berhasil diperbarui');
     }
 
