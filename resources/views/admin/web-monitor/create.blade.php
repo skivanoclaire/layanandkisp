@@ -15,14 +15,14 @@
             @csrf
 
             <div class="mb-4">
-                <label for="nama_instansi" class="block text-sm font-semibold text-gray-700 mb-2">
+                <label for="nama_sistem" class="block text-sm font-semibold text-gray-700 mb-2">
                     Nama Instansi / Sistem
                 </label>
                 <input type="text"
-                       id="nama_instansi"
-                       name="nama_instansi"
-                       value="{{ old('nama_instansi') }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_instansi') border-red-500 @enderror"
+                       id="nama_sistem"
+                       name="nama_sistem"
+                       value="{{ old('nama_sistem') }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_sistem') border-red-500 @enderror"
                        list="unit-kerja-list"
                        placeholder="Ketik atau pilih nama instansi/sistem">
                 <datalist id="unit-kerja-list">
@@ -30,7 +30,7 @@
                         <option value="{{ $unit->nama }}">{{ $unit->tipe }}</option>
                     @endforeach
                 </datalist>
-                @error('nama_instansi')
+                @error('nama_sistem')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
                 <p class="text-gray-500 text-xs mt-1">Opsional: Ketik manual atau pilih dari daftar unit kerja</p>

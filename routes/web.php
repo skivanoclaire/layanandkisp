@@ -317,6 +317,7 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     });
 
     // Master Data Unit Kerja
+    Route::get('unit-kerja/export-pdf', [UnitKerjaController::class, 'exportPdf'])->name('unit-kerja.export-pdf');
     Route::resource('unit-kerja', UnitKerjaController::class);
 
     // Role Management (CRUD)

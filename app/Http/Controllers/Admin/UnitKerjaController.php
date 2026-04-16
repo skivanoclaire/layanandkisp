@@ -8,10 +8,57 @@ use Illuminate\Http\Request;
 
 class UnitKerjaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $unitKerjas = UnitKerja::orderBy('tipe')->orderBy('nama')->get();
-        return view('admin.unit-kerja.index', compact('unitKerjas'));
+        $tipeOptions = UnitKerja::tipeOptions();
+        $selectedTipes = $request->input('tipe', []);
+
+        $query = UnitKerja::orderBy('tipe')->orderBy('nama');
+
+        if (!empty($selectedTipes)) {
+            $query->whereIn('tipe', $selectedTipes);
+        }
+
+        $unitKerjas = $query->get();
+
+        return view('admin.unit-kerja.index', compact('unitKerjas', 'tipeOptions', 'selectedTipes'));
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $selectedTipes = $request->input('tipe', []);
+
+        $query = UnitKerja::orderBy('tipe')->orderBy('nama');
+
+        if (!empty($selectedTipes)) {
+            $query->whereIn('tipe', $selectedTipes);
+        }
+
+        $data = $query->get();
+
+        $filterLabels = [];
+        if (!empty($selectedTipes)) {
+            $filterLabels['Tipe'] = implode(', ', $selectedTipes);
+        }
+
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $html = view('admin.unit-kerja.export-pdf', [
+            'data' => $data,
+            'filterLabels' => $filterLabels,
+            'tanggal' => now()->locale('id')->isoFormat('D MMMM YYYY, HH:mm') . ' WITA',
+        ])->render();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'Master-Data-Instansi-' . now()->format('Ymd-His') . '.pdf';
+
+        return $dompdf->stream($filename, ['Attachment' => false]);
     }
 
     public function create()

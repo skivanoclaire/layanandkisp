@@ -53,7 +53,7 @@
 
         <nav class="mt-6 space-y-2 flex-1 overflow-y-auto px-4 pb-6">
             {{-- Dashboard Admin --}}
-            @if (auth()->user()->hasPermission('admin.dashboard'))
+            @if (auth()->user()?->hasPermission('admin.dashboard'))
                 <a href="{{ route('admin.dashboard') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.dashboard') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -62,7 +62,7 @@
             @endif
 
             {{-- Dashboard Pengguna --}}
-            @if (auth()->user()->hasPermission('user.dashboard'))
+            @if (auth()->user()?->hasPermission('user.dashboard'))
                 <a href="{{ route('user.dashboard') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('user.dashboard') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -71,7 +71,7 @@
             @endif
 
             {{-- Kelola Permohonan (Accordion untuk Admin) --}}
-            @if (auth()->user()->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Permohonan PSE']))
+            @if (auth()->user()?->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Permohonan PSE']))
                 @php
                     $atPermohonan = request()->routeIs('admin.permohonan');
                     $atEmail = request()->routeIs('admin.email.*') || request()->routeIs('admin.email-password-reset.*');
@@ -99,7 +99,7 @@
                         </svg>
                     </button>
                     <div x-show="openAdminPermohonan" class="ml-4 space-y-1">
-                        @if (auth()->user()->hasPermission('admin.permohonan'))
+                        @if (auth()->user()?->hasPermission('admin.permohonan'))
                             <a href="{{ route('admin.permohonan') }}"
                                 class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                           {{ $atPermohonan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -107,7 +107,7 @@
                             </a>
                         @endif
 
-                        @if (auth()->user()->hasPermission('admin.email'))
+                        @if (auth()->user()?->hasPermission('admin.email'))
                             @php
                                 $atEmailRequest = request()->routeIs('admin.email.*');
                                 $atEmailPasswordReset = request()->routeIs('admin.email-password-reset.*');
@@ -139,7 +139,7 @@
                             </div>
                         @endif
 
-                        @if (auth()->user()->hasPermission('admin.subdomain.index'))
+                        @if (auth()->user()?->hasPermission('admin.subdomain.index'))
                             {{-- Subdomain Submenu (Admin) --}}
                             @php
                                 $atAdminSubdomainNew = request()->routeIs('admin.subdomain.index') || request()->routeIs('admin.subdomain.show');
@@ -178,7 +178,7 @@
                         @endif
 
                         {{-- Rekomendasi Aplikasi V2 Submenu (Admin) --}}
-                        @if (auth()->user()->hasAnyPermission(['admin.rekomendasi.verifikasi.index', 'admin.rekomendasi.surat.generate', 'admin.rekomendasi.monitoring.index', 'admin.fase-pengembangan.view']))
+                        @if (auth()->user()?->hasAnyPermission(['admin.rekomendasi.verifikasi.index', 'admin.rekomendasi.surat.generate', 'admin.rekomendasi.monitoring.index', 'admin.fase-pengembangan.view']))
                             @php
                                 $atRekomendasiVerifikasi = request()->routeIs('admin.rekomendasi.verifikasi.*');
                                 $atRekomendasiSurat = request()->routeIs('admin.rekomendasi.surat.*');
@@ -196,14 +196,14 @@
                                     </svg>
                                 </button>
                                 <div x-show="openRekomendasiV2" class="ml-4 space-y-1 mt-1">
-                                    @if (auth()->user()->hasPermission('admin.rekomendasi.verifikasi.index'))
+                                    @if (auth()->user()?->hasPermission('admin.rekomendasi.verifikasi.index'))
                                         <a href="{{ route('admin.rekomendasi.verifikasi.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atRekomendasiVerifikasi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Verifikasi Usulan
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('admin.fase-pengembangan.view'))
+                                    @if (auth()->user()?->hasPermission('admin.fase-pengembangan.view'))
                                         <a href="{{ route('admin.fase-pengembangan.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ request()->routeIs('admin.fase-pengembangan.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -211,14 +211,14 @@
                                         </a>
                                     @endif
                                     {{-- Menu Surat Rekomendasi sudah tidak diperlukan karena dipindahkan ke Verifikasi --}}
-                                    {{-- @if (auth()->user()->hasPermission('admin.rekomendasi.surat.generate'))
+                                    {{-- @if (auth()->user()?->hasPermission('admin.rekomendasi.surat.generate'))
                                         <a href="{{ route('admin.rekomendasi.surat.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atRekomendasiSurat ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Surat Rekomendasi
                                         </a>
                                     @endif --}}
-                                    @if (auth()->user()->hasPermission('admin.rekomendasi.monitoring.index'))
+                                    @if (auth()->user()?->hasPermission('admin.rekomendasi.monitoring.index'))
                                         <a href="{{ route('admin.rekomendasi.monitoring.dashboard') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atRekomendasiMonitoring ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -230,7 +230,7 @@
                         @endif
 
                         {{-- Video Conference Admin --}}
-                        @if (auth()->user()->hasRole('Admin'))
+                        @if (auth()->user()?->hasRole('Admin'))
                             <a href="{{ route('admin.vidcon.index') }}"
                                 class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                           {{ request()->routeIs('admin.vidcon.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -239,7 +239,7 @@
                         @endif
 
                         {{-- Survei Kepuasan Layanan Admin --}}
-                        @if (auth()->user()->hasPermission('Kelola Survei Kepuasan'))
+                        @if (auth()->user()?->hasPermission('Kelola Survei Kepuasan'))
                             @php
                                 $atAdminSurveiIndex = request()->routeIs('admin.survei-kepuasan.index') || request()->routeIs('admin.survei-kepuasan.show');
                                 $atAdminSurveiStats = request()->routeIs('admin.survei-kepuasan.statistics');
@@ -272,7 +272,7 @@
                         @endif
 
                         {{-- Internet Submenu (Admin) --}}
-                        @if (auth()->user()->hasAnyPermission(['Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah']))
+                        @if (auth()->user()?->hasAnyPermission(['Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah']))
                             @php
                                 $atAdminLaporanGangguan = request()->routeIs('admin.internet.laporan-gangguan.*');
                                 $atAdminStarlink = request()->routeIs('admin.internet.starlink.*');
@@ -288,14 +288,14 @@
                                     </svg>
                                 </button>
                                 <div x-show="openAdminInternet" class="ml-4 space-y-1 mt-1">
-                                    @if (auth()->user()->hasPermission('Kelola Laporan Gangguan Internet'))
+                                    @if (auth()->user()?->hasPermission('Kelola Laporan Gangguan Internet'))
                                         <a href="{{ route('admin.internet.laporan-gangguan.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminLaporanGangguan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Laporan Gangguan
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Kelola Starlink Jelajah'))
+                                    @if (auth()->user()?->hasPermission('Kelola Starlink Jelajah'))
                                         <a href="{{ route('admin.internet.starlink.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminStarlink ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -307,7 +307,7 @@
                         @endif
 
                             {{-- VPN/Jaringan Privat Submenu (Admin) --}}
-                            @if (auth()->user()->hasAnyPermission(['Kelola Pendaftaran VPN', 'Kelola Reset Akun VPN', 'Kelola Akses JIP PDNS']))
+                            @if (auth()->user()?->hasAnyPermission(['Kelola Pendaftaran VPN', 'Kelola Reset Akun VPN', 'Kelola Akses JIP PDNS']))
                                 @php
                                     $atAdminVpnRegistration = request()->routeIs('admin.vpn.registration.*');
                                     $atAdminVpnReset = request()->routeIs('admin.vpn.reset.*');
@@ -324,21 +324,21 @@
                                         </svg>
                                     </button>
                                     <div x-show="openAdminVpn" class="ml-4 space-y-1 mt-1">
-                                        @if (auth()->user()->hasPermission('Kelola Pendaftaran VPN'))
+                                        @if (auth()->user()?->hasPermission('Kelola Pendaftaran VPN'))
                                             <a href="{{ route('admin.vpn.registration.index') }}"
                                                 class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                                {{ $atAdminVpnRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                                 Pendaftaran VPN
                                             </a>
                                         @endif
-                                        @if (auth()->user()->hasPermission('Kelola Reset Akun VPN'))
+                                        @if (auth()->user()?->hasPermission('Kelola Reset Akun VPN'))
                                             <a href="{{ route('admin.vpn.reset.index') }}"
                                                 class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                                {{ $atAdminVpnReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                                 Reset Akun VPN
                                             </a>
                                         @endif
-                                        @if (auth()->user()->hasPermission('Kelola Akses JIP PDNS'))
+                                        @if (auth()->user()?->hasPermission('Kelola Akses JIP PDNS'))
                                             <a href="{{ route('admin.vpn.jip-pdns.index') }}"
                                                 class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                                {{ $atAdminJipPdns ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -351,7 +351,7 @@
                         @endif
 
                         {{-- Pusat Data/Komputasi Submenu (Admin) --}}
-                        @if (auth()->user()->hasAnyPermission(['Kelola Kunjungan/Colocation', 'Kelola VPS/VM', 'Kelola Backup', 'Kelola Cloud Storage']))
+                        @if (auth()->user()?->hasAnyPermission(['Kelola Kunjungan/Colocation', 'Kelola VPS/VM', 'Kelola Backup', 'Kelola Cloud Storage']))
                             @php
                                 $atAdminVisitation = request()->routeIs('admin.datacenter.visitation.*');
                                 $atAdminVps = request()->routeIs('admin.datacenter.vps.*');
@@ -394,7 +394,7 @@
                         @endif
 
                         {{-- Tanda Tangan Elektronik Submenu (Admin) --}}
-                        @if (auth()->user()->hasAnyPermission(['Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Pembaruan Sertifikat TTE']))
+                        @if (auth()->user()?->hasAnyPermission(['Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Pembaruan Sertifikat TTE']))
                             @php
                                 $atAdminTteAssistance = request()->routeIs('admin.tte.assistance.*');
                                 $atAdminTteRegistration = request()->routeIs('admin.tte.registration.*');
@@ -412,28 +412,28 @@
                                     </svg>
                                 </button>
                                 <div x-show="openAdminTte" class="ml-4 space-y-1 mt-1">
-                                    @if (auth()->user()->hasPermission('Kelola Bantuan TTE'))
+                                    @if (auth()->user()?->hasPermission('Kelola Bantuan TTE'))
                                         <a href="{{ route('admin.tte.assistance.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminTteAssistance ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Pendampingan TTE
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Kelola Registrasi TTE'))
+                                    @if (auth()->user()?->hasPermission('Kelola Registrasi TTE'))
                                         <a href="{{ route('admin.tte.registration.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminTteRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Pendaftaran Akun TTE
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Kelola Reset Passphrase TTE'))
+                                    @if (auth()->user()?->hasPermission('Kelola Reset Passphrase TTE'))
                                         <a href="{{ route('admin.tte.passphrase-reset.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminTtePassphraseReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Reset Passphrase TTE
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Kelola Pembaruan Sertifikat TTE'))
+                                    @if (auth()->user()?->hasPermission('Kelola Pembaruan Sertifikat TTE'))
                                         <a href="{{ route('admin.tte.certificate-update.index') }}"
                                             class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminTteCertificateUpdate ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -445,7 +445,7 @@
                         @endif
 
                         {{-- Manajemen PSE (Admin) --}}
-                        @if (auth()->user()->hasPermission('Kelola Permohonan PSE'))
+                        @if (auth()->user()?->hasPermission('Kelola Permohonan PSE'))
                             <a href="{{ route('admin.pse-update.index') }}"
                                 class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atAdminPse ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -458,7 +458,7 @@
 
 
             {{-- Layanan Digital (Accordion) - Hanya untuk user verified --}}
-            @if (auth()->user()->is_verified && auth()->user()->hasAnyPermission([
+            @if (auth()->user()?->is_verified && auth()->user()?->hasAnyPermission([
                         'Akses Permohonan Email',
                         'Akses Reset Password Email',
                         'Akses Permohonan Subdomain',
@@ -516,7 +516,7 @@
                     </button>
                     <div x-show="openPermohonan" class="ml-4 space-y-1">
 
-                        @if (auth()->user()->hasAnyPermission(['user.email.index', 'user.email.create', 'user.email.show', 'user.email-password-reset.index', 'user.email-password-reset.create']))
+                        @if (auth()->user()?->hasAnyPermission(['user.email.index', 'user.email.create', 'user.email.show', 'user.email-password-reset.index', 'user.email-password-reset.create']))
                             @php
                                 $atEmailRequest = request()->routeIs('user.email.*');
                                 $atEmailPasswordReset = request()->routeIs('user.email-password-reset.*');
@@ -546,7 +546,7 @@
                             </div>
                         @endif
 
-                        @if (auth()->user()->hasAnyPermission(['user.subdomain.index', 'user.subdomain.create', 'user.subdomain.show', 'user.subdomain.name-change.index', 'user.subdomain.name-change.create', 'user.subdomain.name-change.show']))
+                        @if (auth()->user()?->hasAnyPermission(['user.subdomain.index', 'user.subdomain.create', 'user.subdomain.show', 'user.subdomain.name-change.index', 'user.subdomain.name-change.create', 'user.subdomain.name-change.show']))
                             @php
                                 $atSubdomainRegistration = request()->routeIs('user.subdomain.*') && !request()->routeIs('user.subdomain.ip-change.*') && !request()->routeIs('user.subdomain.name-change.*');
                                 $atSubdomainIpChange = request()->routeIs('user.subdomain.ip-change.*');
@@ -583,7 +583,7 @@
                         @endif
 
                         {{-- Pendaftaran Sistem Elektronik (PSE) (User) --}}
-                        @if (auth()->user()->hasPermission('Akses Update Data PSE'))
+                        @if (auth()->user()?->hasPermission('Akses Update Data PSE'))
                             <a href="{{ route('user.pse-update.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atPseUser ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -592,7 +592,7 @@
                         @endif
 
                         {{-- Rekomendasi Aplikasi V2 Submenu (User) --}}
-                        @if (auth()->user()->hasAnyPermission(['user.rekomendasi.usulan.create', 'user.fase-pengembangan']))
+                        @if (auth()->user()?->hasAnyPermission(['user.rekomendasi.usulan.create', 'user.fase-pengembangan']))
                             @php
                                 $openRekomendasiUserV2 = $atRekomendasiUsulan || $atFasePengembangan;
                             @endphp
@@ -606,14 +606,14 @@
                                     </svg>
                                 </button>
                                 <div x-show="openRekomendasiUserV2" class="ml-4 space-y-1 mt-1">
-                                    @if (auth()->user()->hasPermission('user.rekomendasi.usulan.create'))
+                                    @if (auth()->user()?->hasPermission('user.rekomendasi.usulan.create'))
                                         <a href="{{ route('user.rekomendasi.usulan.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atRekomendasiUsulan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Usulan Pertimbangan
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('user.fase-pengembangan'))
+                                    @if (auth()->user()?->hasPermission('user.fase-pengembangan'))
                                         <a href="{{ route('fase-pengembangan.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ request()->routeIs('fase-pengembangan.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -625,7 +625,7 @@
                         @endif
 
                         {{-- Konsultasi SPBE Berbasis AI --}}
-                        @if (auth()->user()->hasPermission('Akses Konsultasi SPBE AI'))
+                        @if (auth()->user()?->hasPermission('Akses Konsultasi SPBE AI'))
                             <a href="{{ route('user.konsultasi-spbe-ai.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atKonsultasiSpbeAi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -634,7 +634,7 @@
                         @endif
 
                         {{-- Survei Kepuasan Layanan --}}
-                        @if (auth()->user()->hasPermission('Akses Survei Kepuasan'))
+                        @if (auth()->user()?->hasPermission('Akses Survei Kepuasan'))
                             <a href="{{ route('survei-kepuasan.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atSurveiKepuasan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -643,7 +643,7 @@
                         @endif
 
                         {{-- Tanda Tangan Elektronik (TTE) Submenu --}}
-                        @if (auth()->user()->hasAnyPermission(['Akses Bantuan TTE', 'Akses Registrasi TTE', 'Akses Reset Passphrase TTE', 'Akses Pembaruan Sertifikat TTE']))
+                        @if (auth()->user()?->hasAnyPermission(['Akses Bantuan TTE', 'Akses Registrasi TTE', 'Akses Reset Passphrase TTE', 'Akses Pembaruan Sertifikat TTE']))
                             @php
                                 $atTteAssistance = request()->routeIs('user.tte.assistance.*');
                                 $atTteRegistration = request()->routeIs('user.tte.registration.*');
@@ -661,28 +661,28 @@
                                     </svg>
                                 </button>
                                 <div x-show="openTte" class="ml-4 space-y-1 mt-1">
-                                    @if (auth()->user()->hasPermission('Akses Bantuan TTE'))
+                                    @if (auth()->user()?->hasPermission('Akses Bantuan TTE'))
                                         <a href="{{ route('user.tte.assistance.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atTteAssistance ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Pendampingan Aktivasi dan Penggunaan TTE
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Akses Registrasi TTE'))
+                                    @if (auth()->user()?->hasPermission('Akses Registrasi TTE'))
                                         <a href="{{ route('user.tte.registration.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atTteRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Pendaftaran Akun Baru TTE
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Akses Reset Passphrase TTE'))
+                                    @if (auth()->user()?->hasPermission('Akses Reset Passphrase TTE'))
                                         <a href="{{ route('user.tte.passphrase-reset.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atTtePassphraseReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Permohonan Reset Passphrase TTE
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Akses Pembaruan Sertifikat TTE'))
+                                    @if (auth()->user()?->hasPermission('Akses Pembaruan Sertifikat TTE'))
                                         <a href="{{ route('user.tte.certificate-update.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atTteCertificateUpdate ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -694,7 +694,7 @@
                         @endif
 
                         {{-- Video Conference --}}
-                        @if (auth()->user()->hasPermission('Akses Video Conference'))
+                        @if (auth()->user()?->hasPermission('Akses Video Conference'))
                             <a href="{{ route('user.vidcon.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ request()->routeIs('user.vidcon.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -703,7 +703,7 @@
                         @endif
 
                         {{-- Internet Submenu --}}
-                        @if (auth()->user()->hasAnyPermission(['Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah']))
+                        @if (auth()->user()?->hasAnyPermission(['Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah']))
                             @php
                                 $atLaporanGangguan = request()->routeIs('user.internet.laporan-gangguan.*');
                                 $atStarlink = request()->routeIs('user.internet.starlink.*');
@@ -719,14 +719,14 @@
                                     </svg>
                                 </button>
                                 <div x-show="openInternet" class="ml-4 space-y-1 mt-1">
-                                    @if (auth()->user()->hasPermission('Akses Lapor Gangguan Internet'))
+                                    @if (auth()->user()?->hasPermission('Akses Lapor Gangguan Internet'))
                                         <a href="{{ route('user.internet.laporan-gangguan.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atLaporanGangguan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Lapor Gangguan
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Akses Starlink Jelajah'))
+                                    @if (auth()->user()?->hasPermission('Akses Starlink Jelajah'))
                                         <a href="{{ route('user.internet.starlink.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atStarlink ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -738,7 +738,7 @@
                         @endif
 
                         {{-- VPN/Jaringan Privat Submenu --}}
-                        @if (auth()->user()->hasAnyPermission(['Akses Pendaftaran VPN', 'Akses Reset Akun VPN', 'Akses JIP PDNS']))
+                        @if (auth()->user()?->hasAnyPermission(['Akses Pendaftaran VPN', 'Akses Reset Akun VPN', 'Akses JIP PDNS']))
                             @php
                                 $atVpnRegistration = request()->routeIs('user.vpn.registration.*');
                                 $atVpnReset = request()->routeIs('user.vpn.reset.*');
@@ -755,21 +755,21 @@
                                     </svg>
                                 </button>
                                 <div x-show="openVpn" class="ml-4 space-y-1 mt-1">
-                                    @if (auth()->user()->hasPermission('Akses Pendaftaran VPN'))
+                                    @if (auth()->user()?->hasPermission('Akses Pendaftaran VPN'))
                                         <a href="{{ route('user.vpn.registration.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atVpnRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Pendaftaran Baru
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Akses Reset Akun VPN'))
+                                    @if (auth()->user()?->hasPermission('Akses Reset Akun VPN'))
                                         <a href="{{ route('user.vpn.reset.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atVpnReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                             Reset Akun
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('Akses JIP PDNS'))
+                                    @if (auth()->user()?->hasPermission('Akses JIP PDNS'))
                                         <a href="{{ route('user.vpn.jip-pdns.index') }}"
                                             class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                            {{ $atJipPdns ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -781,7 +781,7 @@
                         @endif
 
                         {{-- Pusat Data/Komputasi Submenu --}}
-                        @if (auth()->user()->hasAnyPermission(['Akses Kunjungan/Colocation Data Center', 'Akses VPS/VM', 'Akses Backup', 'Akses Cloud Storage']))
+                        @if (auth()->user()?->hasAnyPermission(['Akses Kunjungan/Colocation Data Center', 'Akses VPS/VM', 'Akses Backup', 'Akses Cloud Storage']))
                             @php
                                 $atVisitation = request()->routeIs('user.datacenter.visitation.*');
                                 $atVps = request()->routeIs('user.datacenter.vps.*');
@@ -827,7 +827,7 @@
             @endif
 
             {{-- Permohonan Manual - Unggah Surat (Standalone) - Hanya untuk user verified --}}
-            @if (auth()->user()->is_verified && auth()->user()->hasPermission('user.permohonan'))
+            @if (auth()->user()?->is_verified && auth()->user()?->hasPermission('user.permohonan'))
             <div class="menu-item-unggah-manual">
                 <a href="{{ route('user.permohonan') }}"
                     class="block py-2.5 px-4 rounded hover:bg-green-100 hover:text-green-700
@@ -838,7 +838,7 @@
             @endif
 
             {{-- Video Konferensi (Accordion) --}}
-            @if (auth()->user()->hasAnyPermission([
+            @if (auth()->user()?->hasAnyPermission([
                         'op.tik.borrow.index',
                         'op.tik.borrow.create',
                         'admin.tik.assets',
@@ -847,7 +847,7 @@
                         'op.tik.schedule',
                         'admin.statistic',
                         'admin.vidcon.data',
-                    ]) || auth()->user()->hasRole('Operator-Vidcon'))
+                    ]) || auth()->user()?->hasRole('Operator-Vidcon'))
                 @php
                     $atPeminjamanSaya =
                         request()->routeIs('op.tik.borrow.index') || request()->routeIs('op.tik.borrow.show');
@@ -882,7 +882,7 @@
                     </button>
                     <div x-show="openVidcon" class="ml-4 space-y-1">
                         {{-- Peminjaman Saya --}}
-                        @if (auth()->user()->hasPermission('op.tik.borrow.index'))
+                        @if (auth()->user()?->hasPermission('op.tik.borrow.index'))
                             <a href="{{ route('op.tik.borrow.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atPeminjamanSaya ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -891,7 +891,7 @@
                         @endif
 
                         {{-- Buat Peminjaman --}}
-                        @if (auth()->user()->hasPermission('op.tik.borrow.create'))
+                        @if (auth()->user()?->hasPermission('op.tik.borrow.create'))
                             <a href="{{ route('op.tik.borrow.create') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atBuatPeminjaman ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -900,7 +900,7 @@
                         @endif
 
                         {{-- Inventaris Digital --}}
-                        @if (auth()->user()->hasPermission('admin.tik.assets'))
+                        @if (auth()->user()?->hasPermission('admin.tik.assets'))
                             <a href="{{ route('admin.tik.assets.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atInventaris ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -909,7 +909,7 @@
                         @endif
 
                         {{-- Laporan Peminjaman --}}
-                        @if (auth()->user()->hasPermission('admin.tik.borrow'))
+                        @if (auth()->user()?->hasPermission('admin.tik.borrow'))
                             <a href="{{ route('admin.tik.borrow.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atLaporanPeminjaman ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -918,7 +918,7 @@
                         @endif
 
                         {{-- Jadwal Video Konferensi --}}
-                        @if (auth()->user()->hasAnyPermission(['admin.schedule', 'op.tik.schedule']))
+                        @if (auth()->user()?->hasAnyPermission(['admin.schedule', 'op.tik.schedule']))
                             <a href="{{ route('op.tik.schedule.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atJadwalVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -927,7 +927,7 @@
                         @endif
 
                         {{-- Statistik Video Konferensi --}}
-                        @if (auth()->user()->hasPermission('admin.statistic'))
+                        @if (auth()->user()?->hasPermission('admin.statistic'))
                             <a href="{{ route('op.tik.statistic.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atStatistikVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -936,7 +936,7 @@
                         @endif
 
                         {{-- Pelaporan & Dokumentasi Operator --}}
-                        @if (auth()->user()->hasRole('Operator-Vidcon'))
+                        @if (auth()->user()?->hasRole('Operator-Vidcon'))
                             <a href="{{ route('operator.vidcon.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atPelaporanOperator ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -945,7 +945,7 @@
                         @endif
 
                         {{-- Kelola Data Vidcon --}}
-                        @if (auth()->user()->hasPermission('admin.vidcon.data'))
+                        @if (auth()->user()?->hasPermission('admin.vidcon.data'))
                             <a href="{{ route('admin.vidcon-data.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atKelolaVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -957,7 +957,7 @@
             @endif
 
             {{-- Unified Subdomain Management --}}
-            @if (auth()->user()->hasPermission('admin.subdomain'))
+            @if (auth()->user()?->hasPermission('admin.subdomain'))
                 @php
                     $pendingCount = \App\Models\SubdomainRequest::where('status', 'menunggu')->count();
                 @endphp
@@ -976,7 +976,7 @@
             @endif
 
             {{-- Master Data Subdomain --}}
-            @if (auth()->user()->hasPermission('admin.web-monitor'))
+            @if (auth()->user()?->hasPermission('admin.web-monitor'))
                 <a href="{{ route('admin.web-monitor.index') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.web-monitor.index') || request()->routeIs('admin.web-monitor.create') || request()->routeIs('admin.web-monitor.show') || request()->routeIs('admin.web-monitor.edit') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -985,7 +985,7 @@
             @endif
 
             {{-- Master Data Instansi --}}
-            @if (auth()->user()->hasPermission('admin.unit-kerja'))
+            @if (auth()->user()?->hasPermission('admin.unit-kerja'))
                 <a href="{{ route('admin.unit-kerja.index') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.unit-kerja.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -994,7 +994,7 @@
             @endif
 
             {{-- Master Data Email --}}
-            @if (auth()->user()->hasRole('Admin'))
+            @if (auth()->user()?->hasRole('Admin'))
                 <a href="{{ route('admin.email-accounts.index') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.email-accounts.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1003,7 +1003,7 @@
             @endif
 
             {{-- Master Data IP --}}
-            @if (auth()->user()->hasPermission('admin.web-monitor.check-ip-publik'))
+            @if (auth()->user()?->hasPermission('admin.web-monitor.check-ip-publik'))
                 <a href="{{ route('admin.web-monitor.check-ip-publik') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.web-monitor.check-ip-publik') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1012,7 +1012,7 @@
             @endif
 
             {{-- Master Data Aset TIK (Google Sheets Integration) --}}
-            @if(auth()->user()->hasPermission('admin.google-aset-tik'))
+            @if(auth()->user()?->hasPermission('admin.google-aset-tik'))
                 <a href="{{ route('admin.google-aset-tik.dashboard') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.google-aset-tik.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1021,7 +1021,7 @@
             @endif
 
             {{-- User Management --}}
-            @if (auth()->user()->hasPermission('admin.users'))
+            @if (auth()->user()?->hasPermission('admin.users'))
                 <a href="{{ route('admin.users') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.users*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1030,7 +1030,7 @@
             @endif
 
             {{-- Kelola Role --}}
-            @if (auth()->user()->hasPermission('admin.roles.index'))
+            @if (auth()->user()?->hasPermission('admin.roles.index'))
                 <a href="{{ route('admin.roles.index') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.roles*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1039,7 +1039,7 @@
             @endif
 
             {{-- Kelola Kewenangan --}}
-            @if (auth()->user()->hasRole('Admin'))
+            @if (auth()->user()?->hasRole('Admin'))
                 <a href="{{ route('admin.role-permissions') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.role-permissions*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1048,7 +1048,7 @@
             @endif
 
             {{-- Cek via SIMPEG --}}
-            @if (auth()->user()->hasPermission('admin.simpeg'))
+            @if (auth()->user()?->hasPermission('admin.simpeg'))
                 <a href="{{ route('admin.simpeg.index') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.simpeg.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1057,7 +1057,7 @@
             @endif
 
             {{-- Profile Pengguna --}}
-            @if (auth()->user()->hasPermission('user.profile'))
+            @if (auth()->user()?->hasPermission('user.profile'))
                 <a href="{{ route('profile.edit') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('profile.edit') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">

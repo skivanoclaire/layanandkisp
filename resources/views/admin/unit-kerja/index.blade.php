@@ -19,14 +19,44 @@
     @endif
 
     <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="mb-4">
-            <a href="{{ route('admin.unit-kerja.create') }}"
-               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold inline-flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                Tambah Instansi
-            </a>
+        <!-- Filter & Actions -->
+        <div class="mb-4 space-y-4">
+            <form method="GET" action="{{ route('admin.unit-kerja.index') }}" id="filterForm">
+                <div class="flex flex-wrap items-end gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Filter Tipe:</label>
+                        <div class="flex flex-wrap gap-3">
+                            @foreach($tipeOptions as $tipe)
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="tipe[]" value="{{ $tipe }}"
+                                           {{ in_array($tipe, $selectedTipes) ? 'checked' : '' }}
+                                           onchange="document.getElementById('filterForm').submit()"
+                                           class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                    <span class="ml-1.5 text-sm text-gray-700">{{ $tipe }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('admin.unit-kerja.create') }}"
+                   class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold inline-flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Tambah Instansi
+                </a>
+                <a href="{{ route('admin.unit-kerja.export-pdf', request()->query()) }}"
+                   target="_blank"
+                   class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold inline-flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Export PDF
+                </a>
+            </div>
         </div>
 
         <div class="overflow-x-auto">

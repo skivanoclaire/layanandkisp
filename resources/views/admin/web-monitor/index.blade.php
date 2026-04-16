@@ -326,7 +326,7 @@
                                 <form action="{{ route('admin.web-monitor.destroy', $item) }}"
                                       method="POST"
                                       class="inline"
-                                      onsubmit="return confirm('Yakin ingin menghapus {{ $item->nama_instansi }}?')">
+                                      onsubmit="return confirm('Yakin ingin menghapus {{ $item->nama_sistem }}?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
