@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(grep -r \"boot\\\\|Observer\\\\|Event\" /c/projects/laravel12-app/app/Models/Tte*.php)",
+      "Bash(ls c:/projects/laravel12-app/app/Http/Controllers/Admin/Tte*)"
+    ]
+  }
+}

@@ -58,6 +58,15 @@ return [
         'token' => env('WHM_TOKEN'),
     ],
 
+    'fonnte' => [
+        'tokens' => [
+            'sandi'  => env('FONNTE_SANDI_TOKEN'),
+            'aptika' => env('FONNTE_APTIKA_TOKEN'),
+        ],
+        'token' => env('FONNTE_SANDI_TOKEN'),
+        'url'   => env('FONNTE_API_URL', 'https://api.fonnte.com/send'),
+    ],
+
     'keycloak' => [
         'client_id' => env('KEYCLOAK_CLIENT_ID'),
         'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),

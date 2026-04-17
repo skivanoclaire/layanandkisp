@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Traits\ExportsTteData;
 use App\Models\TtePassphraseResetRequest;
 use App\Exports\TtePassphraseResetExport;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TtePassphraseResetController extends Controller
 {
@@ -89,6 +91,13 @@ class TtePassphraseResetController extends Controller
         }
 
         $ttePassphraseReset->update($data);
+
+        try {
+            $wa = new FonnteWhatsappService();
+            $wa->sendTteStatusNotification($ttePassphraseReset, 'Reset Passphrase TTE', $request->status, $request->keterangan_admin);
+        } catch (\Exception $e) {
+            Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('admin.tte.passphrase-reset.show', $ttePassphraseReset)
             ->with('success', 'Status permohonan berhasil diupdate.');

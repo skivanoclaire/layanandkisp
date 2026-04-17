@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\EmailPasswordResetRequest;
 use App\Services\CpanelEmailService;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EmailPasswordResetController extends Controller
 {
@@ -110,6 +112,21 @@ class EmailPasswordResetController extends Controller
             'reset_method' => $validated['reset_method'],
         ]);
 
+        try {
+            $resetRequest->loadMissing('user');
+            $wa = new FonnteWhatsappService('aptika');
+            $wa->sendStatusNotification(
+                $resetRequest->user->phone ?? '',
+                $resetRequest->email_address,
+                'Permintaan Reset Password',
+                'processed',
+                $validated['admin_notes'] ?? null,
+                'Email'
+            );
+        } catch (\Exception $e) {
+            Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
+
         return redirect()->route('admin.email-password-reset.index')
             ->with('success', $successMessage);
     }
@@ -137,6 +154,21 @@ class EmailPasswordResetController extends Controller
             'processed_at' => now(),
             'admin_notes' => $validated['admin_notes'],
         ]);
+
+        try {
+            $resetRequest->loadMissing('user');
+            $wa = new FonnteWhatsappService('aptika');
+            $wa->sendStatusNotification(
+                $resetRequest->user->phone ?? '',
+                $resetRequest->email_address,
+                'Permintaan Reset Password',
+                'rejected',
+                $validated['admin_notes'],
+                'Email'
+            );
+        } catch (\Exception $e) {
+            Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('admin.email-password-reset.index')
             ->with('success', 'Permintaan reset password berhasil ditolak.');

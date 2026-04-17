@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\TteAssistanceRequest;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TteAssistanceController extends Controller
 {
@@ -61,6 +63,13 @@ class TteAssistanceController extends Controller
         ];
 
         $tteAssistance->update($data);
+
+        try {
+            $wa = new FonnteWhatsappService();
+            $wa->sendTteStatusNotification($tteAssistance, 'Pendampingan TTE', $request->status, $request->keterangan_admin);
+        } catch (\Exception $e) {
+            Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('admin.tte.assistance.show', $tteAssistance)
             ->with('success', 'Status permohonan berhasil diupdate.');

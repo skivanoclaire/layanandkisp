@@ -18,6 +18,10 @@ class ProfileController extends Controller
     {
         return view('profile.edit', [
             'user' => $request->user(),
+            'unitKerjas' => \App\Models\UnitKerja::forLayananDigital()
+                ->where('is_active', true)
+                ->orderBy('nama')
+                ->get(),
         ]);
     }
 
@@ -34,6 +38,7 @@ class ProfileController extends Controller
             'nip' => ['nullable', 'string', 'max:20'],
             'nik' => ['nullable', 'string', 'max:20'],
             'phone' => ['nullable', 'string', 'max:20'],
+            'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
 
             // Ubah password jika disediakan
             'current_password' => ['nullable', 'current_password'],
@@ -54,11 +59,12 @@ class ProfileController extends Controller
         $isVerified = $user->is_verified;
 
         if (!$isVerified || $isAdmin) {
-            // Boleh update NIP dan NIK
+            // Boleh update NIP, NIK, dan Instansi
             $user->nip = $validated['nip'] ?? null;
             $user->nik = $validated['nik'] ?? null;
+            $user->unit_kerja_id = $validated['unit_kerja_id'] ?? null;
         }
-        // Else: NIP dan NIK tidak diupdate (tetap menggunakan nilai lama)
+        // Else: NIP, NIK, dan Instansi tidak diupdate (tetap menggunakan nilai lama)
 
         // Jika password diisi, update password
         if (!empty($validated['password'])) {

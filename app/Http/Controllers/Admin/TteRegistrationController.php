@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Traits\ExportsTteData;
 use App\Models\TteRegistrationRequest;
 use App\Exports\TteRegistrationExport;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TteRegistrationController extends Controller
 {
@@ -72,6 +74,13 @@ class TteRegistrationController extends Controller
         ];
 
         $tteRegistration->update($data);
+
+        try {
+            $wa = new FonnteWhatsappService();
+            $wa->sendTteStatusNotification($tteRegistration, 'Pendaftaran Akun TTE', $request->status, $request->keterangan_admin);
+        } catch (\Exception $e) {
+            Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('admin.tte.registration.show', $tteRegistration)
             ->with('success', 'Status permohonan berhasil diupdate.');

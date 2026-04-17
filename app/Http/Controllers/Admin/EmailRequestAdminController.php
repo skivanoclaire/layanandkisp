@@ -9,6 +9,7 @@ use App\Models\EmailRequestLog;
 use App\Models\EmailAccount;
 use App\Exports\EmailRequestExport;
 use App\Services\WhmApiService;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
@@ -177,6 +178,20 @@ class EmailRequestAdminController extends Controller
             'action'   => "status:$old->$item->status",
             'note'     => $r->note,
         ]);
+
+        try {
+            $wa = new FonnteWhatsappService('aptika');
+            $wa->sendStatusNotification(
+                $item->no_hp ?? '',
+                $item->ticket_no,
+                'Permintaan Email Baru',
+                $item->status,
+                $r->note,
+                'No. Tiket'
+            );
+        } catch (\Exception $e) {
+            Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
 
         // Build response message
         $message = "Status tiket {$item->ticket_no} diubah menjadi {$item->status}.";
