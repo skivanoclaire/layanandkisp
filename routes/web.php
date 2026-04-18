@@ -102,11 +102,16 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
      * });
      */
 
-    Route::middleware(['permission:user.permohonan'])->group(function () {
-        Route::get('/unggahmanual', [PermohonanController::class, 'dashboard'])->name('user.permohonan');
-        Route::post('/unggahmanual/submit', [PermohonanController::class, 'submit'])->name('user.submit');
-        Route::delete('/unggahmanual/request/{id}', [PermohonanController::class, 'delete'])->name('user.delete');
-    });
+    /*
+     * DISABLED — fitur Unggah Surat Manual sudah tidak dipakai.
+     * Uncomment untuk mengaktifkan kembali.
+     *
+     * Route::middleware(['permission:user.permohonan'])->group(function () {
+     *     Route::get('/unggahmanual', [PermohonanController::class, 'dashboard'])->name('user.permohonan');
+     *     Route::post('/unggahmanual/submit', [PermohonanController::class, 'submit'])->name('user.submit');
+     *     Route::delete('/unggahmanual/request/{id}', [PermohonanController::class, 'delete'])->name('user.delete');
+     * });
+     */
 
     // FASE 1: Usulan Pertimbangan - V2
     Route::middleware(['permission:user.rekomendasi.usulan.create'])

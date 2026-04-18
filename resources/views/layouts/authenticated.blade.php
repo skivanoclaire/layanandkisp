@@ -826,8 +826,8 @@
                 </div>
             @endif
 
-            {{-- Permohonan Manual - Unggah Surat (Standalone) - Hanya untuk user verified --}}
-            @if (auth()->user()?->is_verified && auth()->user()?->hasPermission('user.permohonan'))
+            {{-- DISABLED — fitur Unggah Surat Manual sudah tidak dipakai (route-nya juga di-comment di routes/web.php). Ganti @if(false) ke kondisi asli untuk aktifkan kembali. --}}
+            @if (false) {{-- was: auth()->user()?->is_verified && auth()->user()?->hasPermission('user.permohonan') --}}
             <div class="menu-item-unggah-manual">
                 <a href="{{ route('user.permohonan') }}"
                     class="block py-2.5 px-4 rounded hover:bg-green-100 hover:text-green-700
@@ -837,7 +837,121 @@
             </div>
             @endif
 
-            {{-- Video Konferensi (Accordion) --}}
+            {{-- Unified Subdomain Management --}}
+            @if (auth()->user()?->hasPermission('admin.subdomain'))
+                @php
+                    $pendingCount = \App\Models\SubdomainRequest::where('status', 'menunggu')->count();
+                @endphp
+                <a href="{{ route('admin.unified-subdomain.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.unified-subdomain.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    <div class="flex items-center justify-between">
+                        <span>Kelola Subdomain Terpadu</span>
+                        @if($pendingCount > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                                {{ $pendingCount }}
+                            </span>
+                        @endif
+                    </div>
+                </a>
+            @endif
+
+            {{-- Master Data (grouped dropdown) --}}
+            @php
+                $atMasterInstansi = request()->routeIs('admin.unit-kerja.*');
+                $atMasterSubdomain = request()->routeIs('admin.web-monitor.index')
+                    || request()->routeIs('admin.web-monitor.create')
+                    || request()->routeIs('admin.web-monitor.show')
+                    || request()->routeIs('admin.web-monitor.edit');
+                $atMasterEmail = request()->routeIs('admin.email-accounts.*');
+                $atMasterIp = request()->routeIs('admin.web-monitor.check-ip-publik');
+                $atMasterVidcon = request()->routeIs('admin.vidcon-data.*');
+                $atMasterAsetTik = request()->routeIs('admin.google-aset-tik.*');
+                $openMasterData = $atMasterInstansi
+                    || $atMasterSubdomain
+                    || $atMasterEmail
+                    || $atMasterIp
+                    || $atMasterVidcon
+                    || $atMasterAsetTik;
+
+                $canSeeMasterData = auth()->user()?->hasPermission('admin.unit-kerja')
+                    || auth()->user()?->hasPermission('admin.web-monitor')
+                    || auth()->user()?->hasRole('Admin')
+                    || auth()->user()?->hasPermission('admin.web-monitor.check-ip-publik')
+                    || auth()->user()?->hasPermission('admin.vidcon.data')
+                    || auth()->user()?->hasPermission('admin.google-aset-tik');
+            @endphp
+            @if ($canSeeMasterData)
+                <div x-data="{ openMasterData: {{ $openMasterData ? 'true' : 'false' }} }">
+                    <button @click="openMasterData = !openMasterData"
+                        class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openMasterData ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                        <span>Master Data</span>
+                        <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openMasterData }"
+                            fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="openMasterData" class="ml-4 space-y-1">
+                        {{-- Master Data Instansi --}}
+                        @if (auth()->user()?->hasPermission('admin.unit-kerja'))
+                            <a href="{{ route('admin.unit-kerja.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atMasterInstansi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Master Data Instansi
+                            </a>
+                        @endif
+
+                        {{-- Master Data Subdomain --}}
+                        @if (auth()->user()?->hasPermission('admin.web-monitor'))
+                            <a href="{{ route('admin.web-monitor.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atMasterSubdomain ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Master Data Subdomain
+                            </a>
+                        @endif
+
+                        {{-- Master Data Email --}}
+                        @if (auth()->user()?->hasRole('Admin'))
+                            <a href="{{ route('admin.email-accounts.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atMasterEmail ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Master Data Email
+                            </a>
+                        @endif
+
+                        {{-- Master Data IP --}}
+                        @if (auth()->user()?->hasPermission('admin.web-monitor.check-ip-publik'))
+                            <a href="{{ route('admin.web-monitor.check-ip-publik') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atMasterIp ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Master Data IP
+                            </a>
+                        @endif
+
+                        {{-- Master Data Vidcon --}}
+                        @if (auth()->user()?->hasPermission('admin.vidcon.data'))
+                            <a href="{{ route('admin.vidcon-data.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atMasterVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Master Data Vidcon
+                            </a>
+                        @endif
+
+                        {{-- Master Data Aset TIK --}}
+                        @if (auth()->user()?->hasPermission('admin.google-aset-tik'))
+                            <a href="{{ route('admin.google-aset-tik.dashboard') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atMasterAsetTik ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Master Data Aset TIK
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Peminjaman & Vidcon (Accordion) --}}
             @if (auth()->user()?->hasAnyPermission([
                         'op.tik.borrow.index',
                         'op.tik.borrow.create',
@@ -857,7 +971,6 @@
                     $atLaporanPeminjaman = request()->routeIs('admin.tik.borrow.*');
                     $atJadwalVidcon = request()->routeIs('op.tik.schedule.*');
                     $atStatistikVidcon = request()->routeIs('op.tik.statistic.*');
-                    $atKelolaVidcon = request()->routeIs('admin.vidcon-data.*');
                     $atPelaporanOperator = request()->routeIs('operator.vidcon.*');
                     $openVidcon =
                         $atPeminjamanSaya ||
@@ -866,13 +979,12 @@
                         $atLaporanPeminjaman ||
                         $atJadwalVidcon ||
                         $atStatistikVidcon ||
-                        $atKelolaVidcon ||
                         $atPelaporanOperator;
                 @endphp
                 <div x-data="{ openVidcon: {{ $openVidcon ? 'true' : 'false' }} }">
                     <button @click="openVidcon = !openVidcon"
                         class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                        <span>Video Konferensi</span>
+                        <span>Peminjaman & Vidcon</span>
                         <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openVidcon }"
                             fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
@@ -944,116 +1056,76 @@
                             </a>
                         @endif
 
-                        {{-- Kelola Data Vidcon --}}
-                        @if (auth()->user()?->hasPermission('admin.vidcon.data'))
-                            <a href="{{ route('admin.vidcon-data.index') }}"
-                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-                       {{ $atKelolaVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                Master Data Vidcon
-                            </a>
-                        @endif
                     </div>
                 </div>
             @endif
 
-            {{-- Unified Subdomain Management --}}
-            @if (auth()->user()?->hasPermission('admin.subdomain'))
-                @php
-                    $pendingCount = \App\Models\SubdomainRequest::where('status', 'menunggu')->count();
-                @endphp
-                <a href="{{ route('admin.unified-subdomain.index') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.unified-subdomain.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    <div class="flex items-center justify-between">
-                        <span>Kelola Subdomain Terpadu</span>
-                        @if($pendingCount > 0)
-                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-                                {{ $pendingCount }}
-                            </span>
+            {{-- Pengguna & Akses (grouped dropdown) --}}
+            @php
+                $atKelolaPengguna = request()->routeIs('admin.users*');
+                $atKelolaPeran = request()->routeIs('admin.roles*');
+                $atKelolaKewenangan = request()->routeIs('admin.role-permissions*');
+                $atCekSimpeg = request()->routeIs('admin.simpeg.*');
+                $openPenggunaAkses = $atKelolaPengguna
+                    || $atKelolaPeran
+                    || $atKelolaKewenangan
+                    || $atCekSimpeg;
+
+                $canSeePenggunaAkses = auth()->user()?->hasPermission('admin.users')
+                    || auth()->user()?->hasPermission('admin.roles.index')
+                    || auth()->user()?->hasRole('Admin')
+                    || auth()->user()?->hasPermission('admin.simpeg');
+            @endphp
+            @if ($canSeePenggunaAkses)
+                <div x-data="{ openPenggunaAkses: {{ $openPenggunaAkses ? 'true' : 'false' }} }">
+                    <button @click="openPenggunaAkses = !openPenggunaAkses"
+                        class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openPenggunaAkses ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                        <span>Pengguna & Akses</span>
+                        <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openPenggunaAkses }"
+                            fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="openPenggunaAkses" class="ml-4 space-y-1">
+                        {{-- Kelola Pengguna --}}
+                        @if (auth()->user()?->hasPermission('admin.users'))
+                            <a href="{{ route('admin.users') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atKelolaPengguna ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Kelola Pengguna
+                            </a>
+                        @endif
+
+                        {{-- Kelola Peran (Role) --}}
+                        @if (auth()->user()?->hasPermission('admin.roles.index'))
+                            <a href="{{ route('admin.roles.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atKelolaPeran ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Kelola Peran (Role)
+                            </a>
+                        @endif
+
+                        {{-- Kelola Kewenangan --}}
+                        @if (auth()->user()?->hasRole('Admin'))
+                            <a href="{{ route('admin.role-permissions') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atKelolaKewenangan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Kelola Kewenangan
+                            </a>
+                        @endif
+
+                        {{-- Cek via SIMPEG --}}
+                        @if (auth()->user()?->hasPermission('admin.simpeg'))
+                            <a href="{{ route('admin.simpeg.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atCekSimpeg ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Cek via SIMPEG
+                            </a>
                         @endif
                     </div>
-                </a>
-            @endif
-
-            {{-- Master Data Subdomain --}}
-            @if (auth()->user()?->hasPermission('admin.web-monitor'))
-                <a href="{{ route('admin.web-monitor.index') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.web-monitor.index') || request()->routeIs('admin.web-monitor.create') || request()->routeIs('admin.web-monitor.show') || request()->routeIs('admin.web-monitor.edit') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    Master Data Subdomain
-                </a>
-            @endif
-
-            {{-- Master Data Instansi --}}
-            @if (auth()->user()?->hasPermission('admin.unit-kerja'))
-                <a href="{{ route('admin.unit-kerja.index') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.unit-kerja.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    Master Data Instansi
-                </a>
-            @endif
-
-            {{-- Master Data Email --}}
-            @if (auth()->user()?->hasRole('Admin'))
-                <a href="{{ route('admin.email-accounts.index') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.email-accounts.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    Master Data Email
-                </a>
-            @endif
-
-            {{-- Master Data IP --}}
-            @if (auth()->user()?->hasPermission('admin.web-monitor.check-ip-publik'))
-                <a href="{{ route('admin.web-monitor.check-ip-publik') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.web-monitor.check-ip-publik') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    Master Data IP
-                </a>
-            @endif
-
-            {{-- Master Data Aset TIK (Google Sheets Integration) --}}
-            @if(auth()->user()?->hasPermission('admin.google-aset-tik'))
-                <a href="{{ route('admin.google-aset-tik.dashboard') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.google-aset-tik.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    Master Data Aset TIK
-                </a>
-            @endif
-
-            {{-- User Management --}}
-            @if (auth()->user()?->hasPermission('admin.users'))
-                <a href="{{ route('admin.users') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.users*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    User Management
-                </a>
-            @endif
-
-            {{-- Kelola Role --}}
-            @if (auth()->user()?->hasPermission('admin.roles.index'))
-                <a href="{{ route('admin.roles.index') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.roles*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    Kelola Role
-                </a>
-            @endif
-
-            {{-- Kelola Kewenangan --}}
-            @if (auth()->user()?->hasRole('Admin'))
-                <a href="{{ route('admin.role-permissions') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.role-permissions*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    Kelola Kewenangan
-                </a>
-            @endif
-
-            {{-- Cek via SIMPEG --}}
-            @if (auth()->user()?->hasPermission('admin.simpeg'))
-                <a href="{{ route('admin.simpeg.index') }}"
-                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-               {{ request()->routeIs('admin.simpeg.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                    Cek via SIMPEG
-                </a>
+                </div>
             @endif
 
             {{-- Profile Pengguna --}}
