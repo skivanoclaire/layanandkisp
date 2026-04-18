@@ -259,6 +259,23 @@
                             <a href="{{ route('admin.email-accounts.show', $account) }}?return_url={{ urlencode(request()->fullUrl()) }}" class="text-blue-600 hover:text-blue-900 mr-3">
                                 Detail
                             </a>
+                            @if($account->isSuspended())
+                                <form action="{{ route('admin.email-accounts.unsuspend', $account) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="text-green-600 hover:text-green-900 mr-3"
+                                        onclick="return confirm('Unsuspend {{ $account->email }} di WHM?')">
+                                        Unsuspend
+                                    </button>
+                                </form>
+                            @else
+                                <form action="{{ route('admin.email-accounts.suspend', $account) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="text-yellow-600 hover:text-yellow-900 mr-3"
+                                        onclick="return confirm('Suspend {{ $account->email }} di WHM? Pengguna tidak akan bisa login atau menerima email.')">
+                                        Suspend
+                                    </button>
+                                </form>
+                            @endif
                             <form action="{{ route('admin.email-accounts.destroy', $account) }}" method="POST" class="inline">
                                 @csrf
                                 @method('DELETE')

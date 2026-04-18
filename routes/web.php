@@ -352,6 +352,8 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/email-accounts/{emailAccount}', [\App\Http\Controllers\Admin\EmailAccountController::class, 'show'])->name('email-accounts.show');
     Route::put('/email-accounts/{emailAccount}/update-nip', [\App\Http\Controllers\Admin\EmailAccountController::class, 'updateNip'])->name('email-accounts.update-nip');
     Route::put('/email-accounts/{emailAccount}/update-requester-info', [\App\Http\Controllers\Admin\EmailAccountController::class, 'updateRequesterInfo'])->name('email-accounts.update-requester-info');
+    Route::post('/email-accounts/{emailAccount}/suspend', [\App\Http\Controllers\Admin\EmailAccountController::class, 'suspend'])->name('email-accounts.suspend');
+    Route::post('/email-accounts/{emailAccount}/unsuspend', [\App\Http\Controllers\Admin\EmailAccountController::class, 'unsuspend'])->name('email-accounts.unsuspend');
     Route::delete('/email-accounts/{emailAccount}', [\App\Http\Controllers\Admin\EmailAccountController::class, 'destroy'])->name('email-accounts.destroy');
     Route::delete('/email-accounts-destroy-all', [\App\Http\Controllers\Admin\EmailAccountController::class, 'destroyAll'])->name('email-accounts.destroy-all');
 

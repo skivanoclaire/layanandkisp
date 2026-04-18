@@ -3,7 +3,8 @@
     "allow": [
       "Bash(xargs grep *)",
       "Bash(grep -r \"boot\\\\|Observer\\\\|Event\" /c/projects/laravel12-app/app/Models/Tte*.php)",
-      "Bash(ls c:/projects/laravel12-app/app/Http/Controllers/Admin/Tte*)"
+      "Bash(ls c:/projects/laravel12-app/app/Http/Controllers/Admin/Tte*)",
+      "Bash(find /c/projects/laravel12-app -type f \\\\\\( -name \"*.md\" -o -name \"*.txt\" \\\\\\) -exec grep -l \"cPanel\\\\|WHM\\\\|email\\\\|disk\\\\|quota\" {} \\\\;)"
     ]
   }
 }

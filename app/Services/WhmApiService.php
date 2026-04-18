@@ -125,7 +125,7 @@ class WhmApiService
                     ->get($url, [
                         'cpanel_jsonapi_user' => $cpanelUser,
                         'cpanel_jsonapi_module' => 'Email',
-                        'cpanel_jsonapi_func' => 'listpops',
+                        'cpanel_jsonapi_func' => 'listpopswithdisk',
                         'cpanel_jsonapi_apiversion' => '2'
                     ]);
 
@@ -379,6 +379,104 @@ class WhmApiService
                 'success' => false,
                 'message' => $e->getMessage(),
                 'email' => $email
+            ];
+        }
+    }
+
+    /**
+     * Suspend or unsuspend an email account on WHM.
+     * Suspends/unsuspends BOTH login dan incoming mail agar status "suspended" konsisten.
+     *
+     * @param string $email Full email address (e.g., user@kaltaraprov.go.id)
+     * @param bool $suspend True untuk suspend, false untuk unsuspend
+     * @return array ['success' => bool, 'message' => string]
+     */
+    public function setEmailSuspension($email, $suspend = true)
+    {
+        try {
+            if (strpos($email, '@') === false) {
+                throw new Exception("Invalid email format: {$email}");
+            }
+
+            list($username, $domain) = explode('@', $email, 2);
+
+            // Find cPanel user for this domain
+            $accountsResponse = $this->makeRequest('listaccts');
+            $cpanelUser = null;
+            $cpanelAccounts = $accountsResponse['acct'] ?? ($accountsResponse['data']['acct'] ?? []);
+            foreach ($cpanelAccounts as $account) {
+                if (($account['domain'] ?? null) === $domain) {
+                    $cpanelUser = $account['user'];
+                    break;
+                }
+            }
+
+            if (!$cpanelUser) {
+                throw new Exception("No cPanel account found for domain: {$domain}");
+            }
+
+            $loginFunc = $suspend ? 'suspend_login' : 'unsuspend_login';
+            $incomingFunc = $suspend ? 'suspend_incoming' : 'unsuspend_incoming';
+
+            $url = "{$this->baseUrl}/cpanel";
+            $errors = [];
+
+            foreach ([$loginFunc, $incomingFunc] as $func) {
+                $response = Http::withHeaders([
+                    'Authorization' => "WHM {$this->username}:{$this->token}",
+                ])
+                ->withOptions(['verify' => false])
+                ->timeout(30)
+                ->get($url, [
+                    'cpanel_jsonapi_user' => $cpanelUser,
+                    'cpanel_jsonapi_module' => 'Email',
+                    'cpanel_jsonapi_func' => $func,
+                    'cpanel_jsonapi_apiversion' => '2',
+                    'email' => $username,
+                    'domain' => $domain,
+                ]);
+
+                if (!$response->successful()) {
+                    $errors[] = "{$func}: HTTP {$response->status()}";
+                    continue;
+                }
+
+                $data = $response->json();
+                $result = $data['cpanelresult'] ?? [];
+
+                if (isset($result['error'])) {
+                    $errors[] = "{$func}: " . $result['error'];
+                    continue;
+                }
+
+                $firstData = $result['data'][0] ?? null;
+                if ($firstData && isset($firstData['result']) && $firstData['result'] != 1) {
+                    $errors[] = "{$func}: " . ($firstData['reason'] ?? 'Unknown error');
+                }
+            }
+
+            if (!empty($errors)) {
+                throw new Exception(implode('; ', $errors));
+            }
+
+            $action = $suspend ? 'suspended' : 'unsuspended';
+            Log::info("Email {$action} on WHM", ['email' => $email]);
+
+            return [
+                'success' => true,
+                'message' => "Email {$email} berhasil di-" . ($suspend ? 'suspend' : 'unsuspend') . '.',
+            ];
+
+        } catch (Exception $e) {
+            $action = $suspend ? 'suspend' : 'unsuspend';
+            Log::error("Failed to {$action} email account", [
+                'email' => $email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
             ];
         }
     }

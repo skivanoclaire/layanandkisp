@@ -157,6 +157,48 @@ class EmailAccountController extends Controller
         return view('admin.email-accounts.show', compact('emailAccount', 'requestingUser', 'unitKerjaList'));
     }
 
+    public function suspend(EmailAccount $emailAccount)
+    {
+        $result = $this->whmApi->setEmailSuspension($emailAccount->email, true);
+
+        if (!$result['success']) {
+            return redirect()->back()->with('error', 'Gagal suspend: ' . $result['message']);
+        }
+
+        $emailAccount->update([
+            'suspended' => 1,
+            'last_synced_at' => now(),
+        ]);
+
+        Log::info('Email account suspended by admin', [
+            'email' => $emailAccount->email,
+            'admin_id' => auth()->id(),
+        ]);
+
+        return redirect()->back()->with('success', $result['message']);
+    }
+
+    public function unsuspend(EmailAccount $emailAccount)
+    {
+        $result = $this->whmApi->setEmailSuspension($emailAccount->email, false);
+
+        if (!$result['success']) {
+            return redirect()->back()->with('error', 'Gagal unsuspend: ' . $result['message']);
+        }
+
+        $emailAccount->update([
+            'suspended' => 0,
+            'last_synced_at' => now(),
+        ]);
+
+        Log::info('Email account unsuspended by admin', [
+            'email' => $emailAccount->email,
+            'admin_id' => auth()->id(),
+        ]);
+
+        return redirect()->back()->with('success', $result['message']);
+    }
+
     public function destroy(EmailAccount $emailAccount)
     {
         $email = $emailAccount->email;
