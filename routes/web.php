@@ -80,26 +80,32 @@ Route::middleware(['auth'])->group(function () {
 
 // Hanya untuk user TER-VERIFIKASI
 Route::middleware(['auth', 'verified.user'])->group(function () {
-    Route::get('/digital', [DigitalFormController::class, 'index'])->name('user.digital');
-    Route::get('/digital/rekomendasi', function () {
-        return view('user.digital-rekomendasi');
-    })->name('user.digital.rekomendasi');
+    /*
+     * DISABLED — desain halaman lama yang tidak jadi dipakai.
+     * Alur Rekomendasi aktif sekarang pakai `digital/rekomendasi/usulan` (V2, di bawah).
+     * Uncomment seluruh blok ini untuk mengaktifkan kembali.
+     *
+     * Route::get('/digital', [DigitalFormController::class, 'index'])->name('user.digital');
+     * Route::get('/digital/rekomendasi', function () {
+     *     return view('user.digital-rekomendasi');
+     * })->name('user.digital.rekomendasi');
+     *
+     * Route::prefix('/digital/rekomendasi/aplikasi')->group(function () {
+     *     Route::get('/', [RekomendasiAplikasiController::class, 'index'])->name('user.rekomendasi.aplikasi.index');
+     *     Route::get('/create', [RekomendasiAplikasiController::class, 'create'])->name('user.rekomendasi.aplikasi.create');
+     *     Route::post('/store', [RekomendasiAplikasiController::class, 'store'])->name('user.rekomendasi.aplikasi.store');
+     *     Route::get('/{id}', [RekomendasiAplikasiController::class, 'show'])->name('user.rekomendasi.aplikasi.show');
+     *     Route::get('/{id}/edit', [RekomendasiAplikasiController::class, 'edit'])->name('user.rekomendasi.aplikasi.edit');
+     *     Route::put('/{id}', [RekomendasiAplikasiController::class, 'update'])->name('user.rekomendasi.aplikasi.update');
+     *     Route::delete('/{id}', [RekomendasiAplikasiController::class, 'destroy'])->name('user.rekomendasi.aplikasi.destroy');
+     *     Route::get('/{id}/download-pdf', [RekomendasiAplikasiController::class, 'downloadPDF'])->name('user.rekomendasi.aplikasi.download-pdf');
+     * });
+     */
 
     Route::middleware(['permission:user.permohonan'])->group(function () {
         Route::get('/unggahmanual', [PermohonanController::class, 'dashboard'])->name('user.permohonan');
         Route::post('/unggahmanual/submit', [PermohonanController::class, 'submit'])->name('user.submit');
         Route::delete('/unggahmanual/request/{id}', [PermohonanController::class, 'delete'])->name('user.delete');
-    });
-
-    Route::prefix('/digital/rekomendasi/aplikasi')->group(function () {
-        Route::get('/', [RekomendasiAplikasiController::class, 'index'])->name('user.rekomendasi.aplikasi.index');
-        Route::get('/create', [RekomendasiAplikasiController::class, 'create'])->name('user.rekomendasi.aplikasi.create');
-        Route::post('/store', [RekomendasiAplikasiController::class, 'store'])->name('user.rekomendasi.aplikasi.store');
-        Route::get('/{id}', [RekomendasiAplikasiController::class, 'show'])->name('user.rekomendasi.aplikasi.show');
-        Route::get('/{id}/edit', [RekomendasiAplikasiController::class, 'edit'])->name('user.rekomendasi.aplikasi.edit');
-        Route::put('/{id}', [RekomendasiAplikasiController::class, 'update'])->name('user.rekomendasi.aplikasi.update');
-        Route::delete('/{id}', [RekomendasiAplikasiController::class, 'destroy'])->name('user.rekomendasi.aplikasi.destroy');
-        Route::get('/{id}/download-pdf', [RekomendasiAplikasiController::class, 'downloadPDF'])->name('user.rekomendasi.aplikasi.download-pdf');
     });
 
     // FASE 1: Usulan Pertimbangan - V2
