@@ -51,6 +51,66 @@ class CloudflareService
     }
 
     /**
+     * Sync all Cloudflare DNS records into the web_monitors table.
+     * Dipanggil oleh WebMonitorController (tombol "Sinkronisasi dari WHM") dan
+     * oleh artisan command `cloudflare:sync` (scheduled hourly).
+     *
+     * @param bool $checkStatus Jalankan checkStatus() setelah upsert record
+     * @return array{created:int, updated:int, checked:int}
+     */
+    public function syncWebMonitorsFromDns(bool $checkStatus = true): array
+    {
+        $dnsRecords = $this->getDnsRecords('A');
+
+        $created = 0;
+        $updated = 0;
+        $checked = 0;
+
+        foreach ($dnsRecords as $record) {
+            $monitor = \App\Models\WebMonitor::where('cloudflare_record_id', $record['id'])
+                ->orWhere('subdomain', $record['name'])
+                ->first();
+
+            if ($monitor) {
+                $monitor->update([
+                    'cloudflare_record_id' => $record['id'],
+                    'subdomain' => $record['name'],
+                    'ip_address' => $record['content'],
+                    'is_proxied' => $record['proxied'] ?? false,
+                ]);
+                $updated++;
+            } else {
+                $name = str_replace('.kaltaraprov.go.id', '', $record['name']);
+                $name = explode('.', $name)[0];
+                $guessedInstansi = ucwords(str_replace(['-', '_'], ' ', $name));
+
+                $monitor = \App\Models\WebMonitor::create([
+                    'cloudflare_record_id' => $record['id'],
+                    'nama_sistem' => $guessedInstansi,
+                    'subdomain' => $record['name'],
+                    'ip_address' => $record['content'],
+                    'is_proxied' => $record['proxied'] ?? false,
+                    'jenis' => \App\Models\WebMonitor::JENIS_WEBSITE_RESMI,
+                    'status' => 'inactive',
+                    'keterangan' => 'Otomatis dari Cloudflare',
+                ]);
+                $created++;
+            }
+
+            if ($checkStatus) {
+                try {
+                    $monitor->checkStatus();
+                    $checked++;
+                } catch (\Exception $e) {
+                    Log::warning("Cloudflare sync: checkStatus failed for {$monitor->subdomain}: " . $e->getMessage());
+                }
+            }
+        }
+
+        return compact('created', 'updated', 'checked');
+    }
+
+    /**
      * Get all DNS A records
      */
     public function getDnsRecords(string $type = 'A'): array

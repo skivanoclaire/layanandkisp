@@ -53,25 +53,26 @@
                 AI SPBE Kaltara
             </a>
             @auth
-                @if (Auth::user()->role === 'admin')
+                @php $user = Auth::user(); @endphp
+                @if ($user->hasRole('Admin'))
                     <a href="{{ route('admin.dashboard') }}"
                         class="bg-emerald-500 hover:bg-emerald-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
                         Admin Dashboard
                     </a>
-                @elseif (Auth::user()->role === 'user')
-                    <a href="{{ route('user.dashboard') }}"
+                @elseif ($user->hasRole('Admin-Vidcon'))
+                    <a href="{{ route('admin.tik.borrow.index') }}"
                         class="bg-blue-500 hover:bg-blue-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
-                        User Dashboard
+                        Admin Vidcon Dashboard
                     </a>
-                @elseif (Auth::user()->role === 'operator-vidcon')
+                @elseif ($user->hasRole('Operator-Vidcon'))
                     <a href="{{ route('op.tik.borrow.index') }}"
                         class="bg-blue-500 hover:bg-blue-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
                         Operator Dashboard
                     </a>
-                @elseif (Auth::user()->role === 'admin-vidcon')
-                    <a href="{{ route('admin.tik.borrow.index') }}"
+                @else
+                    <a href="{{ route('user.dashboard') }}"
                         class="bg-blue-500 hover:bg-blue-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
-                        Admin Vidcon Dashboard
+                        User Dashboard
                     </a>
                 @endif
             @else

@@ -50,13 +50,13 @@
                     $subdomainStats = app(\App\Services\SubdomainAggregatorService::class)->getStats();
                 @endphp
 
-                <!-- Total Subdomain Aktif -->
+                <!-- Subdomain Aktif -->
                 <div class="bg-white border-l-4 border-blue-500 p-4 rounded-lg shadow hover:shadow-lg transition">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Total Subdomain</p>
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Subdomain Aktif</p>
                             <p class="text-3xl font-bold text-gray-800">{{ $subdomainStats['active_monitors'] }}</p>
-                            <p class="text-xs text-gray-500 mt-1">Aktif dari {{ $subdomainStats['total_monitors'] }}</p>
+                            <p class="text-sm font-bold text-gray-600 mt-1">Total Subdomain : {{ $subdomainStats['total_monitors'] }}</p>
                         </div>
                         <div class="bg-blue-100 rounded-full p-3">
                             <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">

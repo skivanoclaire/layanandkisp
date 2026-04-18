@@ -10,3 +10,8 @@ Artisan::command('inspire', function () {
 
 // Schedule website status checks every hour
 Schedule::command('website:check-status')->hourly();
+
+// Sync Cloudflare DNS records to web_monitors every hour.
+// Skip status check karena `website:check-status` di atas sudah meng-handle.
+// Jalankan di menit ke-30 supaya tidak menabrak check-status yang jalan di menit 0.
+Schedule::command('cloudflare:sync --skip-status-check')->hourlyAt(30);

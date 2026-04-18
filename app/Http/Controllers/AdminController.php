@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Request as UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request as HttpRequest;
-use Illuminate\Support\Facades\Hash; // <-- letakkan DI LUAR class
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use App\Traits\ManagesRolePermissions;
@@ -17,176 +18,62 @@ class AdminController extends Controller
     {
         $requests = \App\Models\Request::latest()->take(10)->get();
 
-        // Hitung total keseluruhan dari SEMUA tabel Kelola Permohonan (digital forms)
-        $total = 0;
-        $waiting = 0;
-        $processing = 0;
-        $rejected = 0;
-        $finished = 0;
-
-        // Email Baru
-        $total += \DB::table('email_requests')->count();
-        $waiting += \DB::table('email_requests')->where('status', 'menunggu')->count();
-        $processing += \DB::table('email_requests')->where('status', 'proses')->count();
-        $rejected += \DB::table('email_requests')->where('status', 'ditolak')->count();
-        $finished += \DB::table('email_requests')->where('status', 'selesai')->count();
-
-        // Reset Password Email
-        $total += \DB::table('email_password_reset_requests')->count();
-        $waiting += \DB::table('email_password_reset_requests')->where('status', 'menunggu')->count();
-        $processing += \DB::table('email_password_reset_requests')->where('status', 'proses')->count();
-        $rejected += \DB::table('email_password_reset_requests')->where('status', 'ditolak')->count();
-        $finished += \DB::table('email_password_reset_requests')->where('status', 'selesai')->count();
-
-        // Subdomain Baru
-        $total += \DB::table('subdomain_requests')->count();
-        $waiting += \DB::table('subdomain_requests')->where('status', 'pending')->count();
-        $processing += \DB::table('subdomain_requests')->where('status', 'approved')->count();
-        $rejected += \DB::table('subdomain_requests')->where('status', 'rejected')->count();
-        $finished += \DB::table('subdomain_requests')->where('status', 'completed')->count();
-
-        // Perubahan IP Subdomain
-        $total += \DB::table('subdomain_ip_change_requests')->count();
-        $waiting += \DB::table('subdomain_ip_change_requests')->where('status', 'pending')->count();
-        $processing += \DB::table('subdomain_ip_change_requests')->where('status', 'approved')->count();
-        $rejected += \DB::table('subdomain_ip_change_requests')->where('status', 'rejected')->count();
-        $finished += \DB::table('subdomain_ip_change_requests')->where('status', 'completed')->count();
-
-        // Cloud Storage
-        $total += \DB::table('cloud_storage_requests')->count();
-        $waiting += \DB::table('cloud_storage_requests')->where('status', 'pending')->count();
-        $processing += \DB::table('cloud_storage_requests')->where('status', 'processing')->count();
-        $rejected += \DB::table('cloud_storage_requests')->where('status', 'rejected')->count();
-        $finished += \DB::table('cloud_storage_requests')->where('status', 'completed')->count();
-
-        // Video Conference
-        $total += \DB::table('vidcon_requests')->count();
-        $waiting += \DB::table('vidcon_requests')->where('status', 'pending')->count();
-        $processing += \DB::table('vidcon_requests')->where('status', 'approved')->count();
-        $rejected += \DB::table('vidcon_requests')->where('status', 'rejected')->count();
-        $finished += \DB::table('vidcon_requests')->where('status', 'completed')->count();
-
-        // Registrasi TTE
-        $total += \DB::table('tte_registration_requests')->count();
-        $waiting += \DB::table('tte_registration_requests')->where('status', 'pending')->count();
-        $processing += \DB::table('tte_registration_requests')->where('status', 'processing')->count();
-        $rejected += \DB::table('tte_registration_requests')->where('status', 'rejected')->count();
-        $finished += \DB::table('tte_registration_requests')->where('status', 'completed')->count();
-
-        // Reset Passphrase TTE
-        $total += \DB::table('tte_passphrase_reset_requests')->count();
-        $waiting += \DB::table('tte_passphrase_reset_requests')->where('status', 'pending')->count();
-        $processing += \DB::table('tte_passphrase_reset_requests')->where('status', 'processing')->count();
-        $rejected += \DB::table('tte_passphrase_reset_requests')->where('status', 'rejected')->count();
-        $finished += \DB::table('tte_passphrase_reset_requests')->where('status', 'completed')->count();
-
-        // Bantuan TTE
-        $total += \DB::table('tte_assistance_requests')->count();
-        $waiting += \DB::table('tte_assistance_requests')->where('status', 'pending')->count();
-        $processing += \DB::table('tte_assistance_requests')->where('status', 'processing')->count();
-        $rejected += \DB::table('tte_assistance_requests')->where('status', 'rejected')->count();
-        $finished += \DB::table('tte_assistance_requests')->where('status', 'completed')->count();
-
-        // Reset VPN
-        $total += \DB::table('vpn_resets')->count();
-        $waiting += \DB::table('vpn_resets')->where('status', 'pending')->count();
-        $processing += \DB::table('vpn_resets')->where('status', 'processing')->count();
-        $rejected += \DB::table('vpn_resets')->where('status', 'rejected')->count();
-        $finished += \DB::table('vpn_resets')->where('status', 'completed')->count();
-
-        // VPS
-        $total += \DB::table('vps_requests')->count();
-        $waiting += \DB::table('vps_requests')->where('status', 'pending')->count();
-        $processing += \DB::table('vps_requests')->where('status', 'processing')->count();
-        $rejected += \DB::table('vps_requests')->where('status', 'rejected')->count();
-        $finished += \DB::table('vps_requests')->where('status', 'completed')->count();
-
-        // Starlink
-        $total += \DB::table('starlink_requests')->count();
-        $waiting += \DB::table('starlink_requests')->where('status', 'pending')->count();
-        $processing += \DB::table('starlink_requests')->where('status', 'processing')->count();
-        $rejected += \DB::table('starlink_requests')->where('status', 'rejected')->count();
-        $finished += \DB::table('starlink_requests')->where('status', 'completed')->count();
-
-        // Hitung statistik kinerja bulan ini dari SEMUA tabel Kelola Permohonan
-        $summary = [
-            'Menunggu' => 0,
-            'Dalam Proses' => 0,
-            'Ditolak' => 0,
-            'Selesai' => 0,
+        // Hitung counter & summary dari SEMUA tabel Kelola Permohonan (digital forms).
+        // Tabel-tabel ini punya konvensi nilai status tidak seragam (sebagian Indonesia,
+        // sebagian Inggris, plus variant "diproses" & "processed"). whereIn() di bawah
+        // menyatukan kedua konvensi sehingga counter akurat terlepas dari nilai aktual.
+        $requestTables = [
+            'email'            => ['label' => 'Email Baru',             'table' => 'email_requests'],
+            'email_reset'      => ['label' => 'Reset Password Email',   'table' => 'email_password_reset_requests'],
+            'subdomain'        => ['label' => 'Subdomain Baru',         'table' => 'subdomain_requests'],
+            'subdomain_ip'     => ['label' => 'Perubahan IP Subdomain', 'table' => 'subdomain_ip_change_requests'],
+            'cloud_storage'    => ['label' => 'Cloud Storage',          'table' => 'cloud_storage_requests'],
+            'vidcon'           => ['label' => 'Video Conference',       'table' => 'vidcon_requests'],
+            'tte_registration' => ['label' => 'Registrasi TTE',         'table' => 'tte_registration_requests'],
+            'tte_passphrase'   => ['label' => 'Reset Passphrase TTE',   'table' => 'tte_passphrase_reset_requests'],
+            'tte_assistance'   => ['label' => 'Bantuan TTE',            'table' => 'tte_assistance_requests'],
+            'vpn'              => ['label' => 'Reset VPN',              'table' => 'vpn_resets'],
+            'vps'              => ['label' => 'VPS',                    'table' => 'vps_requests'],
+            'starlink'         => ['label' => 'Starlink',               'table' => 'starlink_requests'],
         ];
 
-        // Email Baru
-        $summary['Menunggu'] += \DB::table('email_requests')->where('status', 'menunggu')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('email_requests')->where('status', 'proses')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('email_requests')->where('status', 'ditolak')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('email_requests')->where('status', 'selesai')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+        $statusAliases = [
+            'menunggu' => ['menunggu', 'pending'],
+            'proses'   => ['proses', 'diproses', 'processing', 'approved'],
+            'ditolak'  => ['ditolak', 'rejected'],
+            'selesai'  => ['selesai', 'completed', 'processed'],
+        ];
 
-        // Reset Password Email
-        $summary['Menunggu'] += \DB::table('email_password_reset_requests')->where('status', 'menunggu')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('email_password_reset_requests')->where('status', 'proses')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('email_password_reset_requests')->where('status', 'ditolak')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('email_password_reset_requests')->where('status', 'selesai')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+        $total = $waiting = $processing = $rejected = $finished = 0;
+        $summary = ['Menunggu' => 0, 'Dalam Proses' => 0, 'Ditolak' => 0, 'Selesai' => 0];
+        $digitalFormStats = [];
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
 
-        // Subdomain Baru
-        $summary['Menunggu'] += \DB::table('subdomain_requests')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('subdomain_requests')->where('status', 'approved')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('subdomain_requests')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('subdomain_requests')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+        foreach ($requestTables as $key => $meta) {
+            $table = $meta['table'];
 
-        // Perubahan IP Subdomain
-        $summary['Menunggu'] += \DB::table('subdomain_ip_change_requests')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('subdomain_ip_change_requests')->where('status', 'approved')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('subdomain_ip_change_requests')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('subdomain_ip_change_requests')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+            $counts = [
+                'total'    => \DB::table($table)->count(),
+                'menunggu' => \DB::table($table)->whereIn('status', $statusAliases['menunggu'])->count(),
+                'proses'   => \DB::table($table)->whereIn('status', $statusAliases['proses'])->count(),
+                'ditolak'  => \DB::table($table)->whereIn('status', $statusAliases['ditolak'])->count(),
+                'selesai'  => \DB::table($table)->whereIn('status', $statusAliases['selesai'])->count(),
+            ];
 
-        // Cloud Storage
-        $summary['Menunggu'] += \DB::table('cloud_storage_requests')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('cloud_storage_requests')->where('status', 'processing')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('cloud_storage_requests')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('cloud_storage_requests')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+            $total      += $counts['total'];
+            $waiting    += $counts['menunggu'];
+            $processing += $counts['proses'];
+            $rejected   += $counts['ditolak'];
+            $finished   += $counts['selesai'];
 
-        // Video Conference
-        $summary['Menunggu'] += \DB::table('vidcon_requests')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('vidcon_requests')->where('status', 'approved')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('vidcon_requests')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('vidcon_requests')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+            $summary['Menunggu']     += \DB::table($table)->whereIn('status', $statusAliases['menunggu'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
+            $summary['Dalam Proses'] += \DB::table($table)->whereIn('status', $statusAliases['proses'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
+            $summary['Ditolak']      += \DB::table($table)->whereIn('status', $statusAliases['ditolak'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
+            $summary['Selesai']      += \DB::table($table)->whereIn('status', $statusAliases['selesai'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
 
-        // Registrasi TTE
-        $summary['Menunggu'] += \DB::table('tte_registration_requests')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('tte_registration_requests')->where('status', 'processing')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('tte_registration_requests')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('tte_registration_requests')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-
-        // Reset Passphrase TTE
-        $summary['Menunggu'] += \DB::table('tte_passphrase_reset_requests')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('tte_passphrase_reset_requests')->where('status', 'processing')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('tte_passphrase_reset_requests')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('tte_passphrase_reset_requests')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-
-        // Bantuan TTE
-        $summary['Menunggu'] += \DB::table('tte_assistance_requests')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('tte_assistance_requests')->where('status', 'processing')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('tte_assistance_requests')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('tte_assistance_requests')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-
-        // Reset VPN
-        $summary['Menunggu'] += \DB::table('vpn_resets')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('vpn_resets')->where('status', 'processing')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('vpn_resets')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('vpn_resets')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-
-        // VPS
-        $summary['Menunggu'] += \DB::table('vps_requests')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('vps_requests')->where('status', 'processing')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('vps_requests')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('vps_requests')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-
-        // Starlink
-        $summary['Menunggu'] += \DB::table('starlink_requests')->where('status', 'pending')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Dalam Proses'] += \DB::table('starlink_requests')->where('status', 'processing')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Ditolak'] += \DB::table('starlink_requests')->where('status', 'rejected')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-        $summary['Selesai'] += \DB::table('starlink_requests')->where('status', 'completed')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
+            $digitalFormStats[$key] = array_merge(['label' => $meta['label'], 'table' => $table], $counts);
+        }
 
         // Statistik per jenis layanan
         $serviceStats = \App\Models\Request::selectRaw('service, status, COUNT(*) as total')
@@ -208,118 +95,6 @@ class AdminController extends Controller
             'Subdomain', 'Email', 'Hosting', 'Cloud Storage', 'SPLP',
             'Internet', 'VPN', 'Wifi Publik', 'Videotron', 'Konten',
             'Helpdesk TIK', 'TTE', 'Rekomendasi'
-        ];
-
-        // Statistik Formulir Digital
-        $digitalFormStats = [
-            'email' => [
-                'label' => 'Email Baru',
-                'table' => 'email_requests',
-                'total' => \DB::table('email_requests')->count(),
-                'menunggu' => \DB::table('email_requests')->where('status', 'menunggu')->count(),
-                'proses' => \DB::table('email_requests')->where('status', 'proses')->count(),
-                'ditolak' => \DB::table('email_requests')->where('status', 'ditolak')->count(),
-                'selesai' => \DB::table('email_requests')->where('status', 'selesai')->count(),
-            ],
-            'email_reset' => [
-                'label' => 'Reset Password Email',
-                'table' => 'email_password_reset_requests',
-                'total' => \DB::table('email_password_reset_requests')->count(),
-                'menunggu' => \DB::table('email_password_reset_requests')->where('status', 'menunggu')->count(),
-                'proses' => \DB::table('email_password_reset_requests')->where('status', 'proses')->count(),
-                'ditolak' => \DB::table('email_password_reset_requests')->where('status', 'ditolak')->count(),
-                'selesai' => \DB::table('email_password_reset_requests')->where('status', 'selesai')->count(),
-            ],
-            'subdomain' => [
-                'label' => 'Subdomain Baru',
-                'table' => 'subdomain_requests',
-                'total' => \DB::table('subdomain_requests')->count(),
-                'menunggu' => \DB::table('subdomain_requests')->where('status', 'pending')->count(),
-                'proses' => \DB::table('subdomain_requests')->where('status', 'approved')->count(),
-                'ditolak' => \DB::table('subdomain_requests')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('subdomain_requests')->where('status', 'completed')->count(),
-            ],
-            'subdomain_ip' => [
-                'label' => 'Perubahan IP Subdomain',
-                'table' => 'subdomain_ip_change_requests',
-                'total' => \DB::table('subdomain_ip_change_requests')->count(),
-                'menunggu' => \DB::table('subdomain_ip_change_requests')->where('status', 'pending')->count(),
-                'proses' => \DB::table('subdomain_ip_change_requests')->where('status', 'approved')->count(),
-                'ditolak' => \DB::table('subdomain_ip_change_requests')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('subdomain_ip_change_requests')->where('status', 'completed')->count(),
-            ],
-            'cloud_storage' => [
-                'label' => 'Cloud Storage',
-                'table' => 'cloud_storage_requests',
-                'total' => \DB::table('cloud_storage_requests')->count(),
-                'menunggu' => \DB::table('cloud_storage_requests')->where('status', 'pending')->count(),
-                'proses' => \DB::table('cloud_storage_requests')->where('status', 'processing')->count(),
-                'ditolak' => \DB::table('cloud_storage_requests')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('cloud_storage_requests')->where('status', 'completed')->count(),
-            ],
-            'vidcon' => [
-                'label' => 'Video Conference',
-                'table' => 'vidcon_requests',
-                'total' => \DB::table('vidcon_requests')->count(),
-                'menunggu' => \DB::table('vidcon_requests')->where('status', 'pending')->count(),
-                'proses' => \DB::table('vidcon_requests')->where('status', 'approved')->count(),
-                'ditolak' => \DB::table('vidcon_requests')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('vidcon_requests')->where('status', 'completed')->count(),
-            ],
-            'tte_registration' => [
-                'label' => 'Registrasi TTE',
-                'table' => 'tte_registration_requests',
-                'total' => \DB::table('tte_registration_requests')->count(),
-                'menunggu' => \DB::table('tte_registration_requests')->where('status', 'pending')->count(),
-                'proses' => \DB::table('tte_registration_requests')->where('status', 'processing')->count(),
-                'ditolak' => \DB::table('tte_registration_requests')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('tte_registration_requests')->where('status', 'completed')->count(),
-            ],
-            'tte_passphrase' => [
-                'label' => 'Reset Passphrase TTE',
-                'table' => 'tte_passphrase_reset_requests',
-                'total' => \DB::table('tte_passphrase_reset_requests')->count(),
-                'menunggu' => \DB::table('tte_passphrase_reset_requests')->where('status', 'pending')->count(),
-                'proses' => \DB::table('tte_passphrase_reset_requests')->where('status', 'processing')->count(),
-                'ditolak' => \DB::table('tte_passphrase_reset_requests')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('tte_passphrase_reset_requests')->where('status', 'completed')->count(),
-            ],
-            'tte_assistance' => [
-                'label' => 'Bantuan TTE',
-                'table' => 'tte_assistance_requests',
-                'total' => \DB::table('tte_assistance_requests')->count(),
-                'menunggu' => \DB::table('tte_assistance_requests')->where('status', 'pending')->count(),
-                'proses' => \DB::table('tte_assistance_requests')->where('status', 'processing')->count(),
-                'ditolak' => \DB::table('tte_assistance_requests')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('tte_assistance_requests')->where('status', 'completed')->count(),
-            ],
-            'vpn' => [
-                'label' => 'Reset VPN',
-                'table' => 'vpn_resets',
-                'total' => \DB::table('vpn_resets')->count(),
-                'menunggu' => \DB::table('vpn_resets')->where('status', 'pending')->count(),
-                'proses' => \DB::table('vpn_resets')->where('status', 'processing')->count(),
-                'ditolak' => \DB::table('vpn_resets')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('vpn_resets')->where('status', 'completed')->count(),
-            ],
-            'vps' => [
-                'label' => 'VPS',
-                'table' => 'vps_requests',
-                'total' => \DB::table('vps_requests')->count(),
-                'menunggu' => \DB::table('vps_requests')->where('status', 'pending')->count(),
-                'proses' => \DB::table('vps_requests')->where('status', 'processing')->count(),
-                'ditolak' => \DB::table('vps_requests')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('vps_requests')->where('status', 'completed')->count(),
-            ],
-            'starlink' => [
-                'label' => 'Starlink',
-                'table' => 'starlink_requests',
-                'total' => \DB::table('starlink_requests')->count(),
-                'menunggu' => \DB::table('starlink_requests')->where('status', 'pending')->count(),
-                'proses' => \DB::table('starlink_requests')->where('status', 'processing')->count(),
-                'ditolak' => \DB::table('starlink_requests')->where('status', 'rejected')->count(),
-                'selesai' => \DB::table('starlink_requests')->where('status', 'completed')->count(),
-            ],
         ];
 
         return view('admin.dashboard', compact(

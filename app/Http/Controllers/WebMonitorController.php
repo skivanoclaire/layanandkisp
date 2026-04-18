@@ -363,57 +363,22 @@ class WebMonitorController extends Controller
     }
 
     /**
-     * Sync all websites with Cloudflare DNS records
+     * Sync all websites with Cloudflare DNS records.
+     * Logic inti ada di CloudflareService::syncWebMonitorsFromDns() agar
+     * bisa di-reuse oleh artisan command `cloudflare:sync` (scheduled hourly).
      */
     public function syncWithCloudflare()
     {
-        $dnsRecords = $this->cloudflare->getDnsRecords('A');
-
-        $synced = 0;
-        $created = 0;
-
-        foreach ($dnsRecords as $record) {
-            // Try to find existing monitor by cloudflare_record_id or subdomain
-            $monitor = WebMonitor::where('cloudflare_record_id', $record['id'])
-                ->orWhere('subdomain', $record['name'])
-                ->first();
-
-            if ($monitor) {
-                // Update existing
-                $monitor->update([
-                    'cloudflare_record_id' => $record['id'],
-                    'subdomain' => $record['name'],
-                    'ip_address' => $record['content'],
-                    'is_proxied' => $record['proxied'] ?? false,
-                ]);
-                $synced++;
-            } else {
-                // Create new website from Cloudflare DNS record
-                $monitor = WebMonitor::create([
-                    'cloudflare_record_id' => $record['id'],
-                    'nama_sistem' => $this->guessInstansiName($record['name']),
-                    'subdomain' => $record['name'],
-                    'ip_address' => $record['content'],
-                    'is_proxied' => $record['proxied'] ?? false,
-                    'jenis' => WebMonitor::JENIS_WEBSITE_RESMI, // Default jenis
-                    'status' => 'inactive', // Will be checked below
-                    'keterangan' => 'Otomatis dari Cloudflare',
-                ]);
-                $created++;
-            }
-
-            // Check status for all (new and updated)
-            $monitor->checkStatus();
-        }
+        $stats = $this->cloudflare->syncWebMonitorsFromDns();
 
         $message = "Sinkronisasi selesai. ";
-        if ($created > 0) {
-            $message .= "{$created} website baru ditambahkan, ";
+        if ($stats['created'] > 0) {
+            $message .= "{$stats['created']} website baru ditambahkan, ";
         }
-        if ($synced > 0) {
-            $message .= "{$synced} website diperbarui.";
+        if ($stats['updated'] > 0) {
+            $message .= "{$stats['updated']} website diperbarui.";
         }
-        if ($created === 0 && $synced === 0) {
+        if ($stats['created'] === 0 && $stats['updated'] === 0) {
             $message .= "Tidak ada perubahan.";
         }
 
