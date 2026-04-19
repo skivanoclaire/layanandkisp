@@ -76,6 +76,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/simpeg/check', [ProfileController::class, 'simpegCheck'])->name('profile.simpeg.check');
+    Route::post('/profile/simpeg/apply', [ProfileController::class, 'simpegApply'])->name('profile.simpeg.apply');
 });
 
 // Hanya untuk user TER-VERIFIKASI

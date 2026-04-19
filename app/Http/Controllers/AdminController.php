@@ -20,29 +20,48 @@ class AdminController extends Controller
 
         // Hitung counter & summary dari SEMUA tabel Kelola Permohonan (digital forms).
         // Tabel-tabel ini punya konvensi nilai status tidak seragam (sebagian Indonesia,
-        // sebagian Inggris, plus variant "diproses" & "processed"). whereIn() di bawah
-        // menyatukan kedua konvensi sehingga counter akurat terlepas dari nilai aktual.
+        // sebagian Inggris, plus variant "diproses", "processed", "disetujui", dll).
+        // whereIn() di bawah menyatukan semuanya sehingga counter akurat.
+        // Exclude: survei-kepuasan (rating, bukan request) + konsultasi-spbe-ai (no form table).
         $requestTables = [
-            'email'            => ['label' => 'Email Baru',             'table' => 'email_requests'],
-            'email_reset'      => ['label' => 'Reset Password Email',   'table' => 'email_password_reset_requests'],
-            'subdomain'        => ['label' => 'Subdomain Baru',         'table' => 'subdomain_requests'],
-            'subdomain_ip'     => ['label' => 'Perubahan IP Subdomain', 'table' => 'subdomain_ip_change_requests'],
-            'cloud_storage'    => ['label' => 'Cloud Storage',          'table' => 'cloud_storage_requests'],
-            'vidcon'           => ['label' => 'Video Conference',       'table' => 'vidcon_requests'],
-            'tte_registration' => ['label' => 'Registrasi TTE',         'table' => 'tte_registration_requests'],
-            'tte_passphrase'   => ['label' => 'Reset Passphrase TTE',   'table' => 'tte_passphrase_reset_requests'],
-            'tte_assistance'   => ['label' => 'Bantuan TTE',            'table' => 'tte_assistance_requests'],
-            'vpn'              => ['label' => 'Reset VPN',              'table' => 'vpn_resets'],
-            'vps'              => ['label' => 'VPS',                    'table' => 'vps_requests'],
-            'starlink'         => ['label' => 'Starlink',               'table' => 'starlink_requests'],
+            'email'                   => ['label' => 'Email Baru',                  'table' => 'email_requests'],
+            'email_reset'             => ['label' => 'Reset Password Email',        'table' => 'email_password_reset_requests'],
+            'subdomain'               => ['label' => 'Subdomain Baru',              'table' => 'subdomain_requests'],
+            'subdomain_ip'            => ['label' => 'Perubahan IP Subdomain',      'table' => 'subdomain_ip_change_requests'],
+            'subdomain_name'          => ['label' => 'Perubahan Nama Subdomain',    'table' => 'subdomain_name_change_requests'],
+            'rekomendasi_usulan'      => ['label' => 'Rekomendasi Usulan',          'table' => 'rekomendasi_aplikasi_forms'],
+            'pse'                     => ['label' => 'Pendaftaran Sistem Elektronik','table' => 'pse_update_requests'],
+            'vidcon'                  => ['label' => 'Video Conference',            'table' => 'vidcon_requests'],
+            'lapor_gangguan'          => ['label' => 'Lapor Gangguan Internet',     'table' => 'laporan_gangguan'],
+            'starlink'                => ['label' => 'Starlink Jelajah',            'table' => 'starlink_requests'],
+            'vpn_registration'        => ['label' => 'Pendaftaran VPN',             'table' => 'vpn_registrations'],
+            'vpn_reset'               => ['label' => 'Reset VPN',                   'table' => 'vpn_resets'],
+            'jip_pdns'                => ['label' => 'JIP PDNS',                    'table' => 'jip_pdns_requests'],
+            'visitation'              => ['label' => 'Kunjungan Pusat Data',        'table' => 'visitations'],
+            'vps'                     => ['label' => 'VPS / VM',                    'table' => 'vps_requests'],
+            'backup'                  => ['label' => 'Backup Pusat Data',           'table' => 'backup_requests'],
+            'cloud_storage'           => ['label' => 'Cloud Storage',               'table' => 'cloud_storage_requests'],
+            'tte_assistance'          => ['label' => 'Pendampingan TTE',            'table' => 'tte_assistance_requests'],
+            'tte_registration'        => ['label' => 'Registrasi TTE',              'table' => 'tte_registration_requests'],
+            'tte_passphrase'          => ['label' => 'Reset Passphrase TTE',        'table' => 'tte_passphrase_reset_requests'],
+            'tte_certificate_update'  => ['label' => 'Pembaruan Sertifikat TTE',    'table' => 'tte_certificate_update_requests'],
         ];
 
+        // Alias status mencakup semua konvensi yang ditemukan di 21 table di atas:
+        //   - menunggu:   'menunggu', 'pending', 'diajukan', 'belum_mulai'
+        //   - proses:     'proses', 'diproses', 'processing', 'approved', 'perlu_revisi', 'sedang_berjalan'
+        //   - ditolak:    'ditolak', 'rejected'
+        //   - selesai:    'selesai', 'completed', 'processed', 'disetujui'
         $statusAliases = [
-            'menunggu' => ['menunggu', 'pending'],
-            'proses'   => ['proses', 'diproses', 'processing', 'approved'],
+            'menunggu' => ['menunggu', 'pending', 'diajukan', 'belum_mulai'],
+            'proses'   => ['proses', 'diproses', 'processing', 'approved', 'perlu_revisi', 'sedang_berjalan'],
             'ditolak'  => ['ditolak', 'rejected'],
-            'selesai'  => ['selesai', 'completed', 'processed'],
+            'selesai'  => ['selesai', 'completed', 'processed', 'disetujui'],
         ];
+
+        // Status yang TIDAK DIHITUNG sama sekali (tidak masuk total & bucket manapun).
+        // `draft` = form yang masih dikerjakan user, belum disubmit ke admin.
+        $excludeStatuses = ['draft'];
 
         $total = $waiting = $processing = $rejected = $finished = 0;
         $summary = ['Menunggu' => 0, 'Dalam Proses' => 0, 'Ditolak' => 0, 'Selesai' => 0];
@@ -53,12 +72,16 @@ class AdminController extends Controller
         foreach ($requestTables as $key => $meta) {
             $table = $meta['table'];
 
+            // Closure mengembalikan query builder baru tiap pemanggilan,
+            // sudah pre-filtered untuk exclude `draft` (dan status di-exclude lainnya).
+            $base = fn() => \DB::table($table)->whereNotIn('status', $excludeStatuses);
+
             $counts = [
-                'total'    => \DB::table($table)->count(),
-                'menunggu' => \DB::table($table)->whereIn('status', $statusAliases['menunggu'])->count(),
-                'proses'   => \DB::table($table)->whereIn('status', $statusAliases['proses'])->count(),
-                'ditolak'  => \DB::table($table)->whereIn('status', $statusAliases['ditolak'])->count(),
-                'selesai'  => \DB::table($table)->whereIn('status', $statusAliases['selesai'])->count(),
+                'total'    => $base()->count(),
+                'menunggu' => $base()->whereIn('status', $statusAliases['menunggu'])->count(),
+                'proses'   => $base()->whereIn('status', $statusAliases['proses'])->count(),
+                'ditolak'  => $base()->whereIn('status', $statusAliases['ditolak'])->count(),
+                'selesai'  => $base()->whereIn('status', $statusAliases['selesai'])->count(),
             ];
 
             $total      += $counts['total'];
@@ -67,10 +90,10 @@ class AdminController extends Controller
             $rejected   += $counts['ditolak'];
             $finished   += $counts['selesai'];
 
-            $summary['Menunggu']     += \DB::table($table)->whereIn('status', $statusAliases['menunggu'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
-            $summary['Dalam Proses'] += \DB::table($table)->whereIn('status', $statusAliases['proses'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
-            $summary['Ditolak']      += \DB::table($table)->whereIn('status', $statusAliases['ditolak'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
-            $summary['Selesai']      += \DB::table($table)->whereIn('status', $statusAliases['selesai'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
+            $summary['Menunggu']     += $base()->whereIn('status', $statusAliases['menunggu'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
+            $summary['Dalam Proses'] += $base()->whereIn('status', $statusAliases['proses'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
+            $summary['Ditolak']      += $base()->whereIn('status', $statusAliases['ditolak'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
+            $summary['Selesai']      += $base()->whereIn('status', $statusAliases['selesai'])->whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->count();
 
             $digitalFormStats[$key] = array_merge(['label' => $meta['label'], 'table' => $table], $counts);
         }
@@ -259,6 +282,7 @@ class AdminController extends Controller
 
     public function editUser(User $user)
     {
+        $user->load('jabatan.unitKerja');
         $roles = \App\Models\Role::all();
         $unitKerjas = \App\Models\UnitKerja::active()->orderBy('nama')->get();
         return view('admin.edit-user', compact('user', 'roles', 'unitKerjas'));

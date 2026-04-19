@@ -13,7 +13,7 @@ use Throwable;
 
 class SimpegCheckController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $logs = SimpegCheck::with(['user','createdBy'])
             ->latest()->take(10)->get();
@@ -25,7 +25,21 @@ class SimpegCheckController extends Controller
             'result' => null,
             'layout' => 'layouts.app',
             'unitKerjas' => $unitKerjas,
+            'prefilledNik' => $request->query('nik'),
+            'targetUserId' => $request->query('target_user_id'),
+            'returnUrl'    => $this->safeReturnUrl($request->query('return_url')),
         ]);
+    }
+
+    /**
+     * Whitelist: hanya return URL yang se-origin dengan app (anti open redirect).
+     */
+    protected function safeReturnUrl(?string $url): ?string
+    {
+        if (!$url) {
+            return null;
+        }
+        return str_starts_with($url, url('/')) ? $url : null;
     }
 
     public function check(Request $request, SimpegClient $client)
@@ -117,10 +131,16 @@ class SimpegCheckController extends Controller
             }
         }
 
-        // Karena NIK di-encrypt, kita perlu cari user dengan cara decrypt setiap NIK
-        $user = User::whereNotNull('nik')->get()->first(function($u) use ($nik) {
-            return $u->nik === $nik;
-        });
+        // Kalau datang dari halaman edit-user (target_user_id dikirim di request),
+        // langsung pakai user itu — lebih cepat, skip iterasi decrypt NIK semua user.
+        if ($request->filled('target_user_id')) {
+            $user = User::find($request->integer('target_user_id'));
+        } else {
+            // Karena NIK di-encrypt, kita perlu cari user dengan cara decrypt setiap NIK
+            $user = User::whereNotNull('nik')->get()->first(function($u) use ($nik) {
+                return $u->nik === $nik;
+            });
+        }
 
         $nameMatch  = $user && $nama
             ? (mb_strtoupper(trim($user->name)) === mb_strtoupper(trim($nama)))
@@ -177,6 +197,9 @@ class SimpegCheckController extends Controller
             'layout'    => 'layouts.app',
             'input_nik' => $nik,
             'unitKerjas' => $unitKerjas,
+            'prefilledNik' => $nik,
+            'targetUserId' => $request->input('target_user_id'),
+            'returnUrl'    => $this->safeReturnUrl($request->input('return_url')),
         ]);
     }
 
@@ -279,6 +302,14 @@ class SimpegCheckController extends Controller
         }
 
         $fieldsList = implode(', ', $updatedFields);
-        return back()->with('flash_success', "Data berhasil disimpan ke user {$user->name}: {$fieldsList}");
+        $message = "Data berhasil disimpan ke user {$user->name}: {$fieldsList}";
+
+        // Kalau datang dari halaman lain (mis. edit-user), kembalikan ke sana.
+        $returnUrl = $this->safeReturnUrl($request->input('return_url'));
+        if ($returnUrl) {
+            return redirect($returnUrl)->with('success', $message);
+        }
+
+        return back()->with('flash_success', $message);
     }
 }

@@ -58,16 +58,26 @@
             <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Instansi <span class="text-red-500">*</span>
             </label>
+            @php
+                $defaultInstansi = $user->unitKerja->nama ?? '';
+                $selectedInstansi = old('instansi', $defaultInstansi);
+            @endphp
             <select name="instansi" required
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                 <option value="">-- Pilih Instansi --</option>
                 @foreach($unitKerjas as $unitKerja)
-                    <option value="{{ $unitKerja->nama }}" {{ old('instansi') == $unitKerja->nama ? 'selected' : '' }}>
+                    <option value="{{ $unitKerja->nama }}" {{ $selectedInstansi == $unitKerja->nama ? 'selected' : '' }}>
                         {{ $unitKerja->nama }}
                     </option>
                 @endforeach
             </select>
-            <p class="text-xs text-gray-500 mt-1">Pilih Instansi</p>
+            <p class="text-xs text-gray-500 mt-1">
+                @if($defaultInstansi)
+                    Terisi otomatis dari profil Anda — ubah jika perlu.
+                @else
+                    Pilih Instansi (profil Anda belum punya data Unit Kerja).
+                @endif
+            </p>
         </div>
 
         <!-- Jabatan -->
@@ -75,9 +85,13 @@
             <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Jabatan <span class="text-red-500">*</span>
             </label>
-            <input type="text" name="jabatan" value="{{ old('jabatan') }}" required
+            @php $defaultJabatan = $user->jabatan->nama_jabatan ?? ''; @endphp
+            <input type="text" name="jabatan" value="{{ old('jabatan', $defaultJabatan) }}" required
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Masukkan jabatan Anda">
+            @if($defaultJabatan)
+                <p class="text-xs text-gray-500 mt-1">Terisi otomatis dari profil Anda — ubah jika perlu.</p>
+            @endif
         </div>
 
         <!-- Information Box -->

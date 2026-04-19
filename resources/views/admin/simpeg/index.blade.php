@@ -29,11 +29,19 @@
         @endif
 
         {{-- Form input NIK --}}
-        <form method="POST" action="{{ route('admin.simpeg.check') }}" class="bg-white rounded shadow p-4 mb-6">
+        <form id="nik-form" method="POST" action="{{ route('admin.simpeg.check') }}" class="bg-white rounded shadow p-4 mb-6">
             @csrf
+            {{-- Context dari halaman edit-user (opsional) --}}
+            @if(!empty($targetUserId))
+                <input type="hidden" name="target_user_id" value="{{ $targetUserId }}">
+            @endif
+            @if(!empty($returnUrl))
+                <input type="hidden" name="return_url" value="{{ $returnUrl }}">
+            @endif
+
             <label class="block text-sm font-medium mb-1" for="nik">NIK</label>
             <div class="flex gap-2">
-                <input id="nik" type="text" name="nik" value="{{ old('nik', $input_nik ?? '') }}"
+                <input id="nik" type="text" name="nik" value="{{ old('nik', $input_nik ?? ($prefilledNik ?? '')) }}"
                     class="w-full border rounded px-3 py-2" inputmode="numeric" pattern="\d{16}"
                     placeholder="Masukkan 16 digit NIK" required>
                 <button type="button"
@@ -51,6 +59,15 @@
                 Cek
             </button>
         </form>
+
+        {{-- Auto-submit kalau datang dari halaman edit-user dengan NIK pre-filled --}}
+        @if(!empty($prefilledNik) && empty($input_nik) && empty($result))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('nik-form').submit();
+                });
+            </script>
+        @endif
 
         {{-- Hasil cek --}}
         @if (!is_null($result))
@@ -184,7 +201,10 @@
                         <form method="POST" action="{{ route('admin.simpeg.saveToUser') }}">
                             @csrf
 
-                            @if(empty($result['user']))
+                            @if(!empty($targetUserId))
+                                {{-- Context dari edit-user: user sudah pasti, skip dropdown --}}
+                                <input type="hidden" name="user_id" value="{{ $targetUserId }}">
+                            @elseif(empty($result['user']))
                                 {{-- Dropdown untuk pilih user jika tidak ditemukan berdasarkan NIK --}}
                                 <div class="mb-4">
                                     <label for="user_id_select" class="block text-sm font-medium text-gray-700 mb-1">
@@ -208,6 +228,9 @@
                             <input type="hidden" name="nik" value="{{ $input_nik ?? '' }}">
                             @if(!empty($result['instansi']))
                                 <input type="hidden" name="instansi_simpeg" value="{{ $result['instansi'] }}">
+                            @endif
+                            @if(!empty($returnUrl))
+                                <input type="hidden" name="return_url" value="{{ $returnUrl }}">
                             @endif
 
                             <div class="space-y-2 mb-4">

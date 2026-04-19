@@ -92,6 +92,63 @@
                 <p class="mt-1 text-xs text-gray-500">Opsional - Pilih untuk user yang merupakan pegawai instansi</p>
             </div>
 
+            <!-- Jabatan (read-only, dikelola via Sinkron SIMPEG) -->
+            <div class="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <div class="flex items-start justify-between gap-4 mb-2">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800">Jabatan</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Data jabatan disinkronkan dari SIMPEG — tidak diedit manual.</p>
+                    </div>
+                    @if(!empty($user->nik))
+                        <a href="{{ route('admin.simpeg.index', ['nik' => $user->nik, 'target_user_id' => $user->id, 'return_url' => url()->current()]) }}"
+                           class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Sinkron dengan SIMPEG
+                        </a>
+                    @else
+                        <span class="shrink-0 inline-flex items-center px-3 py-1.5 bg-gray-300 text-gray-500 text-xs font-semibold rounded cursor-not-allowed" title="NIK user belum diisi">
+                            Sinkron dengan SIMPEG
+                        </span>
+                    @endif
+                </div>
+
+                @if($user->jabatan)
+                    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm mt-3">
+                        <div>
+                            <dt class="text-xs text-gray-500">Nama Jabatan</dt>
+                            <dd class="text-gray-800">{{ $user->jabatan->nama_jabatan ?: '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-gray-500">Eselon</dt>
+                            <dd class="text-gray-800">{{ $user->jabatan->eselon ?: '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-gray-500">TMT Jabatan</dt>
+                            <dd class="text-gray-800">
+                                {{ $user->jabatan->tmt_jabatan ? \Carbon\Carbon::parse($user->jabatan->tmt_jabatan)->format('d M Y') : '—' }}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-gray-500">Unit Kerja (dari Jabatan)</dt>
+                            <dd class="text-gray-800">
+                                {{ $user->jabatan->unitKerja->nama ?? ($user->jabatan->unit_kerja_legacy ?: '—') }}
+                            </dd>
+                        </div>
+                    </dl>
+                @else
+                    <p class="mt-2 text-sm text-gray-600 italic">
+                        Belum ada data jabatan.
+                        @if(!empty($user->nik))
+                            Klik tombol <strong>Sinkron dengan SIMPEG</strong> di atas untuk mengisi otomatis dari SIMPEG.
+                        @else
+                            Isi NIK user dulu (dan simpan), lalu gunakan tombol Sinkron SIMPEG.
+                        @endif
+                    </p>
+                @endif
+            </div>
+
             <div class="mt-4">
                 <label class="block font-semibold mb-1">Password Baru</label>
                 <input type="password" name="password" class="form-input w-full border border-gray-300 rounded-md p-2"
