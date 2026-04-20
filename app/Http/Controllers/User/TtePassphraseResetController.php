@@ -5,7 +5,9 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\TtePassphraseResetRequest;
 use App\Models\EmailAccount;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TtePassphraseResetController extends Controller
 {
@@ -59,7 +61,7 @@ class TtePassphraseResetController extends Controller
 
         $user = auth()->user();
 
-        TtePassphraseResetRequest::create([
+        $tteRequest = TtePassphraseResetRequest::create([
             'user_id' => $user->id,
             'nama' => $user->name,
             'nip' => $user->nip,
@@ -69,6 +71,17 @@ class TtePassphraseResetController extends Controller
             'jabatan' => $request->jabatan,
             'status' => 'menunggu',
         ]);
+
+        try {
+            $wa = new FonnteWhatsappService();
+            $wa->sendSubmitNotification(
+                $tteRequest->no_hp ?? '',
+                $tteRequest->ticket_no,
+                'Reset Passphrase TTE'
+            );
+        } catch (\Exception $e) {
+            Log::error('WhatsApp submit notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('user.tte.passphrase-reset.index')
             ->with('success', 'Permohonan reset passphrase TTE berhasil diajukan!');

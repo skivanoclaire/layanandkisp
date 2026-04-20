@@ -93,6 +93,30 @@ class FonnteWhatsappService
         return $this->sendMessage($phoneNumber, $message);
     }
 
+    public function sendSubmitNotification(
+        string $phoneNumber,
+        string $identifier,
+        string $serviceTypeName,
+        string $identifierLabel = 'No. Tiket'
+    ): bool {
+        if (empty($phoneNumber)) {
+            Log::warning("FonnteWhatsapp: phone empty for {$identifier}");
+            return false;
+        }
+
+        $message = "*{$this->header}*\n\n"
+            . "Yth. Bapak/Ibu,\n\n"
+            . "Permohonan {$serviceTypeName} Anda telah kami terima.\n\n"
+            . "{$identifierLabel}: {$identifier}\n"
+            . "Layanan: {$serviceTypeName}\n"
+            . "Status: *Menunggu*\n\n"
+            . "Kami akan memproses permohonan Anda dan mengirim kabar saat status berubah.\n\n"
+            . "Terima kasih.\n"
+            . "Helpdesk DKISP Kaltara";
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
     public function sendTteStatusNotification(
         Model $ticket,
         string $serviceTypeName,

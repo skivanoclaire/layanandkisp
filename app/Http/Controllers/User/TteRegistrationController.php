@@ -7,7 +7,9 @@ use App\Models\TteRegistrationRequest;
 use App\Models\EmailRequest;
 use App\Models\EmailAccount;
 use App\Models\UnitKerja;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TteRegistrationController extends Controller
@@ -59,7 +61,7 @@ class TteRegistrationController extends Controller
 
         $user = auth()->user();
 
-        TteRegistrationRequest::create([
+        $tteRequest = TteRegistrationRequest::create([
             'user_id' => $user->id,
             'nama' => $user->name,
             'nip' => $user->nip,
@@ -69,6 +71,17 @@ class TteRegistrationController extends Controller
             'no_hp' => $validated['no_hp'],
             'status' => 'menunggu',
         ]);
+
+        try {
+            $wa = new FonnteWhatsappService();
+            $wa->sendSubmitNotification(
+                $tteRequest->no_hp ?? '',
+                $tteRequest->ticket_no,
+                'Pendaftaran Akun TTE'
+            );
+        } catch (\Exception $e) {
+            Log::error('WhatsApp submit notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('user.tte.registration.index')
             ->with('success', 'Permohonan pendaftaran akun TTE berhasil diajukan!');

@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\TteCertificateUpdateRequest;
 use App\Models\EmailAccount;
 use App\Models\UnitKerja;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TteCertificateUpdateController extends Controller
 {
@@ -57,7 +59,7 @@ class TteCertificateUpdateController extends Controller
 
         $user = auth()->user();
 
-        TteCertificateUpdateRequest::create([
+        $tteRequest = TteCertificateUpdateRequest::create([
             'user_id' => $user->id,
             'nama' => $user->name,
             'nip' => $user->nip,
@@ -67,6 +69,17 @@ class TteCertificateUpdateController extends Controller
             'no_hp' => $validated['no_hp'],
             'status' => 'menunggu',
         ]);
+
+        try {
+            $wa = new FonnteWhatsappService();
+            $wa->sendSubmitNotification(
+                $tteRequest->no_hp ?? '',
+                $tteRequest->ticket_no,
+                'Pembaruan Sertifikat TTE'
+            );
+        } catch (\Exception $e) {
+            Log::error('WhatsApp submit notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('user.tte.certificate-update.index')
             ->with('success', 'Permohonan pembaruan sertifikat TTE berhasil diajukan!');

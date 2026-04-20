@@ -7,7 +7,9 @@ use App\Models\TteAssistanceRequest;
 use App\Models\EmailRequest;
 use App\Models\EmailAccount;
 use App\Models\UnitKerja;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TteAssistanceController extends Controller
@@ -64,7 +66,7 @@ class TteAssistanceController extends Controller
         // Upload surat permohonan
         $suratPath = $request->file('surat_permohonan')->store('tte/assistance/surat', 'public');
 
-        TteAssistanceRequest::create([
+        $tteRequest = TteAssistanceRequest::create([
             'user_id' => $user->id,
             'nama' => $user->name,
             'nip' => $user->nip,
@@ -76,6 +78,17 @@ class TteAssistanceController extends Controller
             'surat_permohonan_path' => $suratPath,
             'status' => 'menunggu',
         ]);
+
+        try {
+            $wa = new FonnteWhatsappService();
+            $wa->sendSubmitNotification(
+                $tteRequest->no_hp ?? '',
+                $tteRequest->ticket_no,
+                'Pendampingan TTE'
+            );
+        } catch (\Exception $e) {
+            Log::error('WhatsApp submit notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('user.tte.assistance.index')
             ->with('success', 'Permohonan pendampingan TTE berhasil diajukan!');
