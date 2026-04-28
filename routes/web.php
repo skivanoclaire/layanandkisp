@@ -318,6 +318,10 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/simpeg-check', [SimpegCheckController::class, 'check'])->name('simpeg.check');
     Route::post('/simpeg-check/save-to-user', [SimpegCheckController::class, 'saveToUser'])->name('simpeg.saveToUser');
 
+    // AJAX endpoints untuk modal "Cek Data" di /admin/users
+    Route::post('/simpeg-check/api/{user}/check', [SimpegCheckController::class, 'apiCheckUser'])->name('simpeg.api.check');
+    Route::post('/simpeg-check/api/{user}/apply', [SimpegCheckController::class, 'apiApplyUser'])->name('simpeg.api.apply');
+
     // Rekomendasi Aplikasi (Admin melihat semua data)
     Route::prefix('/rekomendasi')->name('rekomendasi.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'index'])->name('index');
@@ -685,6 +689,7 @@ Route::middleware(['auth','role:Admin', 'permission:Kelola Pendaftaran VPN'])
         Route::post('/{vpnRegistration}/complete', [\App\Http\Controllers\Admin\VpnRegistrationController::class, 'complete'])->name('complete');
         Route::post('/{vpnRegistration}/reject', [\App\Http\Controllers\Admin\VpnRegistrationController::class, 'reject'])->name('reject');
         Route::post('/{vpnRegistration}/update-notes', [\App\Http\Controllers\Admin\VpnRegistrationController::class, 'updateNotes'])->name('update-notes');
+        Route::post('/{vpnRegistration}/revise-bandwidth', [\App\Http\Controllers\Admin\VpnRegistrationController::class, 'reviseBandwidth'])->name('revise-bandwidth');
     });
 
 // VPN Reset - Admin

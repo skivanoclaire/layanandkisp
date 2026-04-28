@@ -5,10 +5,50 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
+    /**
+     * Deterministic hash dari NIK untuk lookup unik tanpa mendekripsi semua row.
+     * NIK di-cast `encrypted` (random IV) sehingga tidak bisa dicari via WHERE.
+     */
+    public static function hashNik(?string $nik): ?string
+    {
+        $nik = $nik !== null ? preg_replace('/\D+/', '', $nik) : null;
+        return $nik ? hash('sha256', $nik) : null;
+    }
+
+    /**
+     * Cache per-request: apakah kolom users.nik_hash sudah ada?
+     * Defensif untuk environment yang belum jalankan migration nik_hash —
+     * tanpa ini, setiap save (mis. update remember_token saat login/logout)
+     * akan throw "Unknown column 'nik_hash'".
+     */
+    protected static ?bool $nikHashColumnExists = null;
+
+    protected static function nikHashColumnExists(): bool
+    {
+        if (self::$nikHashColumnExists === null) {
+            try {
+                self::$nikHashColumnExists = Schema::hasColumn('users', 'nik_hash');
+            } catch (\Throwable $e) {
+                self::$nikHashColumnExists = false;
+            }
+        }
+        return self::$nikHashColumnExists;
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $user) {
+            if (self::nikHashColumnExists()) {
+                $user->nik_hash = self::hashNik($user->nik);
+            }
+        });
+    }
 
     protected $fillable = [
         'name',
@@ -16,6 +56,7 @@ class User extends Authenticatable
         'password',
         'role',          // penting
         'nik',
+        'nik_hash',
         'nip',
         'phone',
         'unit_kerja_id',

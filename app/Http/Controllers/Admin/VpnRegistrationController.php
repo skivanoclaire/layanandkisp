@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\VpnRegistration;
+use App\Models\VpnRegistrationLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,7 +34,7 @@ class VpnRegistrationController extends Controller
 
     public function show(VpnRegistration $vpnRegistration)
     {
-        $vpnRegistration->load(['user', 'unitKerja', 'processedBy']);
+        $vpnRegistration->load(['user', 'unitKerja', 'processedBy', 'logs.actor']);
         return view('admin.vpn.registration.show', compact('vpnRegistration'));
     }
 
@@ -68,18 +69,57 @@ class VpnRegistrationController extends Controller
             'admin_notes' => 'nullable|string',
         ]);
 
-        $vpnRegistration->update([
+        $vpnRegistration->setPlainUsernameVpn($validated['username_vpn']);
+        $vpnRegistration->setPlainPasswordVpn($validated['password_vpn']);
+        $vpnRegistration->fill([
             'status' => 'selesai',
-            'username_vpn' => $validated['username_vpn'],
-            'password_vpn' => $validated['password_vpn'],
             'ip_vpn' => $validated['ip_vpn'],
             'keterangan_admin' => $validated['keterangan_admin'],
             'admin_notes' => $validated['admin_notes'],
             'completed_at' => now(),
+        ])->save();
+
+        VpnRegistrationLog::create([
+            'vpn_registration_id' => $vpnRegistration->id,
+            'actor_id' => Auth::id(),
+            'action' => 'credentials_provided',
+            'note' => 'Kredensial VPN diberikan dan status diubah ke selesai.',
         ]);
 
         return redirect()->route('admin.vpn.registration.show', $vpnRegistration)
             ->with('success', 'Permohonan telah diselesaikan dan kredensial VPN berhasil diberikan.');
+    }
+
+    public function reviseBandwidth(Request $request, VpnRegistration $vpnRegistration)
+    {
+        if (in_array($vpnRegistration->status, ['selesai', 'ditolak'])) {
+            return redirect()->back()->with('error', 'Bandwidth tidak dapat direvisi untuk permohonan yang sudah selesai atau ditolak.');
+        }
+
+        $validated = $request->validate([
+            'bandwidth' => 'required|string|max:255',
+            'revision_note' => 'nullable|string|max:500',
+        ]);
+
+        $old = $vpnRegistration->bandwidth;
+
+        if ($old === $validated['bandwidth']) {
+            return redirect()->back()->with('error', 'Bandwidth baru sama dengan bandwidth saat ini.');
+        }
+
+        $vpnRegistration->update(['bandwidth' => $validated['bandwidth']]);
+
+        VpnRegistrationLog::create([
+            'vpn_registration_id' => $vpnRegistration->id,
+            'actor_id' => Auth::id(),
+            'action' => 'bandwidth_revised',
+            'old_value' => $old,
+            'new_value' => $validated['bandwidth'],
+            'note' => $validated['revision_note'] ?? null,
+        ]);
+
+        return redirect()->route('admin.vpn.registration.show', $vpnRegistration)
+            ->with('success', 'Bandwidth berhasil direvisi.');
     }
 
     public function reject(Request $request, VpnRegistration $vpnRegistration)

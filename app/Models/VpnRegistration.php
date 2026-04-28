@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 
 class VpnRegistration extends Model
 {
@@ -80,5 +81,42 @@ class VpnRegistration extends Model
     public function processedBy()
     {
         return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(VpnRegistrationLog::class)->orderBy('created_at', 'desc');
+    }
+
+    public function setPlainUsernameVpn(?string $plain): void
+    {
+        $this->username_vpn = $plain ? Crypt::encryptString($plain) : null;
+    }
+
+    public function setPlainPasswordVpn(?string $plain): void
+    {
+        $this->password_vpn = $plain ? Crypt::encryptString($plain) : null;
+    }
+
+    public function getPlainUsernameVpn(): ?string
+    {
+        return $this->decryptCredential($this->username_vpn);
+    }
+
+    public function getPlainPasswordVpn(): ?string
+    {
+        return $this->decryptCredential($this->password_vpn);
+    }
+
+    private function decryptCredential(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Exception $e) {
+            return $value;
+        }
     }
 }

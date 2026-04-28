@@ -66,6 +66,7 @@
             <div class="mb-4">
                 <label for="nik" class="block text-sm font-medium text-gray-700">NIK (Nomor Induk Kependudukan)</label>
                 <input type="text" name="nik" id="nik" value="{{ old('nik', $user->nik) }}"
+                    inputmode="numeric" pattern="\d{16}" maxlength="16" autocomplete="off"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500"
                     placeholder="16 digit NIK">
             </div>
@@ -92,26 +93,11 @@
                 <p class="mt-1 text-xs text-gray-500">Opsional - Pilih untuk user yang merupakan pegawai instansi</p>
             </div>
 
-            <!-- Jabatan (read-only, dikelola via Sinkron SIMPEG) -->
+            <!-- Jabatan (read-only, dikelola via tombol Cek Data di /admin/users) -->
             <div class="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-                <div class="flex items-start justify-between gap-4 mb-2">
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-800">Jabatan</h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Data jabatan disinkronkan dari SIMPEG — tidak diedit manual.</p>
-                    </div>
-                    @if(!empty($user->nik))
-                        <a href="{{ route('admin.simpeg.index', ['nik' => $user->nik, 'target_user_id' => $user->id, 'return_url' => url()->current()]) }}"
-                           class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
-                            Sinkron dengan SIMPEG
-                        </a>
-                    @else
-                        <span class="shrink-0 inline-flex items-center px-3 py-1.5 bg-gray-300 text-gray-500 text-xs font-semibold rounded cursor-not-allowed" title="NIK user belum diisi">
-                            Sinkron dengan SIMPEG
-                        </span>
-                    @endif
+                <div class="mb-2">
+                    <h3 class="text-sm font-semibold text-gray-800">Jabatan</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Data jabatan disinkronkan dari SIMPEG — tidak diedit manual.</p>
                 </div>
 
                 @if($user->jabatan)

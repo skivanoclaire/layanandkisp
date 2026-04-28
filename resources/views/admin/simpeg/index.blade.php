@@ -234,21 +234,28 @@
                             @endif
 
                             <div class="space-y-2 mb-4">
-                                {{-- NIK --}}
-                                <label class="flex items-start gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                    <input type="checkbox" name="fields[]" value="nik" class="mt-1" checked>
+                                {{-- NIK ditampilkan info-only. NIK adalah kunci identitas user
+                                     dan otomatis di-set oleh server jika user belum punya NIK.
+                                     Tidak boleh di-edit manual via form ini untuk mencegah duplikat. --}}
+                                <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
                                     <div class="flex-1">
                                         <span class="font-medium">NIK:</span>
                                         <span class="text-gray-700">{{ $input_nik ?? '' }}</span>
                                         @if(!empty($result['user']) && !empty($result['user']->nik))
-                                            <span class="text-xs text-gray-500 block">(Saat ini: {{ $result['user']->nik }})</span>
+                                            @if($result['user']->nik === ($input_nik ?? ''))
+                                                <span class="text-xs text-green-700 block">✓ NIK user sudah sesuai SIMPEG.</span>
+                                            @else
+                                                <span class="text-xs text-red-700 block">⚠ NIK user lokal berbeda ({{ $result['user']->nik }}). Perbaiki manual via Edit User.</span>
+                                            @endif
+                                        @else
+                                            <span class="text-xs text-blue-700 block">ℹ NIK akan otomatis di-set ke user ini saat menyimpan.</span>
                                         @endif
                                     </div>
-                                </label>
+                                </div>
 
                                 @if(!empty($result['nip']))
                                 <label class="flex items-start gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                    <input type="checkbox" name="fields[]" value="nip" class="mt-1">
+                                    <input type="checkbox" name="fields[]" value="nip" class="mt-1" checked>
                                     <div class="flex-1">
                                         <span class="font-medium">NIP:</span>
                                         <span class="text-gray-700">{{ $result['nip'] }}</span>
@@ -262,7 +269,7 @@
 
                                 @if(!empty($result['nama']))
                                 <label class="flex items-start gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                    <input type="checkbox" name="fields[]" value="name" class="mt-1">
+                                    <input type="checkbox" name="fields[]" value="name" class="mt-1" checked>
                                     <div class="flex-1">
                                         <span class="font-medium">Nama:</span>
                                         <span class="text-gray-700">{{ $result['nama'] }}</span>
@@ -276,7 +283,7 @@
 
                                 @if(!empty($result['telepon']))
                                 <label class="flex items-start gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                    <input type="checkbox" name="fields[]" value="phone" class="mt-1">
+                                    <input type="checkbox" name="fields[]" value="phone" class="mt-1" checked>
                                     <div class="flex-1">
                                         <span class="font-medium">Nomor HP:</span>
                                         <span class="text-gray-700">{{ $result['telepon'] }}</span>
@@ -304,13 +311,13 @@
 
                                 @if(!empty($result['jabatan']))
                                 <label class="flex items-start gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                    <input type="checkbox" name="fields[]" value="jabatan" class="mt-1">
+                                    <input type="checkbox" name="fields[]" value="jabatan" class="mt-1" checked>
                                     <div class="flex-1">
                                         <span class="font-medium">Jabatan:</span>
                                         <span class="text-gray-700">{{ $result['jabatan'] }}</span>
                                         <input type="hidden" name="jabatan" value="{{ $result['jabatan'] }}">
                                         @if(!empty($result['user']->jabatan))
-                                            <span class="text-xs text-gray-500 block">(Saat ini: {{ $result['user']->jabatan }})</span>
+                                            <span class="text-xs text-gray-500 block">(Saat ini: {{ $result['user']->jabatan->nama_jabatan ?? '—' }})</span>
                                         @endif
                                     </div>
                                 </label>

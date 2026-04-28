@@ -84,18 +84,68 @@
             </div>
         </div>
 
+        @php
+            $bandwidthLogs = $vpnRegistration->logs->where('action', 'bandwidth_revised');
+        @endphp
+        @if($bandwidthLogs->count() > 0)
+        <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">Riwayat Revisi Bandwidth oleh Admin</h3>
+            <div class="bg-gray-50 rounded border divide-y divide-gray-200">
+                @foreach($bandwidthLogs as $log)
+                <div class="p-3 text-sm">
+                    <div class="flex justify-between items-start gap-2">
+                        <div>
+                            <span class="font-mono text-gray-500 line-through">{{ $log->old_value ?? '-' }}</span>
+                            <span class="mx-2 text-gray-400">→</span>
+                            <span class="font-mono text-purple-700 font-semibold">{{ $log->new_value }}</span>
+                        </div>
+                        <div class="text-xs text-gray-500 whitespace-nowrap">{{ $log->created_at->format('d/m/Y H:i') }}</div>
+                    </div>
+                    @if($log->note)
+                    <p class="text-xs text-gray-600 mt-1 italic">{{ $log->note }}</p>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         <!-- Informasi Kredensial VPN (jika sudah selesai) -->
         @if($vpnRegistration->status === 'selesai' && $vpnRegistration->username_vpn)
+        @php
+            $plainUsername = $vpnRegistration->getPlainUsernameVpn();
+            $plainPassword = $vpnRegistration->getPlainPasswordVpn();
+        @endphp
         <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
             <h3 class="text-lg font-semibold text-green-800 mb-3">Kredensial VPN Anda</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-green-700 mb-1">Username VPN:</label>
-                    <p class="text-green-900 font-mono bg-white px-3 py-2 rounded border border-green-300">{{ $vpnRegistration->username_vpn }}</p>
+                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded border border-green-300">
+                        <span id="vpn-username-display" class="text-green-900 font-mono flex-1 select-all break-all">{{ $plainUsername }}</span>
+                        <button type="button" id="vpn-copy-username" class="text-green-700 hover:text-green-900 flex-shrink-0" title="Salin username">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-green-700 mb-1">Password VPN:</label>
-                    <p class="text-green-900 font-mono bg-white px-3 py-2 rounded border border-green-300">{{ $vpnRegistration->password_vpn }}</p>
+                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded border border-green-300">
+                        <span id="vpn-password-display" class="text-green-900 font-mono flex-1 select-all break-all">••••••••••••</span>
+                        <button type="button" id="vpn-toggle-password" class="text-green-700 hover:text-green-900 flex-shrink-0" title="Tampilkan/Sembunyikan">
+                            <svg id="vpn-eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                        </button>
+                        <button type="button" id="vpn-copy-password" class="text-green-700 hover:text-green-900 flex-shrink-0" title="Salin password">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 @if($vpnRegistration->ip_vpn)
                 <div>
@@ -112,6 +162,11 @@
                 </div>
             </div>
             @endif
+
+            <div class="mt-4 bg-amber-50 border border-amber-300 rounded p-3 text-sm text-amber-900">
+                <p class="font-semibold mb-1">Tanggung Jawab Pengguna</p>
+                <p>Dengan menggunakan layanan ini, pengguna bertanggung jawab penuh untuk menjaga kerahasiaan dan keamanan akun serta dilarang mengakses situs yang tidak diizinkan. Segala konsekuensi hukum akibat penyalahgunaan menjadi tanggung jawab pengguna.</p>
+            </div>
         </div>
         @endif
 
@@ -124,4 +179,40 @@
         @endif
     </div>
 </div>
+
+@if($vpnRegistration->status === 'selesai' && $vpnRegistration->username_vpn)
+<script>
+(function () {
+    const username = @json($plainUsername);
+    const password = @json($plainPassword);
+    const pwDisplay = document.getElementById('vpn-password-display');
+    const toggleBtn = document.getElementById('vpn-toggle-password');
+    const copyPwBtn = document.getElementById('vpn-copy-password');
+    const copyUserBtn = document.getElementById('vpn-copy-username');
+    let visible = false;
+    const masked = '••••••••••••';
+
+    toggleBtn.addEventListener('click', function () {
+        visible = !visible;
+        pwDisplay.textContent = visible ? password : masked;
+    });
+
+    function copy(text, btn) {
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+            const original = btn.getAttribute('title');
+            btn.setAttribute('title', 'Tersalin!');
+            btn.classList.add('text-green-600');
+            setTimeout(function () {
+                btn.setAttribute('title', original);
+                btn.classList.remove('text-green-600');
+            }, 1500);
+        });
+    }
+
+    copyPwBtn.addEventListener('click', function () { copy(password, copyPwBtn); });
+    copyUserBtn.addEventListener('click', function () { copy(username, copyUserBtn); });
+})();
+</script>
+@endif
 @endsection

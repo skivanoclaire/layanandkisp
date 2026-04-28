@@ -144,7 +144,7 @@ class AdminController extends Controller
 
     public function users(HttpRequest $request)
     {
-        $query = User::with(['roles', 'unitKerja']);
+        $query = User::with(['roles', 'unitKerja', 'jabatan']);
 
         // Search functionality
         if ($request->filled('search')) {
@@ -198,11 +198,24 @@ class AdminController extends Controller
             'roles'    => ['required', 'array', 'min:1'],
             'roles.*'  => ['exists:roles,id'],
             'nip'      => ['nullable','string','max:20'],
-            'nik'      => ['nullable','string','max:20'],
+            'nik'      => ['nullable','string','size:16','regex:/^\d{16}$/'],
             'phone'    => ['nullable','string','max:20'],
             'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
             'password' => ['nullable','string','min:8','confirmed'],
         ]);
+
+        if (!empty($validated['nik'])) {
+            $validated['nik'] = preg_replace('/\D+/', '', $validated['nik']);
+            $nikHash = User::hashNik($validated['nik']);
+            $conflict = User::where('nik_hash', $nikHash)
+                ->where('id', '!=', $user->id)
+                ->exists();
+            if ($conflict) {
+                return back()->withInput()->withErrors([
+                    'nik' => 'NIK sudah terdaftar pada user lain.',
+                ]);
+            }
+        }
 
         // Update basic user info
         $user->name  = $validated['name'];
@@ -253,6 +266,13 @@ class AdminController extends Controller
             'roles.*'  => ['exists:roles,id'],
             'is_verified' => ['nullable', 'boolean'],
         ]);
+
+        $nikHash = User::hashNik($validated['nik']);
+        if ($nikHash && User::where('nik_hash', $nikHash)->exists()) {
+            return back()->withInput()->withErrors([
+                'nik' => 'NIK sudah terdaftar pada user lain.',
+            ]);
+        }
 
         // Determine legacy role string based on selected roles
         $selectedRoles = \App\Models\Role::whereIn('id', $validated['roles'])->pluck('name')->toArray();

@@ -165,11 +165,31 @@
                 </div>
                 <p class="mt-1 text-xs text-blue-600">Klik "Auto-pick IP" untuk otomatis memilih IP tersedia dari sistem monitoring</p>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-semibold text-blue-700 mb-1">Username VPS: <span class="text-red-500">*</span></label>
+                    <input type="text" name="username_vps" required
+                           class="w-full px-3 py-2 border border-blue-300 rounded-lg"
+                           placeholder="Username akses VPS">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-blue-700 mb-1">Password VPS: <span class="text-red-500">*</span></label>
+                    <input type="text" name="password_vps" required
+                           class="w-full px-3 py-2 border border-blue-300 rounded-lg"
+                           placeholder="Password akses VPS">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-blue-700 mb-1">Operating System (OS):</label>
+                    <input type="text" name="os_vps"
+                           class="w-full px-3 py-2 border border-blue-300 rounded-lg"
+                           placeholder="Contoh: Ubuntu 22.04 LTS, CentOS 7, Windows Server 2019">
+                </div>
+            </div>
             <div class="mb-4">
                 <label class="block text-sm font-semibold text-blue-700 mb-1">Keterangan untuk User:</label>
                 <textarea name="keterangan_admin" rows="3"
                           class="w-full px-3 py-2 border border-blue-300 rounded-lg"
-                          placeholder="Informasi akses VPS, credentials, dll (opsional)">{{ $vpsRequest->keterangan_admin }}</textarea>
+                          placeholder="Informasi tambahan untuk user (opsional)">{{ $vpsRequest->keterangan_admin }}</textarea>
             </div>
             <div>
                 <label class="block text-sm font-semibold text-blue-700 mb-1">Catatan Internal (opsional):</label>
@@ -181,6 +201,91 @@
                 Selesaikan & Berikan Akses VPS
             </button>
         </form>
+    </div>
+    @endif
+
+    <!-- Credentials Display Section -->
+    @if($vpsRequest->status === 'selesai' && $vpsRequest->username_vps)
+    @php
+        $plainUsernameVps = $vpsRequest->getPlainUsernameVps();
+        $plainPasswordVps = $vpsRequest->getPlainPasswordVps();
+    @endphp
+    <div class="bg-indigo-50 border-l-4 border-indigo-500 rounded-lg p-6 mb-6">
+        <div class="flex items-start justify-between gap-3 mb-3">
+            <div>
+                <h3 class="text-lg font-bold text-indigo-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    Kredensial yang Diberikan ke User
+                </h3>
+                <p class="text-xs text-indigo-700 mt-1">Gunakan informasi ini untuk verifikasi atau bantuan ke user. Jaga kerahasiaan kredensial.</p>
+            </div>
+            @if($vpsRequest->completed_at)
+            <span class="text-xs text-indigo-600 whitespace-nowrap">
+                Diselesaikan: {{ $vpsRequest->completed_at->format('d/m/Y H:i') }}
+            </span>
+            @endif
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-semibold text-indigo-700 mb-1">Username VPS:</label>
+                <div class="flex items-center gap-2 bg-white px-3 py-2 rounded border border-indigo-300">
+                    <span id="admin-vps-username-display" class="text-indigo-900 font-mono flex-1 select-all break-all">{{ $plainUsernameVps }}</span>
+                    <button type="button" id="admin-vps-copy-username" class="text-indigo-700 hover:text-indigo-900 flex-shrink-0" title="Salin username">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-indigo-700 mb-1">Password VPS:</label>
+                <div class="flex items-center gap-2 bg-white px-3 py-2 rounded border border-indigo-300">
+                    <span id="admin-vps-password-display" class="text-indigo-900 font-mono flex-1 select-all break-all">••••••••••••</span>
+                    <button type="button" id="admin-vps-toggle-password" class="text-indigo-700 hover:text-indigo-900 flex-shrink-0" title="Tampilkan/Sembunyikan">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </button>
+                    <button type="button" id="admin-vps-copy-password" class="text-indigo-700 hover:text-indigo-900 flex-shrink-0" title="Salin password">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            @if($vpsRequest->ip_public)
+            <div>
+                <label class="block text-sm font-semibold text-indigo-700 mb-1">IP Public:</label>
+                <div class="flex items-center gap-2 bg-white px-3 py-2 rounded border border-indigo-300">
+                    <span id="admin-vps-ip-display" class="text-indigo-900 font-mono flex-1 select-all break-all">{{ $vpsRequest->ip_public }}</span>
+                    <button type="button" id="admin-vps-copy-ip" class="text-indigo-700 hover:text-indigo-900 flex-shrink-0" title="Salin IP">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            @endif
+            @if($vpsRequest->os_vps)
+            <div>
+                <label class="block text-sm font-semibold text-indigo-700 mb-1">Operating System:</label>
+                <p class="text-indigo-900 font-mono bg-white px-3 py-2 rounded border border-indigo-300">{{ $vpsRequest->os_vps }}</p>
+            </div>
+            @endif
+        </div>
+
+        @if($vpsRequest->keterangan_admin)
+        <div class="mt-4">
+            <label class="block text-sm font-semibold text-indigo-700 mb-1">Keterangan untuk User:</label>
+            <div class="bg-white p-3 rounded border border-indigo-300">
+                <p class="text-indigo-900 whitespace-pre-wrap">{{ $vpsRequest->keterangan_admin }}</p>
+            </div>
+        </div>
+        @endif
     </div>
     @endif
 
@@ -225,4 +330,45 @@ async function autopickIP() {
     }
 }
 </script>
+
+@if($vpsRequest->status === 'selesai' && $vpsRequest->username_vps)
+<script>
+(function () {
+    const username = @json($plainUsernameVps);
+    const password = @json($plainPasswordVps);
+    const ipPublic = @json($vpsRequest->ip_public);
+    const pwDisplay = document.getElementById('admin-vps-password-display');
+    const toggleBtn = document.getElementById('admin-vps-toggle-password');
+    const copyPwBtn = document.getElementById('admin-vps-copy-password');
+    const copyUserBtn = document.getElementById('admin-vps-copy-username');
+    const copyIpBtn = document.getElementById('admin-vps-copy-ip');
+    let visible = false;
+    const masked = '••••••••••••';
+
+    toggleBtn.addEventListener('click', function () {
+        visible = !visible;
+        pwDisplay.textContent = visible ? password : masked;
+    });
+
+    function copy(text, btn) {
+        if (!navigator.clipboard || !text) return;
+        navigator.clipboard.writeText(text).then(function () {
+            const original = btn.getAttribute('title');
+            btn.setAttribute('title', 'Tersalin!');
+            btn.classList.add('text-green-600');
+            setTimeout(function () {
+                btn.setAttribute('title', original);
+                btn.classList.remove('text-green-600');
+            }, 1500);
+        });
+    }
+
+    copyPwBtn.addEventListener('click', function () { copy(password, copyPwBtn); });
+    copyUserBtn.addEventListener('click', function () { copy(username, copyUserBtn); });
+    if (copyIpBtn) {
+        copyIpBtn.addEventListener('click', function () { copy(ipPublic, copyIpBtn); });
+    }
+})();
+</script>
+@endif
 @endsection

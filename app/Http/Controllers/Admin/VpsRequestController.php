@@ -63,20 +63,26 @@ class VpsRequestController extends Controller
 
         $validated = $request->validate([
             'ip_public' => 'required|string|max:255',
+            'username_vps' => 'required|string|max:255',
+            'password_vps' => 'required|string|max:255',
+            'os_vps' => 'nullable|string|max:255',
             'keterangan_admin' => 'nullable|string',
             'admin_notes' => 'nullable|string',
         ]);
 
-        $vpsRequest->update([
+        $vpsRequest->setPlainUsernameVps($validated['username_vps']);
+        $vpsRequest->setPlainPasswordVps($validated['password_vps']);
+        $vpsRequest->fill([
             'status' => 'selesai',
             'ip_public' => $validated['ip_public'],
-            'keterangan_admin' => $validated['keterangan_admin'],
-            'admin_notes' => $validated['admin_notes'],
+            'os_vps' => $validated['os_vps'] ?? null,
+            'keterangan_admin' => $validated['keterangan_admin'] ?? null,
+            'admin_notes' => $validated['admin_notes'] ?? null,
             'completed_at' => now(),
-        ]);
+        ])->save();
 
         return redirect()->route('admin.datacenter.vps.show', $vpsRequest)
-            ->with('success', 'Permohonan telah diselesaikan dan IP Public berhasil diberikan.');
+            ->with('success', 'Permohonan telah diselesaikan dan kredensial VPS berhasil diberikan.');
     }
 
     public function reject(Request $request, VpsRequest $vpsRequest)

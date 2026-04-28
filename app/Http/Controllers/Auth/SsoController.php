@@ -59,10 +59,15 @@ class SsoController extends Controller
                 return redirect()->route('login')->with('error', 'Data SSO tidak lengkap. NIP atau email tidak ditemukan.');
             }
 
-            // Find user by NIP or Email
-            $user = User::where(function($query) use ($nip, $email) {
+            // Find user by NIP, Email, atau NIK (via hash) — cek NIK penting
+            // supaya user existing tidak ter-duplikasi saat SSO bawa NIP/email baru.
+            $nikHash = User::hashNik($nik);
+            $user = User::where(function($query) use ($nip, $email, $nikHash) {
                 $query->where('nip', $nip)
                       ->orWhere('email', $email);
+                if ($nikHash) {
+                    $query->orWhere('nik_hash', $nikHash);
+                }
             })->first();
 
             if (!$user) {
@@ -186,7 +191,13 @@ class SsoController extends Controller
           return $this->fail($request, 'Data token tidak lengkap (nip/email).', 401);
       }
 
-      $user = User::where('nip', $nip)->orWhere('email', $email)->first();
+      $nikHash = User::hashNik($nik);
+      $user = User::where(function($q) use ($nip, $email, $nikHash) {
+          $q->where('nip', $nip)->orWhere('email', $email);
+          if ($nikHash) {
+              $q->orWhere('nik_hash', $nikHash);
+          }
+      })->first();
 
       if (! $user) {
           $user = User::create([

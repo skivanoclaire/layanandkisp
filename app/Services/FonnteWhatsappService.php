@@ -117,6 +117,29 @@ class FonnteWhatsappService
         return $this->sendMessage($phoneNumber, $message);
     }
 
+    public function sendAdminNewRequestAlert(
+        string $ticketNo,
+        string $serviceTypeName,
+        string $nama,
+        string $nip
+    ): bool {
+        $adminPhone = (string) config("services.fonnte.admin_phones.{$this->channel}", '');
+
+        if (empty($adminPhone)) {
+            Log::warning("FonnteWhatsapp: Admin phone not configured for channel {$this->channel}");
+            return false;
+        }
+
+        $message = "*[Permohonan Baru] {$serviceTypeName}*\n\n"
+            . "No. Tiket: {$ticketNo}\n"
+            . "Nama: {$nama}\n"
+            . "NIP: {$nip}\n\n"
+            . "Silakan segera tinjau dan proses permohonan ini.\n"
+            . "Helpdesk DKISP Kaltara";
+
+        return $this->sendMessage($adminPhone, $message);
+    }
+
     public function sendTteStatusNotification(
         Model $ticket,
         string $serviceTypeName,

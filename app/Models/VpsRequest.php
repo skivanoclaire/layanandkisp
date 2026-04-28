@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 
 class VpsRequest extends Model
 {
@@ -22,6 +23,9 @@ class VpsRequest extends Model
         'storage_gb',
         'keterangan',
         'ip_public',
+        'username_vps',
+        'password_vps',
+        'os_vps',
         'keterangan_admin',
         'status',
         'processed_by',
@@ -78,5 +82,37 @@ class VpsRequest extends Model
     public function processedBy()
     {
         return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function setPlainUsernameVps(?string $plain): void
+    {
+        $this->username_vps = $plain ? Crypt::encryptString($plain) : null;
+    }
+
+    public function setPlainPasswordVps(?string $plain): void
+    {
+        $this->password_vps = $plain ? Crypt::encryptString($plain) : null;
+    }
+
+    public function getPlainUsernameVps(): ?string
+    {
+        return $this->decryptCredential($this->username_vps);
+    }
+
+    public function getPlainPasswordVps(): ?string
+    {
+        return $this->decryptCredential($this->password_vps);
+    }
+
+    private function decryptCredential(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Exception $e) {
+            return $value;
+        }
     }
 }

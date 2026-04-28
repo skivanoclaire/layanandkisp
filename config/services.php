@@ -63,6 +63,9 @@ return [
             'sandi'  => env('FONNTE_SANDI_TOKEN'),
             'aptika' => env('FONNTE_APTIKA_TOKEN'),
         ],
+        'admin_phones' => [
+            'sandi' => env('WA_ADMIN_SANDI'),
+        ],
         'token' => env('FONNTE_SANDI_TOKEN'),
         'url'   => env('FONNTE_API_URL', 'https://api.fonnte.com/send'),
     ],

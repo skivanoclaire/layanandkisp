@@ -79,6 +79,12 @@ class TtePassphraseResetController extends Controller
                 $tteRequest->ticket_no,
                 'Reset Passphrase TTE'
             );
+            $wa->sendAdminNewRequestAlert(
+                $tteRequest->ticket_no,
+                'Reset Passphrase TTE',
+                $tteRequest->nama,
+                $tteRequest->nip
+            );
         } catch (\Exception $e) {
             Log::error('WhatsApp submit notification failed: ' . $e->getMessage());
         }

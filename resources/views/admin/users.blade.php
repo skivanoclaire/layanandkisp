@@ -84,6 +84,7 @@
                     <th class="px-4 py-2 text-left border border-gray-300">Nama</th>
                     <th class="px-4 py-2 text-left border border-gray-300">NIP</th>
                     <th class="px-4 py-2 text-left border border-gray-300">NIK</th>
+                    <th class="px-4 py-2 text-left border border-gray-300">Jabatan</th>
                     <th class="px-4 py-2 text-left border border-gray-300">Unit Kerja</th>
                     <th class="px-4 py-2 text-left border border-gray-300">No. Telepon</th>
                     <th class="px-4 py-2 text-left border border-gray-300">Email</th>
@@ -97,6 +98,7 @@
                         <td class="px-4 py-2 border border-gray-300">{{ $user->name }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $user->nip ?? '-' }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $user->nik ?? '-' }}</td>
+                        <td class="px-4 py-2 border border-gray-300">{{ $user->jabatan->nama_jabatan ?? '-' }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $user->unitKerja->nama ?? '-' }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $user->phone ?? '-' }}</td>
                         <td class="px-4 py-2 border border-gray-300">{{ $user->email }}</td>
@@ -154,6 +156,17 @@
                                     </form>
                                 @endif
 
+                                {{-- Cek Data via SIMPEG — buka modal AJAX --}}
+                                @if(!empty($user->nik))
+                                    <button type="button"
+                                        class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm js-cek-data"
+                                        data-user-id="{{ $user->id }}"
+                                        data-user-name="{{ $user->name }}"
+                                        title="Cek & sinkron data user dengan SIMPEG">
+                                        Cek Data
+                                    </button>
+                                @endif
+
                                 {{-- Edit --}}
                                 <a href="{{ route('admin.users.edit', $user->id) }}"
                                     class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
@@ -177,9 +190,252 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Flash hasil sinkron (dipakai oleh modal Cek Data) --}}
+    <div id="cek-data-flash" class="fixed top-4 right-4 z-[60] hidden max-w-md rounded border px-4 py-3 text-sm shadow-lg"></div>
+
+    {{-- Modal Cek Data via SIMPEG (admin → user lain) --}}
+    <div id="cek-data-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between border-b px-6 py-4">
+                <h3 class="text-lg font-bold text-gray-800">
+                    Sinkron Data dari SIMPEG <span id="cek-data-username" class="font-normal text-gray-500"></span>
+                </h3>
+                <button type="button" id="cek-data-close" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+
+            <div class="overflow-y-auto px-6 py-4 flex-1">
+                <div id="cek-data-loading" class="text-center py-8 text-gray-600">
+                    <svg class="animate-spin w-8 h-8 mx-auto mb-3 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Mengambil data dari SIMPEG...
+                </div>
+                <div id="cek-data-error" class="hidden rounded border border-red-200 bg-red-50 text-red-800 px-4 py-3 text-sm"></div>
+                <div id="cek-data-result" class="hidden"></div>
+            </div>
+
+            <div class="border-t px-6 py-3 flex items-center justify-end gap-2 bg-gray-50">
+                <button type="button" id="cek-data-cancel" class="px-4 py-2 text-sm border rounded hover:bg-gray-100">Batal</button>
+                <button type="button" id="cek-data-apply" class="hidden px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold">
+                    Terapkan yang Dicentang
+                </button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
+    <script>
+    (function() {
+        const modal     = document.getElementById('cek-data-modal');
+        const loading   = document.getElementById('cek-data-loading');
+        const errorBox  = document.getElementById('cek-data-error');
+        const resultBox = document.getElementById('cek-data-result');
+        const btnClose  = document.getElementById('cek-data-close');
+        const btnCancel = document.getElementById('cek-data-cancel');
+        const btnApply  = document.getElementById('cek-data-apply');
+        const usernameLabel = document.getElementById('cek-data-username');
+        const flashBox  = document.getElementById('cek-data-flash');
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+                       || document.querySelector('input[name="_token"]')?.value;
+
+        const checkUrl = "{{ url('/admin/simpeg-check/api') }}"; // + /{userId}/check
+        const applyUrl = "{{ url('/admin/simpeg-check/api') }}"; // + /{userId}/apply
+
+        let currentUserId = null;
+        let lastSimpeg = null;
+
+        function openModal(userId, userName) {
+            currentUserId = userId;
+            usernameLabel.textContent = userName ? '— ' + userName : '';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            loading.classList.remove('hidden');
+            errorBox.classList.add('hidden');
+            resultBox.classList.add('hidden');
+            btnApply.classList.add('hidden');
+        }
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            currentUserId = null;
+            lastSimpeg = null;
+        }
+        function showFlash(type, message) {
+            flashBox.textContent = message;
+            flashBox.className = 'fixed top-4 right-4 z-[60] max-w-md rounded border px-4 py-3 text-sm shadow-lg '
+                + (type === 'success' ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-800');
+            flashBox.classList.remove('hidden');
+            setTimeout(() => flashBox.classList.add('hidden'), 5000);
+        }
+        function esc(s) {
+            return (s ?? '').toString()
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function renderResult(simpeg, current) {
+            const rows = [
+                { key: 'name',       label: 'Nama',       simpegVal: simpeg.nama,     currentVal: current.name },
+                { key: 'nip',        label: 'NIP',        simpegVal: simpeg.nip,      currentVal: current.nip },
+                { key: 'email',      label: 'Email',      simpegVal: simpeg.email,    currentVal: current.email },
+                { key: 'phone',      label: 'Nomor HP',   simpegVal: simpeg.telepon,  currentVal: current.phone },
+                { key: 'jabatan',    label: 'Jabatan',    simpegVal: simpeg.jabatan,  currentVal: current.jabatan },
+                { key: 'unit_kerja', label: 'Unit Kerja', simpegVal: simpeg.instansi, currentVal: current.unit_kerja_nama,
+                  extra: simpeg.matched_unit_kerja_id
+                    ? '<span class="text-xs text-green-700 ml-1">✓ Cocok dengan Master Data</span>'
+                    : '<span class="text-xs text-yellow-700 ml-1">⚠ Tidak cocok dengan Master Data</span>' },
+            ];
+
+            const rowsHtml = rows.map(r => {
+                // Jabatan & Unit Kerja selalu ditampilkan (info-only jika SIMPEG tidak punya data).
+                const alwaysShow = r.key === 'jabatan' || r.key === 'unit_kerja';
+                if (!r.simpegVal && !alwaysShow) return '';
+
+                if (!r.simpegVal) {
+                    // SIMPEG tidak mengembalikan data field ini untuk pegawai ini.
+                    return `
+                        <div class="flex items-start gap-3 p-3 border rounded bg-gray-50">
+                            <div class="mt-1 w-4 h-4 flex-shrink-0"></div>
+                            <div class="flex-1 text-sm">
+                                <div class="font-semibold text-gray-400">${esc(r.label)}</div>
+                                <div class="text-gray-400 text-xs mt-1 italic">SIMPEG tidak memiliki data ini untuk pegawai ini.</div>
+                                ${r.currentVal ? `<div class="text-gray-500 text-xs mt-0.5">Saat ini: ${esc(r.currentVal)}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const same = (r.simpegVal ?? '').toString().trim().toLowerCase()
+                          === (r.currentVal ?? '').toString().trim().toLowerCase();
+                const sameBadge = same ? '<span class="ml-2 text-xs text-gray-500">(sama)</span>' : '';
+                // Auto-check kalau beda; untuk unit_kerja hanya auto-check kalau ada match.
+                const autoCheck = same ? '' :
+                    (r.key === 'unit_kerja' ? (simpeg.matched_unit_kerja_id ? 'checked' : '') : 'checked');
+                return `
+                    <label class="flex items-start gap-3 p-3 border rounded hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="fields[]" value="${r.key}" class="mt-1" ${autoCheck}>
+                        <div class="flex-1 text-sm">
+                            <div class="font-semibold text-gray-800">${esc(r.label)}${sameBadge}</div>
+                            <div class="text-gray-700 mt-1"><span class="text-xs text-gray-500">SIMPEG:</span> ${esc(r.simpegVal)} ${r.extra ?? ''}</div>
+                            <div class="text-gray-500 text-xs mt-0.5">Saat ini: ${esc(r.currentVal) || '—'}</div>
+                        </div>
+                    </label>
+                `;
+            }).join('');
+
+            resultBox.innerHTML = `
+                <p class="text-sm text-gray-600 mb-3">Centang field yang ingin diupdate berdasarkan data SIMPEG:</p>
+                <div class="space-y-2">${rowsHtml}</div>
+            `;
+        }
+
+        // Event delegation supaya tombol di halaman DataTables berikutnya tetap ke-handle
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.js-cek-data');
+            if (!btn) return;
+            e.preventDefault();
+
+            const userId = btn.dataset.userId;
+            const userName = btn.dataset.userName;
+            openModal(userId, userName);
+
+            try {
+                const res = await fetch(`${checkUrl}/${userId}/check`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+                const body = await res.json();
+                loading.classList.add('hidden');
+
+                if (!body.success) {
+                    errorBox.textContent = body.message || 'Terjadi kesalahan.';
+                    errorBox.classList.remove('hidden');
+                    return;
+                }
+
+                lastSimpeg = body.simpeg;
+                renderResult(body.simpeg, body.current);
+                resultBox.classList.remove('hidden');
+                btnApply.classList.remove('hidden');
+            } catch (err) {
+                loading.classList.add('hidden');
+                errorBox.textContent = 'Gagal menghubungi server: ' + err.message;
+                errorBox.classList.remove('hidden');
+            }
+        });
+
+        btnClose.addEventListener('click', closeModal);
+        btnCancel.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+        btnApply.addEventListener('click', async () => {
+            if (!currentUserId || !lastSimpeg) return;
+            const checked = Array.from(resultBox.querySelectorAll('input[name="fields[]"]:checked')).map(el => el.value);
+            if (checked.length === 0) {
+                alert('Pilih minimal satu field untuk diupdate.');
+                return;
+            }
+
+            btnApply.disabled = true;
+            const originalText = btnApply.textContent;
+            btnApply.textContent = 'Menyimpan...';
+
+            try {
+                const payload = {
+                    fields: checked,
+                    name:     lastSimpeg.nama,
+                    nip:      lastSimpeg.nip,
+                    phone:    lastSimpeg.telepon,
+                    jabatan:  lastSimpeg.jabatan,
+                    instansi: lastSimpeg.instansi,
+                    unit_kerja_id: lastSimpeg.matched_unit_kerja_id,
+                };
+                // Email hanya dikirim jika dicentang — mencegah validasi gagal
+                // saat SIMPEG mengembalikan email multi-alamat yang tidak valid.
+                if (checked.includes('email')) {
+                    payload.email = lastSimpeg.email;
+                }
+                const res = await fetch(`${applyUrl}/${currentUserId}/apply`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify(payload),
+                });
+                const body = await res.json();
+
+                if (!body.success) {
+                    alert(body.message || 'Gagal menyimpan.');
+                    btnApply.disabled = false;
+                    btnApply.textContent = originalText;
+                    return;
+                }
+
+                closeModal();
+                showFlash('success', body.message);
+                // Reload supaya kolom-kolom di tabel re-render dengan nilai terbaru
+                setTimeout(() => window.location.reload(), 800);
+            } catch (e) {
+                alert('Gagal menyimpan: ' + e.message);
+                btnApply.disabled = false;
+                btnApply.textContent = originalText;
+            }
+        });
+    })();
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Jika pakai DataTables, disable built-in search karena kita sudah punya form filter

@@ -28,7 +28,7 @@
                     E-Layanan<br class="sm:hidden"> DKISP
                 </h1>
                 <p class="text-base sm:text-lg text-gray-500 leading-snug">
-                    Layanan Digital Dinas Komunikasi Informatika<br class="hidden lg:inline">
+                    Portal Layanan TIK Dinas Komunikasi Informatika<br class="hidden lg:inline">
                     Statistik dan Persandian Provinsi Kalimantan Utara
                 </p>
             </div>
