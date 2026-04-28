@@ -25,7 +25,7 @@ class TteAssistanceController extends Controller
 
     public function create()
     {
-        $user = auth()->user();
+        $user = auth()->user()->load(['unitKerja', 'jabatan']);
 
         // Check if user NIP exists in Master Data Email (email_accounts)
         $emailAccount = EmailAccount::where('requester_nip', $user->nip)

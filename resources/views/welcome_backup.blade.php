@@ -1,33 +1,6 @@
 @extends('layouts.app')
 
-@section('bodyClass', 'hero-bg-animated')
-
 @section('content')
-    {{-- Cosmic Hybrid background: nebula + stars + solar system --}}
-    <div class="cosmic-bg" aria-hidden="true">
-        <div class="nebula nebula-1"></div>
-        <div class="nebula nebula-2"></div>
-        <div class="nebula nebula-3"></div>
-
-        @for ($i = 0; $i < 80; $i++)
-            @php
-                $top = rand(0, 100);
-                $left = rand(0, 100);
-                $size = rand(1, 3);
-                $delay = rand(0, 60) / 10;
-                $duration = rand(20, 50) / 10;
-            @endphp
-            <span class="star" style="top:{{ $top }}%;left:{{ $left }}%;width:{{ $size }}px;height:{{ $size }}px;animation-delay:-{{ $delay }}s;animation-duration:{{ $duration }}s;"></span>
-        @endfor
-
-        <div class="solar-system">
-            <div class="sun"></div>
-            <div class="orbit orbit-1"><div class="planet planet-1"></div></div>
-            <div class="orbit orbit-2"><div class="planet planet-2"></div></div>
-            <div class="orbit orbit-3"><div class="planet planet-3"></div></div>
-            <div class="orbit orbit-4"><div class="planet planet-4"></div></div>
-        </div>
-    </div>
     <div class="w-full px-4 md:px-8 lg:px-16 py-12 flex flex-col md:flex-row items-center gap-12">
 
         <!-- Left Grid: Menu -->
@@ -164,11 +137,8 @@
                 @endphp
 
                 @foreach ($items as $item)
-                @php $delay = ($loop->index % 8) * 60; @endphp
                     <a href="#{{ $item['slug'] }}"
-                        class="bg-white border border-gray-200 shadow rounded-xl p-6 text-center hover:shadow-xl hover:-translate-y-1 hover:scale-105 hover:border-emerald-400 transition-all duration-300"
-                        data-aos="fade-up"
-                        data-aos-delay="{{ $delay }}">
+                        class="bg-white border border-gray-200 shadow rounded-xl p-6 text-center hover:shadow-lg transition">
                         <div class="text-5xl mb-2">{{ $item['icon'] }}</div>
                         <div class="text-sm font-semibold text-gray-800">{{ $item['label'] }}</div>
                     </a>
@@ -179,8 +149,7 @@
         <!-- Right Illustration -->
         <div class="w-full md:w-1/2 flex justify-center items-center">
             <img src="{{ asset('layanankaltara2.png') }}" alt="Ilustrasi"
-                class="w-full h-auto max-w-none md:w-[90%] lg:w-full hero-image-float"
-                data-aos="fade-left" data-aos-duration="900">
+                class="w-full h-auto max-w-none md:w-[90%] lg:w-full">
         </div>
     </div>
 
@@ -189,8 +158,7 @@
         @foreach ($items as $item)
             <section id="{{ $item['slug'] }}" class="pt-24 scroll-mt-24">
                 <div
-                    class="bg-gradient-to-r from-green-100 to-blue-100 p-8 rounded-lg shadow flex flex-col md:flex-row items-start gap-8"
-                    data-aos="fade-up" data-aos-duration="600">
+                    class="bg-gradient-to-r from-green-100 to-blue-100 p-8 rounded-lg shadow flex flex-col md:flex-row items-start gap-8">
                     <div class="w-32 flex-shrink-0 hidden md:block">
                         <img src="{{ asset($item['image']) }}" alt="{{ $item['label'] }}" class="w-full">
                     </div>

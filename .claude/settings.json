@@ -3,7 +3,8 @@
     "allow": [
       "Bash(grep -n \"vpn.registration\\\\|admin.*vpn\" c:\\\\\\\\projects\\\\\\\\laravel12-app\\\\\\\\routes\\\\\\\\web.php)",
       "Bash(php -l resources/views/admin/vpn/registration/show.blade.php)",
-      "Bash(grep -E '\\\\.\\(php|blade\\\\.php\\)$')"
+      "Bash(grep -E '\\\\.\\(php|blade\\\\.php\\)$')",
+      "Bash(npm run *)"
     ]
   }
 }

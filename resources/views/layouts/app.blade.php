@@ -10,9 +10,10 @@
     <!-- Fallback untuk browser lama -->
     <link rel="alternate icon" href="{{ asset('kaltara.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
 </head>
 
-<body class="scroll-smooth bg-white font-sans text-gray-800">
+<body class="scroll-smooth font-sans text-gray-800 @yield('bodyClass', 'bg-white')">
 
     {{-- HEADER --}}
     <header
@@ -119,6 +120,29 @@
         </div>
     </footer>
 
+    {{-- Scroll to top button --}}
+    <button id="scrollToTop" type="button" class="scroll-to-top" aria-label="Kembali ke atas">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+        </svg>
+    </button>
+
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 700, once: true, easing: 'ease-out-cubic' });
+
+        (function () {
+            const btn = document.getElementById('scrollToTop');
+            if (!btn) return;
+            const toggle = () => {
+                if (window.scrollY > 300) btn.classList.add('visible');
+                else btn.classList.remove('visible');
+            };
+            window.addEventListener('scroll', toggle, { passive: true });
+            btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            toggle();
+        })();
+    </script>
 </body>
 
 </html>

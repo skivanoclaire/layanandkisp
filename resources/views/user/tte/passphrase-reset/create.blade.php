@@ -58,26 +58,20 @@
             <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Instansi <span class="text-red-500">*</span>
             </label>
-            @php
-                $defaultInstansi = $user->unitKerja->nama ?? '';
-                $selectedInstansi = old('instansi', $defaultInstansi);
-            @endphp
-            <select name="instansi" required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                <option value="">-- Pilih Instansi --</option>
-                @foreach($unitKerjas as $unitKerja)
-                    <option value="{{ $unitKerja->nama }}" {{ $selectedInstansi == $unitKerja->nama ? 'selected' : '' }}>
-                        {{ $unitKerja->nama }}
-                    </option>
-                @endforeach
-            </select>
-            <p class="text-xs text-gray-500 mt-1">
-                @if($defaultInstansi)
-                    Terisi otomatis dari profil Anda — ubah jika perlu.
-                @else
-                    Pilih Instansi (profil Anda belum punya data Unit Kerja).
-                @endif
-            </p>
+            @if($user->unitKerja)
+                <input type="text" name="instansi" value="{{ $user->unitKerja->nama }}" readonly
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600">
+                <p class="text-xs text-gray-500 mt-1">Diambil dari data Unit Kerja profil Anda.</p>
+            @else
+                <select name="instansi" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <option value="">-- Pilih Instansi --</option>
+                    @foreach($unitKerjas as $uk)
+                        <option value="{{ $uk->nama }}" {{ old('instansi') == $uk->nama ? 'selected' : '' }}>{{ $uk->nama }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-red-500 mt-1">Profil Anda belum memiliki data Unit Kerja, silakan pilih manual.</p>
+            @endif
         </div>
 
         <!-- Jabatan -->
@@ -85,12 +79,13 @@
             <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Jabatan <span class="text-red-500">*</span>
             </label>
-            @php $defaultJabatan = $user->jabatan->nama_jabatan ?? ''; @endphp
-            <input type="text" name="jabatan" value="{{ old('jabatan', $defaultJabatan) }}" required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            @php $jabatanValue = $user->jabatan->nama_jabatan ?? ''; @endphp
+            <input type="text" name="jabatan" value="{{ old('jabatan', $jabatanValue) }}" required
+                {{ $jabatanValue ? 'readonly' : '' }}
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg {{ $jabatanValue ? 'bg-gray-100 text-gray-600' : 'focus:ring-2 focus:ring-purple-500 focus:border-transparent' }}"
                 placeholder="Masukkan jabatan Anda">
-            @if($defaultJabatan)
-                <p class="text-xs text-gray-500 mt-1">Terisi otomatis dari profil Anda — ubah jika perlu.</p>
+            @if($jabatanValue)
+                <p class="text-xs text-gray-500 mt-1">Diambil dari data Jabatan profil Anda.</p>
             @endif
         </div>
 
