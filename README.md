@@ -146,15 +146,7 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
    php artisan key:generate
    ```
 
-4. **Konfigurasi database**
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=layanan_dkisp
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
+4. **Konfigurasi database** — sesuaikan kredensial database pada file `.env`.
 
 5. **Konfigurasi integrasi** (sesuaikan di `.env`)
    ```env
