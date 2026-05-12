@@ -34,19 +34,20 @@ Lihat file `LICENSE` untuk detail.
 ## Fitur Layanan Digital
 
 ### 📧 Email Dinas
-- Permohonan pembuatan email dinas baru
+- Permohonan pembuatan email dinas baru (`@kaltaraprov.go.id`)
 - Reset password email
-- Tracking status permohonan
+- Tracking status permohonan (menunggu, proses, selesai, ditolak)
+- Notifikasi WhatsApp otomatis ke pengguna setiap perubahan status (token APTIKA)
 
 ### 🌐 Subdomain
-- Pendaftaran subdomain baru (*.kaltaraprov.go.id)
+- Pendaftaran subdomain baru (`*.kaltaraprov.go.id`)
 - Perubahan IP/pointing
 - Perubahan nama subdomain
 - Monitoring status website
 
 ### 📋 Rekomendasi Aplikasi
-- Pengajuan rekomendasi aplikasi
-- Analisis risiko keamanan
+- Pengajuan rekomendasi aplikasi (sesuai Permenkomdigi 6/2025)
+- Analisis kebutuhan, perencanaan, dan manajemen risiko
 - Penilaian kelayakan sistem
 
 ### 🤖 Konsultasi SPBE Berbasis AI
@@ -58,6 +59,9 @@ Lihat file `LICENSE` untuk detail.
 - Pendaftaran akun baru TTE
 - Permohonan reset passphrase TTE
 - Pembaruan sertifikat TTE
+- **Auto-fill** Instansi & Jabatan dari profil pengguna (data Unit Kerja & Jabatan)
+- Notifikasi WhatsApp ke pengguna saat submit (dengan nomor tiket) & saat status diperbarui (token SANDI)
+- Notifikasi WhatsApp ke admin saat permohonan baru masuk
 
 ### 📃 Aset TIK
 - Akses Data Aset TIK Hardware/Software Seluruh OPD
@@ -66,6 +70,7 @@ Lihat file `LICENSE` untuk detail.
 ### 🎥 Video Conference
 - Layanan video konferensi
 - Penjadwalan meeting online
+- Pembagian tugas operator otomatis
 
 ### 🌍 Internet
 - Lapor gangguan internet
@@ -74,6 +79,10 @@ Lihat file `LICENSE` untuk detail.
 ### 🔐 Jaringan Privat/VPN
 - Permohonan akses VPN
 - Konfigurasi jaringan privat
+- **Kredensial VPN terenkripsi** di database (Laravel Crypt)
+- Tampilan kredensial untuk pengguna: tombol mata (show/hide) + tombol copy username/password
+- Disclaimer tanggung jawab pengguna otomatis ditampilkan
+- **Revisi bandwidth oleh admin** dengan riwayat audit (siapa & kapan revisi)
 
 ### 🖥️ Pusat Data/Komputasi
 - Kunjungan/Colocation
@@ -106,16 +115,47 @@ Lihat file `LICENSE` untuk detail.
    - Jadwal Vidcon
    - Pembagian Tugas Vidcon Otomatis
 
+### Pengguna & Akses
+- Kelola Pengguna (CRUD, verifikasi, role assignment)
+- Kelola Peran (Role) — CRUD role
+- Kelola Kewenangan (Role-Permission Matrix)
+- **Log Audit** — riwayat lengkap aktivitas autentikasi (login, logout, gagal, lockout, ganti password) dengan filter event/tanggal/IP/user; eksklusif untuk Admin
+- Cek via SIMPEG
 
+## Keamanan
 
-### Manajemen
-- User Management
-- Kelola Role
-- Kelola Kewenangan
-- Verifikasi Pengguna via SIMPEG
-- RBAC
-- Audit Log
+### Autentikasi
+- **SSO Keycloak** terintegrasi dengan portal ASN Kaltara
+- Login lokal dengan email + password (Laravel Breeze)
+- **Rate Limiting** otomatis: 5 percobaan per kombinasi email+IP, lockout dengan timer
+- **Progressive Image CAPTCHA** (`mews/captcha`, self-hosted GD-based) — muncul otomatis setelah 3x percobaan login gagal dari IP yang sama
+- Counter CAPTCHA reset otomatis setelah login berhasil
 
+### Audit Trail
+Sistem mencatat seluruh event autentikasi ke tabel `audit_logs`:
+- ✅ **Login berhasil** — user, IP, user-agent
+- 🚪 **Logout**
+- ⚠️ **Login gagal** — termasuk attempt dengan email tidak terdaftar
+- 🔒 **Lockout** — saat rate limiter trigger
+- 🔑 **Ganti password**
+
+Halaman audit dilengkapi filter range tanggal, jenis event, dan pencarian email/nama/IP.
+
+### Kredensial Sensitif
+- Password VPN, password email, NIK, dan kredensial lain dienkripsi dengan Laravel Crypt
+- Decrypt only-on-display untuk authorized user
+- Backfill otomatis untuk data legacy
+
+## Notifikasi WhatsApp (Fonnte)
+
+Aplikasi terintegrasi dengan API Fonnte untuk pengiriman notifikasi WA otomatis menggunakan **2 channel terpisah**:
+
+| Channel | Token Env | Digunakan Untuk |
+|---------|-----------|-----------------|
+| **SANDI** | `FONNTE_SANDI_TOKEN` | Layanan TTE (4 jenis): notifikasi submit ke pengguna + status update ke pengguna + alert permohonan baru ke admin (`WA_ADMIN_SANDI`) |
+| **APTIKA** | `FONNTE_APTIKA_TOKEN` | Layanan Email & Reset Password Email: notifikasi status update ke pengguna |
+
+Header pesan otomatis disesuaikan dengan channel ("Helpdesk Bidang Persandian" / "Helpdesk Bidang Aptika"). Kegagalan pengiriman WA tidak menghalangi proses utama (graceful fail dengan logging).
 
 ## Integrasi Sistem
 
@@ -123,23 +163,36 @@ Lihat file `LICENSE` untuk detail.
 |--------|--------|
 | **SSO Keycloak** | Single Sign-On terintegrasi dengan [sso.kaltaraprov.go.id](https://sso.kaltaraprov.go.id) |
 | **Cloudflare** | Manajemen DNS dan subdomain otomatis |
-| **WHM/cPanel** | Manajemen email dinas otomatis |
+| **WHM/cPanel** | Manajemen email dinas otomatis (create/reset password) |
 | **API SIMPEG** | Verifikasi dan sinkronisasi data ASN |
+| **Fonnte WhatsApp** | Notifikasi otomatis 2-channel (SANDI/APTIKA) |
 | **Google API** | Integrasi data aset TIK |
+
+## Tampilan Halaman Depan
+
+Halaman publik (`/`) menampilkan grid 18 layanan digital dengan:
+- **Background animasi cosmic** — solar system orbiting + 80 bintang twinkling + 4 nebula glow (palette hijau)
+- **AOS (Animate on Scroll)** untuk efek fade & slide saat scroll
+- Hover scale + shadow pada cards layanan
+- Tombol **scroll-to-top** muncul otomatis setelah scroll 300px
+- File backup `welcome_backup.blade.php` tersedia untuk revert cepat
 
 ## Tech Stack
 
-- **Framework:** Laravel
+- **Framework:** Laravel 12
 - **PHP Version:** 8.2+
-- **Database:** MySQL
-- **Frontend:** Blade Template, Bootstrap
-- **Authentication:** SSO Keycloak
+- **Database:** MySQL 8+
+- **Frontend:** Blade Template, Tailwind CSS 4, Alpine.js
+- **Animation:** AOS (Animate on Scroll) + custom CSS keyframes
+- **Authentication:** Laravel Breeze + SSO Keycloak (hybrid)
+- **CAPTCHA:** mews/captcha (self-hosted, GD-based)
 - **DNS Management:** Cloudflare API
 - **Email Management:** WHM/cPanel API
+- **WA Notification:** Fonnte API (2 channels)
 
 ## Persyaratan Sistem
 
-- PHP >= 8.2
+- PHP >= 8.2 dengan ekstensi: `gd` (untuk CAPTCHA), `pdo_mysql`, `openssl`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`
 - Composer
 - MySQL >= 8.0
 - Node.js & NPM
@@ -179,7 +232,7 @@ Lihat file `LICENSE` untuk detail.
    ```env
    # SSO Keycloak
    KEYCLOAK_BASE_URL=https://sso.kaltaraprov.go.id
-   KEYCLOAK_REALM=kaltara
+   KEYCLOAK_REALM=asn-kaltara
    KEYCLOAK_CLIENT_ID=
    KEYCLOAK_CLIENT_SECRET=
 
@@ -190,11 +243,16 @@ Lihat file `LICENSE` untuk detail.
    # WHM/cPanel
    WHM_HOST=
    WHM_USERNAME=
-   WHM_API_TOKEN=
+   WHM_TOKEN=
 
    # SIMPEG
    SIMPEG_API_URL=
    SIMPEG_API_KEY=
+
+   # Fonnte WhatsApp (2 channel)
+   FONNTE_SANDI_TOKEN=
+   FONNTE_APTIKA_TOKEN=
+   WA_ADMIN_SANDI=
 
    # Google API
    GOOGLE_API_CREDENTIALS=
@@ -221,18 +279,38 @@ Lihat file `LICENSE` untuk detail.
 ├── app/
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── Admin/          # Controller admin
+│   │   │   ├── Admin/          # Controller admin (Email, VPN, TTE, AuditLog, dll)
+│   │   │   ├── Auth/           # Login, register, password (Breeze + SSO)
 │   │   │   ├── Operator/       # Controller operator
-│   │   │   └── User/           # Controller user
-│   │   └── Middleware/
+│   │   │   └── User/           # Controller user (TTE, Email, VPN, dll)
+│   │   ├── Middleware/
+│   │   └── Requests/Auth/      # LoginRequest dengan rate limit + captcha
+│   ├── Listeners/
+│   │   └── AuthAuditSubscriber.php   # Listen Login/Logout/Failed/Lockout
 │   ├── Models/
+│   │   ├── AuditLog.php             # Audit trail autentikasi
+│   │   ├── EmailRequestLog.php      # Log per-permohonan email
+│   │   ├── VpnRegistrationLog.php   # Log revisi bandwidth, dll
+│   │   └── VpnRegistration.php      # Setter/getter Crypt untuk username/password
 │   └── Services/
-│       └── SimpegClient.php    # Service integrasi SIMPEG
+│       ├── FonnteWhatsappService.php  # 2-channel WA notification
+│       ├── SimpegClient.php           # Integrasi SIMPEG
+│       ├── WhmApiService.php          # Integrasi cPanel
+│       └── CpanelEmailService.php
+├── config/
+│   ├── captcha.php             # Konfigurasi mews/captcha
+│   └── services.php            # Token Fonnte, Cloudflare, dll
 ├── database/
-│   └── migrations/
+│   └── migrations/             # Termasuk audit_logs, vpn_registration_logs
 ├── resources/
+│   ├── css/app.css             # Custom keyframes (cosmic bg, scroll-to-top)
 │   └── views/
+│       ├── admin/audit-logs/   # View Log Audit
+│       ├── auth/login.blade.php # Form login dengan CAPTCHA conditional
+│       └── welcome.blade.php   # Halaman depan dengan animasi
 ├── routes/
+│   ├── web.php
+│   └── auth.php
 └── public/
 ```
 
@@ -240,11 +318,11 @@ Lihat file `LICENSE` untuk detail.
 
 | Role | Akses |
 |------|-------|
-| **Admin** | Full access, konfigurasi sistem manajemen permohonan, approval, master data |
+| **Admin** | Full access, konfigurasi sistem, manajemen permohonan, approval, master data, **Log Audit** |
 | **Operator-Vidcon** | Kelola Layanan Vidcon |
 | **Operator-Sandi** | Kelola Layanan Sandi |
 | **User ASN** | Akses Permohonan Layanan secara Digital |
-| **Custom User** |  Custom akses untuk jenis User lainnya yang diinginkan |
+| **Custom User** | Custom akses untuk jenis User lainnya yang diinginkan |
 
 ## Kontribusi
 

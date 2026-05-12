@@ -73,7 +73,7 @@
             <div class="mt-2">
                 @foreach($vidconData->operators as $op)
                     <span class="inline-block px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 mr-2 mb-2">
-                        {{ $op->name }}
+                        {{ $op->name }} ({{ $op->phone ?: '—' }})
                     </span>
                 @endforeach
             </div>

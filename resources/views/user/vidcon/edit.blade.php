@@ -51,7 +51,7 @@
                     <label class="block text-sm font-semibold text-green-700 mb-1">Operator Ditugaskan:</label>
                     <ul class="list-disc list-inside text-gray-800">
                         @foreach($vidconRequest->operators as $operator)
-                            <li>{{ $operator->name }}</li>
+                            <li>{{ $operator->name }} ({{ $operator->phone ?: '—' }})</li>
                         @endforeach
                     </ul>
                 </div>
@@ -135,27 +135,21 @@
                 @method('PUT')
 
                 <div class="mb-4">
-                    <label for="unit_kerja_id" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Instansi <span class="text-red-500">*</span>
-                    </label>
-                    <select id="unit_kerja_id" name="unit_kerja_id" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                        <option value="">-- Pilih Instansi --</option>
-                        @foreach($unitKerjaList as $uk)
-                            <option value="{{ $uk->id }}" {{ old('unit_kerja_id', $vidconRequest->unit_kerja_id) == $uk->id ? 'selected' : '' }}>
-                                {{ $uk->nama }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Instansi</label>
+                    <input type="text"
+                           value="{{ auth()->user()->unitKerja->nama ?? '-' }}"
+                           readonly
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                    <p class="mt-1 text-xs text-gray-500">Diambil dari profil. Hubungi admin jika perlu perubahan.</p>
                 </div>
 
                 <div class="mb-4">
-                    <label for="no_hp" class="block text-sm font-semibold text-gray-700 mb-2">
-                        No. HP/WhatsApp <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" id="no_hp" name="no_hp" required
-                           value="{{ old('no_hp', $vidconRequest->no_hp) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">No. HP/WhatsApp</label>
+                    <input type="text"
+                           value="{{ auth()->user()->phone }}"
+                           readonly
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                    <p class="mt-1 text-xs text-gray-500">Diambil dari profil. Update di halaman Profil jika berbeda.</p>
                 </div>
 
                 <div class="mb-4">

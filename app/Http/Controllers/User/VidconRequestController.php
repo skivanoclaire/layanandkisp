@@ -4,7 +4,6 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\VidconRequest;
-use App\Models\UnitKerja;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -23,35 +22,27 @@ class VidconRequestController extends Controller
 
     public function create()
     {
-        // Check if user has NIP
+        // Hanya cek NIP (sudah jadi guard sebelumnya). Untuk Instansi & No HP
+        // tidak redirect — view akan menampilkan banner peringatan saja.
         $user = auth()->user();
         if (empty($user->nip)) {
             return redirect()->route('user.vidcon.index')
                 ->with('error', 'NIP Anda belum terdaftar. Silakan hubungi Administrator untuk memperbarui data NIP Anda.');
         }
 
-        // Get master data for dropdowns
-        $unitKerjaList = UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
-
-        return view('user.vidcon.create', compact('unitKerjaList'));
+        return view('user.vidcon.create');
     }
 
     public function store(Request $r)
     {
-        // Check if user has NIP
         $user = auth()->user();
-        if (empty($user->nip)) {
+        if (empty($user->nip) || empty($user->unit_kerja_id) || empty($user->phone)) {
             throw ValidationException::withMessages([
-                'nip' => 'NIP Anda belum terdaftar. Silakan hubungi Administrator.'
+                'profil' => 'Profil Anda belum lengkap (NIP/Instansi/No. HP). Silakan lengkapi profil terlebih dahulu.'
             ]);
         }
 
         $data = $r->validate([
-            // Informasi Pemohon
-            'unit_kerja_id'      => ['required', 'exists:unit_kerjas,id'],
-            'no_hp'              => ['required', 'string', 'max:30'],
-
-            // Video Conference Details
             'judul_kegiatan'     => ['required', 'string', 'max:255'],
             'deskripsi_kegiatan' => ['nullable', 'string'],
             'tanggal_mulai'      => ['required', 'date', 'after_or_equal:today'],
@@ -63,7 +54,6 @@ class VidconRequestController extends Controller
             'jumlah_peserta'     => ['nullable', 'integer', 'min:1', 'max:10000'],
             'keperluan_khusus'   => ['nullable', 'string'],
         ], [
-            'unit_kerja_id.required'           => 'Instansi wajib diisi.',
             'judul_kegiatan.required'          => 'Judul Kegiatan wajib diisi.',
             'tanggal_mulai.required'           => 'Tanggal Mulai wajib diisi.',
             'tanggal_mulai.after_or_equal'     => 'Tanggal Mulai tidak boleh kurang dari hari ini.',
@@ -76,13 +66,14 @@ class VidconRequestController extends Controller
             'platform_lainnya.required_if'     => 'Nama platform wajib diisi jika memilih "Lainnya".',
         ]);
 
-        // Create vidcon request
+        // Create vidcon request — instansi & no_hp dipaksa dari profil user
         $req = new VidconRequest($data);
-        $req->user_id       = auth()->id();
+        $req->user_id       = $user->id;
+        $req->unit_kerja_id = $user->unit_kerja_id;
         $req->nama          = $user->name;
         $req->nip           = $user->nip;
         $req->email_pemohon = $user->email;
-        $req->no_hp         = $data['no_hp'];
+        $req->no_hp         = $user->phone;
         $req->ticket_no     = VidconRequest::nextTicket();
         $req->submitted_at  = now();
         $req->status        = 'menunggu';
@@ -101,6 +92,32 @@ class VidconRequestController extends Controller
         return view('user.vidcon.thanks', compact('vidconRequest'));
     }
 
+    /**
+     * Halaman "Beri Penilaian" — embed survei kepuasan layanan untuk permohonan yang sudah selesai.
+     */
+    public function survey(VidconRequest $vidconRequest)
+    {
+        // Hanya pemilik permohonan yang boleh mengakses
+        if ($vidconRequest->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        // Penilaian hanya tersedia untuk permohonan yang sudah selesai
+        if ($vidconRequest->status !== 'selesai') {
+            abort(403, 'Penilaian hanya tersedia untuk permohonan yang sudah selesai.');
+        }
+
+        // TODO: Ganti dengan URL/token survei khusus layanan Vidcon dari portal SPBE
+        // bila sudah tersedia. Sementara memakai token survei layanan Email.
+        $surveyUrl = 'https://surveidigital.spbe.go.id/embed/survey/eyJzdXJ2ZXlfaWQiOjIsInNlcnZpY2VfaWQiOjE2MCwiaG9zdCI6ImxheWFuYW4uZGlza29taW5mby5rYWx0YXJhcHJvdi5nby5pZCxsb2NhbGhvc3Q6ODA4MCxsb2NhbGhvc3QsaHR0cHM6Ly9sYXlhbmFuLmRpc2tvbWluZm8ua2FsdGFyYXByb3YuZ28uaWQiLCJrZXkiOiJBeEUyNGVkdSJ9/embed/view/';
+
+        return view('user.vidcon.survey', [
+            'vidconRequest' => $vidconRequest,
+            'surveyUrl'     => $surveyUrl,
+            'ticket'        => $vidconRequest->ticket_no,
+        ]);
+    }
+
     public function edit(VidconRequest $vidconRequest)
     {
         // Load operators relation
@@ -117,9 +134,7 @@ class VidconRequestController extends Controller
             abort(403);
         }
 
-        $unitKerjaList = UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
-
-        return view('user.vidcon.edit', compact('vidconRequest', 'unitKerjaList'));
+        return view('user.vidcon.edit', compact('vidconRequest'));
     }
 
     public function update(Request $r, VidconRequest $vidconRequest)
@@ -136,11 +151,6 @@ class VidconRequestController extends Controller
         }
 
         $data = $r->validate([
-            // Informasi Pemohon
-            'unit_kerja_id'      => ['required', 'exists:unit_kerjas,id'],
-            'no_hp'              => ['required', 'string', 'max:30'],
-
-            // Video Conference Details
             'judul_kegiatan'     => ['required', 'string', 'max:255'],
             'deskripsi_kegiatan' => ['nullable', 'string'],
             'tanggal_mulai'      => ['required', 'date', 'after_or_equal:today'],
@@ -152,6 +162,11 @@ class VidconRequestController extends Controller
             'jumlah_peserta'     => ['nullable', 'integer', 'min:1', 'max:10000'],
             'keperluan_khusus'   => ['nullable', 'string'],
         ]);
+
+        // Sinkronkan instansi & no_hp dari profil user (server-side enforcement)
+        $user = auth()->user();
+        $data['unit_kerja_id'] = $user->unit_kerja_id;
+        $data['no_hp']         = $user->phone;
 
         $vidconRequest->update($data);
 

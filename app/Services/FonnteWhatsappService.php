@@ -156,6 +156,29 @@ class FonnteWhatsappService
         );
     }
 
+    public function sendAccountVerifiedNotification(
+        string $phoneNumber,
+        string $nama,
+        string $email
+    ): bool {
+        if (empty($phoneNumber)) {
+            Log::warning('FonnteWhatsapp: sendAccountVerifiedNotification — phone kosong', compact('email'));
+            return false;
+        }
+
+        $message = "*{$this->header}*\n\n"
+            . "Yth. Bapak/Ibu *{$nama}*,\n\n"
+            . "Akun Anda pada *Portal Layanan TIK DKISP Provinsi Kaltara* telah berhasil *diverifikasi* oleh admin.\n\n"
+            . "Email: {$email}\n"
+            . "Status: *Terverifikasi* ✓\n\n"
+            . "Silakan login untuk mulai menyampaikan permohonan layanan digital:\n"
+            . "https://layanan.diskominfo.kaltaraprov.go.id/login\n\n"
+            . "Terima kasih.\n"
+            . "Helpdesk DKISP Kaltara";
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
     protected function getStatusLabel(string $status): string
     {
         return match ($status) {

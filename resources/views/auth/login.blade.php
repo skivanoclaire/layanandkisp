@@ -49,6 +49,23 @@
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
+        @if($showCaptcha ?? false)
+        <!-- CAPTCHA -->
+        <div class="mt-4">
+            <x-input-label for="captcha" value="Verifikasi Keamanan" />
+            <div class="flex items-center gap-3 mt-2">
+                <img src="{{ captcha_src('default') }}" id="captcha-img" alt="captcha" class="rounded border border-gray-300">
+                <button type="button"
+                    onclick="document.getElementById('captcha-img').src='{{ captcha_src('default') }}?'+Math.random()"
+                    class="text-sm text-emerald-600 hover:text-emerald-800 hover:underline">↻ Refresh</button>
+            </div>
+            <x-text-input id="captcha" name="captcha" type="text" class="block mt-2 w-full" required autocomplete="off"
+                placeholder="Ketik karakter pada gambar" />
+            <x-input-error :messages="$errors->get('captcha')" class="mt-2" />
+            <p class="text-xs text-gray-500 mt-1">Verifikasi muncul karena terdeteksi beberapa kali login gagal dari perangkat ini.</p>
+        </div>
+        @endif
+
         <!-- Remember Me -->
         <div class="block mt-4">
             <label for="remember_me" class="inline-flex items-center">

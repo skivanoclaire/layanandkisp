@@ -87,10 +87,21 @@
                     $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan;
                    
                 @endphp
+                @php
+                    $pc = $pendingCounts ?? [];
+                    $badge = function ($count) {
+                        if (!$count) return '';
+                        $label = $count > 99 ? '99+' : $count;
+                        return '<span class="ml-2 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-[10px] font-bold leading-none text-white bg-red-500 rounded-full">' . $label . '</span>';
+                    };
+                @endphp
                 <div x-data="{ openAdminPermohonan: {{ $openPermohonan ? 'true' : 'false' }} }">
                     <button @click="openAdminPermohonan = !openAdminPermohonan"
                         class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openPermohonan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                        <span>Kelola Permohonan</span>
+                        <span class="flex items-center">
+                            <span>Kelola Permohonan</span>
+                            {!! $badge($pc['total'] ?? 0) !!}
+                        </span>
                         <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openAdminPermohonan }"
                             fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
@@ -116,7 +127,10 @@
                             <div x-data="{ openAdminEmail: {{ $openEmail ? 'true' : 'false' }} }">
                                 <button @click="openAdminEmail = !openAdminEmail"
                                     class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openEmail ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                    <span>Email</span>
+                                    <span class="flex items-center">
+                                        <span>Email</span>
+                                        {!! $badge($pc['email'] ?? 0) !!}
+                                    </span>
                                     <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminEmail }"
                                         fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -126,17 +140,29 @@
                                 </button>
                                 <div x-show="openAdminEmail" class="ml-4 space-y-1 mt-1">
                                     <a href="{{ route('admin.email.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                   {{ $atEmailRequest ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Permohonan
+                                        <span>Permohonan</span>
+                                        {!! $badge($pc['email_request'] ?? 0) !!}
                                     </a>
                                     <a href="{{ route('admin.email-password-reset.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                   {{ $atEmailPasswordReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Reset Password
+                                        <span>Reset Password</span>
+                                        {!! $badge($pc['email_password_reset'] ?? 0) !!}
                                     </a>
                                 </div>
                             </div>
+                        @endif
+
+                        {{-- Pemendek Tautan (Admin) --}}
+                        @if (auth()->user()?->hasPermission('admin.shortlink.index'))
+                            <a href="{{ route('admin.shortlink.index') }}"
+                                class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                          {{ request()->routeIs('admin.shortlink.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                <span>Pemendek Tautan</span>
+                                {!! $badge($pc['shortlink'] ?? 0) !!}
+                            </a>
                         @endif
 
                         @if (auth()->user()?->hasPermission('admin.subdomain.index'))
@@ -150,7 +176,10 @@
                             <div x-data="{ openAdminSubdomain: {{ $openAdminSubdomain ? 'true' : 'false' }} }">
                                 <button @click="openAdminSubdomain = !openAdminSubdomain"
                                     class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminSubdomain ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                    <span>Subdomain</span>
+                                    <span class="flex items-center">
+                                        <span>Subdomain</span>
+                                        {!! $badge($pc['subdomain'] ?? 0) !!}
+                                    </span>
                                     <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminSubdomain }"
                                         fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -158,20 +187,23 @@
                                 </button>
                                 <div x-show="openAdminSubdomain" class="ml-4 space-y-1 mt-1">
                                     <a href="{{ route('admin.subdomain.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                        {{ $atAdminSubdomainNew ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Pendaftaran Baru
+                                        <span>Pendaftaran Baru</span>
+                                        {!! $badge($pc['subdomain_new'] ?? 0) !!}
                                     </a>
                                     <a href="{{ route('admin.subdomain.ip-change.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                        {{ $atAdminSubdomainIpChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Perubahan IP
+                                        <span>Perubahan IP</span>
+                                        {!! $badge($pc['subdomain_ip_change'] ?? 0) !!}
                                     </a>
 
                                     <a href="{{ route('admin.subdomain.name-change.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                        {{ $atAdminSubdomainNameChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Perubahan Nama
+                                        <span>Perubahan Nama</span>
+                                        {!! $badge($pc['subdomain_name_change'] ?? 0) !!}
                                     </a>
                                 </div>
                             </div>
@@ -189,7 +221,10 @@
                             <div x-data="{ openRekomendasiV2: {{ $openRekomendasiV2 ? 'true' : 'false' }} }">
                                 <button @click="openRekomendasiV2 = !openRekomendasiV2"
                                     class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openRekomendasiV2 ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                    <span>Rekomendasi Aplikasi</span>
+                                    <span class="flex items-center">
+                                        <span>Rekomendasi Aplikasi</span>
+                                        {!! $badge($pc['rekomendasi'] ?? 0) !!}
+                                    </span>
                                     <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openRekomendasiV2 }"
                                         fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -198,9 +233,10 @@
                                 <div x-show="openRekomendasiV2" class="ml-4 space-y-1 mt-1">
                                     @if (auth()->user()?->hasPermission('admin.rekomendasi.verifikasi.index'))
                                         <a href="{{ route('admin.rekomendasi.verifikasi.index') }}"
-                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atRekomendasiVerifikasi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Verifikasi Usulan
+                                            <span>Verifikasi Usulan</span>
+                                            {!! $badge($pc['rekomendasi_verifikasi'] ?? 0) !!}
                                         </a>
                                     @endif
                                     @if (auth()->user()?->hasPermission('admin.fase-pengembangan.view'))
@@ -232,9 +268,10 @@
                         {{-- Video Conference Admin --}}
                         @if (auth()->user()?->hasRole('Admin'))
                             <a href="{{ route('admin.vidcon.index') }}"
-                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                           {{ request()->routeIs('admin.vidcon.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                Zoom/Youtube Live
+                                <span>Zoom/Youtube Live</span>
+                                {!! $badge($pc['vidcon'] ?? 0) !!}
                             </a>
                         @endif
 
@@ -281,7 +318,10 @@
                             <div x-data="{ openAdminInternet: {{ $openAdminInternet ? 'true' : 'false' }} }">
                                 <button @click="openAdminInternet = !openAdminInternet"
                                     class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminInternet ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                    <span>Internet</span>
+                                    <span class="flex items-center">
+                                        <span>Internet</span>
+                                        {!! $badge($pc['internet'] ?? 0) !!}
+                                    </span>
                                     <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminInternet }"
                                         fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -290,16 +330,18 @@
                                 <div x-show="openAdminInternet" class="ml-4 space-y-1 mt-1">
                                     @if (auth()->user()?->hasPermission('Kelola Laporan Gangguan Internet'))
                                         <a href="{{ route('admin.internet.laporan-gangguan.index') }}"
-                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminLaporanGangguan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Laporan Gangguan
+                                            <span>Laporan Gangguan</span>
+                                            {!! $badge($pc['laporan_gangguan'] ?? 0) !!}
                                         </a>
                                     @endif
                                     @if (auth()->user()?->hasPermission('Kelola Starlink Jelajah'))
                                         <a href="{{ route('admin.internet.starlink.index') }}"
-                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminStarlink ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Starlink Jelajah
+                                            <span>Starlink Jelajah</span>
+                                            {!! $badge($pc['starlink'] ?? 0) !!}
                                         </a>
                                     @endif
                                 </div>
@@ -317,7 +359,10 @@
                                 <div x-data="{ openAdminVpn: {{ $openAdminVpn ? 'true' : 'false' }} }">
                                     <button @click="openAdminVpn = !openAdminVpn"
                                         class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminVpn ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        <span>Jaringan Privat/VPN</span>
+                                        <span class="flex items-center">
+                                            <span>Jaringan Privat/VPN</span>
+                                            {!! $badge($pc['vpn'] ?? 0) !!}
+                                        </span>
                                         <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminVpn }"
                                             fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -326,23 +371,26 @@
                                     <div x-show="openAdminVpn" class="ml-4 space-y-1 mt-1">
                                         @if (auth()->user()?->hasPermission('Kelola Pendaftaran VPN'))
                                             <a href="{{ route('admin.vpn.registration.index') }}"
-                                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                                class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                                {{ $atAdminVpnRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                                Pendaftaran VPN
+                                                <span>Pendaftaran VPN</span>
+                                                {!! $badge($pc['vpn_registration'] ?? 0) !!}
                                             </a>
                                         @endif
                                         @if (auth()->user()?->hasPermission('Kelola Reset Akun VPN'))
                                             <a href="{{ route('admin.vpn.reset.index') }}"
-                                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                                class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                                {{ $atAdminVpnReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                                Reset Akun VPN
+                                                <span>Reset Akun VPN</span>
+                                                {!! $badge($pc['vpn_reset'] ?? 0) !!}
                                             </a>
                                         @endif
                                         @if (auth()->user()?->hasPermission('Kelola Akses JIP PDNS'))
                                             <a href="{{ route('admin.vpn.jip-pdns.index') }}"
-                                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                                class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                                {{ $atAdminJipPdns ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                                Akses JIP PDNS
+                                                <span>Akses JIP PDNS</span>
+                                                {!! $badge($pc['jip_pdns'] ?? 0) !!}
                                             </a>
                                         @endif
                                     </div>
@@ -362,7 +410,10 @@
                             <div x-data="{ openAdminDatacenter: {{ $openAdminDatacenter ? 'true' : 'false' }} }">
                                 <button @click="openAdminDatacenter = !openAdminDatacenter"
                                     class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminDatacenter ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                    <span>Pusat Data/Komputasi</span>
+                                    <span class="flex items-center">
+                                        <span>Pusat Data/Komputasi</span>
+                                        {!! $badge($pc['datacenter'] ?? 0) !!}
+                                    </span>
                                     <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminDatacenter }"
                                         fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -370,24 +421,28 @@
                                 </button>
                                 <div x-show="openAdminDatacenter" class="ml-4 space-y-1 mt-1">
                                     <a href="{{ route('admin.datacenter.visitation.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                        {{ $atAdminVisitation ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Kunjungan/Colocation
+                                        <span>Kunjungan/Colocation</span>
+                                        {!! $badge($pc['visitation'] ?? 0) !!}
                                     </a>
                                     <a href="{{ route('admin.datacenter.vps.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                        {{ $atAdminVps ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        VPS/VM
+                                        <span>VPS/VM</span>
+                                        {!! $badge($pc['vps'] ?? 0) !!}
                                     </a>
                                     <a href="{{ route('admin.datacenter.backup.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                        {{ $atAdminBackup ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Backup
+                                        <span>Backup</span>
+                                        {!! $badge($pc['backup'] ?? 0) !!}
                                     </a>
                                     <a href="{{ route('admin.datacenter.cloud-storage.index') }}"
-                                        class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                        {{ $atAdminCloudStorage ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                        Cloud Storage
+                                        <span>Cloud Storage</span>
+                                        {!! $badge($pc['cloud_storage'] ?? 0) !!}
                                     </a>
                                 </div>
                             </div>
@@ -405,7 +460,10 @@
                             <div x-data="{ openAdminTte: {{ $openAdminTte ? 'true' : 'false' }} }">
                                 <button @click="openAdminTte = !openAdminTte"
                                     class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminTte ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                    <span>Tanda Tangan Elektronik</span>
+                                    <span class="flex items-center">
+                                        <span>Tanda Tangan Elektronik</span>
+                                        {!! $badge($pc['tte'] ?? 0) !!}
+                                    </span>
                                     <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminTte }"
                                         fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -414,30 +472,34 @@
                                 <div x-show="openAdminTte" class="ml-4 space-y-1 mt-1">
                                     @if (auth()->user()?->hasPermission('Kelola Bantuan TTE'))
                                         <a href="{{ route('admin.tte.assistance.index') }}"
-                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminTteAssistance ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Pendampingan TTE
+                                            <span>Pendampingan TTE</span>
+                                            {!! $badge($pc['tte_assistance'] ?? 0) !!}
                                         </a>
                                     @endif
                                     @if (auth()->user()?->hasPermission('Kelola Registrasi TTE'))
                                         <a href="{{ route('admin.tte.registration.index') }}"
-                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminTteRegistration ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Pendaftaran Akun TTE
+                                            <span>Pendaftaran Akun TTE</span>
+                                            {!! $badge($pc['tte_registration'] ?? 0) !!}
                                         </a>
                                     @endif
                                     @if (auth()->user()?->hasPermission('Kelola Reset Passphrase TTE'))
                                         <a href="{{ route('admin.tte.passphrase-reset.index') }}"
-                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminTtePassphraseReset ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Reset Passphrase TTE
+                                            <span>Reset Passphrase TTE</span>
+                                            {!! $badge($pc['tte_passphrase_reset'] ?? 0) !!}
                                         </a>
                                     @endif
                                     @if (auth()->user()?->hasPermission('Kelola Pembaruan Sertifikat TTE'))
                                         <a href="{{ route('admin.tte.certificate-update.index') }}"
-                                            class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                                            {{ $atAdminTteCertificateUpdate ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Pembaruan Sertifikat TTE
+                                            <span>Pembaruan Sertifikat TTE</span>
+                                            {!! $badge($pc['tte_certificate_update'] ?? 0) !!}
                                         </a>
                                     @endif
                                 </div>
@@ -447,9 +509,10 @@
                         {{-- Manajemen PSE (Admin) --}}
                         @if (auth()->user()?->hasPermission('Kelola Permohonan PSE'))
                             <a href="{{ route('admin.pse-update.index') }}"
-                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atAdminPse ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                Manajemen PSE
+                                <span>Manajemen PSE</span>
+                                {!! $badge($pc['pse_update'] ?? 0) !!}
                             </a>
                         @endif
                     </div>
@@ -580,6 +643,15 @@
                                     </a>
                                 </div>
                             </div>
+                        @endif
+
+                        {{-- Pemendek Tautan (User) --}}
+                        @if (auth()->user()?->hasAnyPermission(['user.shortlink.index', 'user.shortlink.create', 'user.shortlink.show']))
+                            <a href="{{ route('user.shortlink.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ request()->routeIs('user.shortlink.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Pemendek Tautan
+                            </a>
                         @endif
 
                         {{-- Pendaftaran Sistem Elektronik (PSE) (User) --}}
@@ -1065,10 +1137,12 @@
                 $atKelolaPengguna = request()->routeIs('admin.users*');
                 $atKelolaPeran = request()->routeIs('admin.roles*');
                 $atKelolaKewenangan = request()->routeIs('admin.role-permissions*');
+                $atLogAudit = request()->routeIs('admin.audit-logs.*');
                 $atCekSimpeg = request()->routeIs('admin.simpeg.*');
                 $openPenggunaAkses = $atKelolaPengguna
                     || $atKelolaPeran
                     || $atKelolaKewenangan
+                    || $atLogAudit
                     || $atCekSimpeg;
 
                 $canSeePenggunaAkses = auth()->user()?->hasPermission('admin.users')
@@ -1113,6 +1187,15 @@
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atKelolaKewenangan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Kelola Kewenangan
+                            </a>
+                        @endif
+
+                        {{-- Log Audit --}}
+                        @if (auth()->user()?->hasRole('Admin'))
+                            <a href="{{ route('admin.audit-logs.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atLogAudit ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Log Audit
                             </a>
                         @endif
 

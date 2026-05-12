@@ -19,6 +19,14 @@ Route::middleware('guest')->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
+    Route::get('check-nik', [RegisteredUserController::class, 'checkNik'])
+        ->middleware('throttle:30,1')
+        ->name('register.check-nik');
+
+    Route::get('check-field', [RegisteredUserController::class, 'checkField'])
+        ->middleware('throttle:30,1')
+        ->name('register.check-field');
+
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 

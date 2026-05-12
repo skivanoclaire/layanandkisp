@@ -230,7 +230,7 @@
                             <label class="block text-sm font-semibold text-green-700 mb-1">Operator Ditugaskan:</label>
                             <ul class="list-disc list-inside text-gray-800">
                                 @foreach($item->operators as $operator)
-                                    <li>{{ $operator->name }} ({{ $operator->email }})</li>
+                                    <li>{{ $operator->name }} ({{ $operator->phone ?: '—' }})</li>
                                 @endforeach
                             </ul>
                         </div>
@@ -398,35 +398,50 @@
             </form>
         </div>
     @elseif($item->status === 'proses')
-        <!-- Update Info Form -->
+        <!-- Form Tindak Lanjut Meeting (Simpan Draft / Setujui) -->
         <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-4">
-            <h3 class="font-semibold text-blue-800 mb-3">Update Informasi Meeting</h3>
-            <form action="{{ route('admin.vidcon.update-info', $item->id) }}" method="POST">
+            <h3 class="font-semibold text-blue-800 mb-1">Informasi Meeting</h3>
+            <p class="text-sm text-blue-700 mb-4">
+                Isi informasi meeting di bawah, lalu pilih <strong>Simpan Sementara</strong> untuk menyimpan draft tanpa memberi tahu pemohon, atau <strong>Setujui &amp; Kirim Link</strong> untuk menyetujui sekaligus mengirim link ke pemohon.
+            </p>
+            <form method="POST" action="{{ route('admin.vidcon.update-info', $item->id) }}">
                 @csrf
                 <div class="mb-3">
-                    <label class="block text-sm font-semibold text-blue-700 mb-1">Link Meeting:</label>
-                    <input type="text" name="link_meeting"
-                           value="{{ $item->link_meeting }}"
-                           class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-sm font-semibold text-blue-700 mb-1">Link Meeting <span class="text-red-500">*</span></label>
+                    <input type="text" name="link_meeting" required
+                           value="{{ old('link_meeting', $item->link_meeting) }}"
+                           class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                           placeholder="https://zoom.us/j/123456789">
+                    @error('link_meeting')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-3">
                     <div>
-                        <label class="block text-sm font-semibold text-blue-700 mb-1">Meeting ID:</label>
-                        <input type="text" name="meeting_id"
-                               value="{{ $item->meeting_id }}"
-                               class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-sm font-semibold text-blue-700 mb-1">Meeting ID <span class="text-red-500">*</span></label>
+                        <input type="text" name="meeting_id" required
+                               value="{{ old('meeting_id', $item->meeting_id) }}"
+                               class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               placeholder="123 456 789">
+                        @error('meeting_id')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-blue-700 mb-1">Password:</label>
-                        <input type="text" name="meeting_password"
-                               value="{{ $item->meeting_password }}"
-                               class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-sm font-semibold text-blue-700 mb-1">Password <span class="text-red-500">*</span></label>
+                        <input type="text" name="meeting_password" required
+                               value="{{ old('meeting_password', $item->meeting_password) }}"
+                               class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               placeholder="abc123">
+                        @error('meeting_password')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-sm font-semibold text-blue-700">Operator Ditugaskan:</label>
-                        <button type="button" id="aiRecommendBtnUpdate"
+                        <button type="button" id="aiRecommendBtnProses"
                                 class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-semibold flex items-center gap-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -437,7 +452,7 @@
                     <div class="border border-blue-300 rounded-lg p-3 bg-white max-h-64 overflow-y-auto">
                         @if($operators->count() > 0)
                             @foreach($operators as $op)
-                                <label class="flex items-start py-2 hover:bg-blue-50 rounded px-2 cursor-pointer operator-checkbox-update">
+                                <label class="flex items-start py-2 hover:bg-blue-50 rounded px-2 cursor-pointer operator-checkbox-proses">
                                     <input type="checkbox"
                                            name="operators[]"
                                            value="{{ $op->id }}"
@@ -477,123 +492,34 @@
                 <div class="mb-3">
                     <label class="block text-sm font-semibold text-blue-700 mb-1">Informasi Tambahan:</label>
                     <textarea name="informasi_tambahan" rows="3"
-                              class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">{{ $item->informasi_tambahan }}</textarea>
+                              class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              placeholder="Informasi penting lainnya untuk peserta">{{ old('informasi_tambahan', $item->informasi_tambahan) }}</textarea>
                 </div>
-                <div class="mb-3">
+                <div class="mb-4">
                     <label class="block text-sm font-semibold text-blue-700 mb-1">Catatan Admin:</label>
                     <textarea name="admin_notes" rows="2"
-                              class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">{{ $item->admin_notes }}</textarea>
+                              class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              placeholder="Catatan internal">{{ old('admin_notes', $item->admin_notes) }}</textarea>
                 </div>
-                <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">
-                    Update Informasi
-                </button>
-            </form>
-        </div>
 
-        <!-- Approve Form (untuk status proses) -->
-        <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-4">
-            <h3 class="font-semibold text-green-800 mb-3">Setujui Permohonan</h3>
-            <form action="{{ route('admin.vidcon.approve', $item->id) }}" method="POST">
-                @csrf
-                <div class="mb-3">
-                    <label class="block text-sm font-semibold text-green-700 mb-1">Link Meeting <span class="text-red-500">*</span></label>
-                    <input type="text" name="link_meeting" required
-                           value="{{ $item->link_meeting }}"
-                           class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                           placeholder="https://zoom.us/j/123456789">
-                    @error('link_meeting')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                <div class="flex flex-wrap gap-2 pt-2 border-t border-blue-200">
+                    <button type="submit"
+                            formaction="{{ route('admin.vidcon.update-info', $item->id) }}"
+                            formnovalidate
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">
+                        Simpan Sementara
+                    </button>
+                    <button type="submit"
+                            formaction="{{ route('admin.vidcon.approve', $item->id) }}"
+                            onclick="return confirm('Setujui permohonan ini dan kirim link meeting ke pemohon?')"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold">
+                            Setujui &amp; Kirim Link
+                    </button>
                 </div>
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                        <label class="block text-sm font-semibold text-green-700 mb-1">Meeting ID <span class="text-red-500">*</span></label>
-                        <input type="text" name="meeting_id" required
-                               value="{{ $item->meeting_id }}"
-                               class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                               placeholder="123 456 789">
-                        @error('meeting_id')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-green-700 mb-1">Password <span class="text-red-500">*</span></label>
-                        <input type="text" name="meeting_password" required
-                               value="{{ $item->meeting_password }}"
-                               class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                               placeholder="abc123">
-                        @error('meeting_password')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="block text-sm font-semibold text-green-700">Operator Ditugaskan:</label>
-                        <button type="button" id="aiRecommendBtnApprove"
-                                class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-semibold flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
-                            Rekomendasi AI
-                        </button>
-                    </div>
-                    <div class="border border-green-300 rounded-lg p-3 bg-white max-h-64 overflow-y-auto">
-                        @if($operators->count() > 0)
-                            @foreach($operators as $op)
-                                <label class="flex items-start py-2 hover:bg-green-50 rounded px-2 cursor-pointer operator-checkbox-approve">
-                                    <input type="checkbox"
-                                           name="operators[]"
-                                           value="{{ $op->id }}"
-                                           data-operator-id="{{ $op->id }}"
-                                           {{ $item->operators->contains($op->id) ? 'checked' : '' }}
-                                           class="w-4 h-4 mt-1 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                                    <span class="ml-3 flex-1">
-                                        <span class="block">
-                                            <span class="font-medium text-gray-900">{{ $op->name }}</span>
-                                            <span class="text-gray-500 text-xs">({{ $op->email }})</span>
-                                        </span>
-                                        <span class="block text-xs text-gray-600 mt-0.5">
-                                            <span class="inline-flex items-center gap-1">
-                                                <svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                                                </svg>
-                                                Aktif: <strong>{{ $op->active_vidcon_workload ?? 0 }}</strong>
-                                            </span>
-                                            <span class="mx-1">•</span>
-                                            <span class="inline-flex items-center gap-1">
-                                                <svg class="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                                </svg>
-                                                Total: <strong>{{ $op->vidcon_workload ?? 0 }}</strong>
-                                            </span>
-                                        </span>
-                                    </span>
-                                </label>
-                            @endforeach
-                        @else
-                            <p class="text-sm text-gray-500 italic">Tidak ada operator vidcon terdaftar</p>
-                        @endif
-                    </div>
-                    <p class="text-xs text-gray-600 mt-1">Pilih satu atau lebih operator (opsional). Klik "Rekomendasi AI" untuk pemilihan otomatis berdasarkan beban kerja.</p>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-semibold text-green-700 mb-1">Informasi Tambahan:</label>
-                    <textarea name="informasi_tambahan" rows="3"
-                              class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500">{{ $item->informasi_tambahan }}</textarea>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-semibold text-green-700 mb-1">Catatan Admin:</label>
-                    <textarea name="admin_notes" rows="2"
-                              class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500">{{ $item->admin_notes }}</textarea>
-                </div>
-                <button type="submit"
-                        onclick="return confirm('Setujui permohonan ini dan kirim link meeting ke pemohon?')"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold">
-                    Setujui & Kirim Link
-                </button>
+                <p class="text-xs text-gray-500 mt-2">
+                    <strong>Simpan Sementara</strong>: status tetap "Diproses", pemohon tidak dinotifikasi (boleh sebagian field kosong).
+                    <strong>Setujui &amp; Kirim Link</strong>: status menjadi "Selesai", pemohon menerima notifikasi (semua field meeting wajib diisi).
+                </p>
             </form>
         </div>
 
@@ -710,66 +636,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle AI Recommend button for Update form
-    const aiRecommendBtnUpdate = document.getElementById('aiRecommendBtnUpdate');
-    if (aiRecommendBtnUpdate) {
-        aiRecommendBtnUpdate.addEventListener('click', function() {
-            // Uncheck all checkboxes first
-            document.querySelectorAll('.operator-checkbox-update input[type="checkbox"]').forEach(checkbox => {
+    // Handle AI Recommend button for combined Proses form (Simpan/Setujui)
+    const aiRecommendBtnProses = document.getElementById('aiRecommendBtnProses');
+    if (aiRecommendBtnProses) {
+        aiRecommendBtnProses.addEventListener('click', function() {
+            document.querySelectorAll('.operator-checkbox-proses input[type="checkbox"]').forEach(checkbox => {
                 checkbox.checked = false;
             });
 
-            // Check recommended operators
             recommendedOperatorIds.forEach(operatorId => {
-                const checkbox = document.querySelector(`.operator-checkbox-update input[data-operator-id="${operatorId}"]`);
+                const checkbox = document.querySelector(`.operator-checkbox-proses input[data-operator-id="${operatorId}"]`);
                 if (checkbox) {
                     checkbox.checked = true;
-                    // Add brief highlight animation
-                    const label = checkbox.closest('.operator-checkbox-update');
+                    const label = checkbox.closest('.operator-checkbox-proses');
                     label.classList.add('bg-purple-100');
-                    setTimeout(() => {
-                        label.classList.remove('bg-purple-100');
-                    }, 1000);
+                    setTimeout(() => label.classList.remove('bg-purple-100'), 1000);
                 }
             });
 
-            // Show feedback
             if (recommendedOperatorIds.length > 0) {
-                const message = `AI memilih ${recommendedOperatorIds.length} operator dengan beban kerja paling ringan`;
-                showNotification(message, 'success');
-            } else {
-                showNotification('Tidak ada operator tersedia untuk rekomendasi', 'info');
-            }
-        });
-    }
-
-    // Handle AI Recommend button for Approve form (status proses)
-    const aiRecommendBtnApprove = document.getElementById('aiRecommendBtnApprove');
-    if (aiRecommendBtnApprove) {
-        aiRecommendBtnApprove.addEventListener('click', function() {
-            // Uncheck all checkboxes first
-            document.querySelectorAll('.operator-checkbox-approve input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-
-            // Check recommended operators
-            recommendedOperatorIds.forEach(operatorId => {
-                const checkbox = document.querySelector(`.operator-checkbox-approve input[data-operator-id="${operatorId}"]`);
-                if (checkbox) {
-                    checkbox.checked = true;
-                    // Add brief highlight animation
-                    const label = checkbox.closest('.operator-checkbox-approve');
-                    label.classList.add('bg-purple-100');
-                    setTimeout(() => {
-                        label.classList.remove('bg-purple-100');
-                    }, 1000);
-                }
-            });
-
-            // Show feedback
-            if (recommendedOperatorIds.length > 0) {
-                const message = `AI memilih ${recommendedOperatorIds.length} operator dengan beban kerja paling ringan`;
-                showNotification(message, 'success');
+                showNotification(`AI memilih ${recommendedOperatorIds.length} operator dengan beban kerja paling ringan`, 'success');
             } else {
                 showNotification('Tidak ada operator tersedia untuk rekomendasi', 'info');
             }

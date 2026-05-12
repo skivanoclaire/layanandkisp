@@ -69,6 +69,8 @@ class UnitKerjaController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge(['nama' => strtoupper(trim($request->nama))]);
+
         $request->validate([
             'nama' => 'required|string|max:255|unique:unit_kerjas,nama',
             'tipe' => 'required|in:' . implode(',', UnitKerja::tipeOptions()),
@@ -92,6 +94,8 @@ class UnitKerjaController extends Controller
 
     public function update(Request $request, UnitKerja $unitKerja)
     {
+        $request->merge(['nama' => strtoupper(trim($request->nama))]);
+
         $request->validate([
             'nama' => 'required|string|max:255|unique:unit_kerjas,nama,' . $unitKerja->id,
             'tipe' => 'required|in:' . implode(',', UnitKerja::tipeOptions()),

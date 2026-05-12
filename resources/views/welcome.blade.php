@@ -74,7 +74,14 @@
                             'image' => 'email.png',
                             'link' => '/login',
                         ],
-                       
+                        [
+                            'icon' => '✂️',
+                            'label' => 'Pemendek Tautan',
+                            'slug' => 'pemendek-tautan',
+                            'image' => 'subdomain.png',
+                            'link' => '/login',
+                        ],
+
                         [
                             'icon' => '📈',
                             'label' => 'Portal Data',
@@ -485,6 +492,25 @@
                                         Menyediakan data statistik sektoral agar dapat digunakan untuk kepentingan Perangkat Daerah
                                         atau masyarakat dalam menunjang pembangunan daerah.
                                     </p>
+                                @break
+
+                                @case('pemendek-tautan')
+                                    <p>
+                                        DKISP Provinsi Kalimantan Utara menyediakan layanan <strong>Pemendek Tautan (URL Shortener)</strong>
+                                        resmi pada domain <a href="https://link.kaltaraprov.go.id" target="_blank"
+                                            class="text-blue-600 underline hover:text-blue-800">link.kaltaraprov.go.id</a>
+                                        bagi Perangkat Daerah dan stakeholder Pemprov Kalimantan Utara. Layanan ini digunakan untuk
+                                        meringkas tautan dokumen, formulir, pengumuman, dan publikasi agar mudah dan aman dibagikan
+                                        kepada masyarakat — tautan resmi <strong>selalu</strong> berawalan <code>link.kaltaraprov.go.id/</code>.
+                                    </p>
+                                    <p><b>Alur permohonan:</b></p>
+                                    <ol class="list-decimal ml-5 space-y-1">
+                                        <li>Login pada aplikasi e-Layanan, lalu ajukan permohonan pada menu <em>Layanan Digital → Pemendek Tautan</em>
+                                            dengan mengisi URL tujuan, kode pendek yang diinginkan (opsional), judul, dan keperluan.</li>
+                                        <li>Admin DKISP memverifikasi permohonan. Jika disetujui, short link otomatis dibuat di
+                                            link.kaltaraprov.go.id dan dapat dilihat pada status permohonan.</li>
+                                        <li>Admin dapat mengubah URL tujuan, memantau statistik klik, atau menonaktifkan tautan jika diperlukan.</li>
+                                    </ol>
                                 @break
 
                                 @default

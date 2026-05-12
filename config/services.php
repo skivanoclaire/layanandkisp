@@ -70,6 +70,15 @@ return [
         'url'   => env('FONNTE_API_URL', 'https://api.fonnte.com/send'),
     ],
 
+    'yourls' => [
+        // Endpoint API YOURLS (link.kaltaraprov.go.id)
+        'url'       => env('YOURLS_API_URL', 'https://link.kaltaraprov.go.id/yourls-api.php'),
+        // Base URL untuk menyusun short URL yang ditampilkan
+        'base'      => env('YOURLS_BASE_URL', 'https://link.kaltaraprov.go.id'),
+        // Secret signature token (passwordless API) — lihat YOURLS Admin -> Tools
+        'signature' => env('YOURLS_API_SIGNATURE'),
+    ],
+
     'keycloak' => [
         'client_id' => env('KEYCLOAK_CLIENT_ID'),
         'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),

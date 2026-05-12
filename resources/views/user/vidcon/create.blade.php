@@ -6,6 +6,28 @@
 <div class="max-w-4xl mx-auto">
     <h1 class="text-2xl font-bold mb-6 text-purple-700">Formulir Permohonan Video Conference</h1>
 
+    @php
+        $profileMissing = [];
+        if (empty(auth()->user()->unit_kerja_id)) $profileMissing[] = 'Instansi';
+        if (empty(auth()->user()->phone)) $profileMissing[] = 'No. HP/WhatsApp';
+    @endphp
+    @if(count($profileMissing) > 0)
+        <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4">
+            <div class="flex items-start">
+                <svg class="w-5 h-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <div class="text-sm">
+                    <p class="text-yellow-800 font-semibold mb-1">Data profil belum lengkap</p>
+                    <p class="text-yellow-700">
+                        {{ implode(' dan ', $profileMissing) }} belum diisi di profil Anda. Permohonan tidak bisa dikirim sampai data ini lengkap.
+                        <a href="{{ route('profile.edit') }}" class="underline font-semibold">Lengkapi profil sekarang</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Operating Hours -->
     <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
         <div class="flex items-start">
@@ -55,39 +77,21 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="unit_kerja_id" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Instansi <span class="text-red-500">*</span>
-                    </label>
-                    <select id="unit_kerja_id"
-                            name="unit_kerja_id"
-                            required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 @error('unit_kerja_id') border-red-500 @enderror">
-                        <option value="">-- Pilih Instansi --</option>
-                        @foreach($unitKerjaList as $uk)
-                            <option value="{{ $uk->id }}" {{ old('unit_kerja_id') == $uk->id ? 'selected' : '' }}>
-                                {{ $uk->nama }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('unit_kerja_id')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Instansi</label>
+                    <input type="text"
+                           value="{{ auth()->user()->unitKerja->nama ?? '-' }}"
+                           readonly
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                    <p class="mt-1 text-xs text-gray-500">Diambil dari profil. Hubungi admin jika perlu perubahan.</p>
                 </div>
 
                 <div class="mb-4">
-                    <label for="no_hp" class="block text-sm font-semibold text-gray-700 mb-2">
-                        No. HP/WhatsApp <span class="text-red-500">*</span>
-                    </label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">No. HP/WhatsApp</label>
                     <input type="text"
-                           id="no_hp"
-                           name="no_hp"
-                           value="{{ old('no_hp', auth()->user()->phone) }}"
-                           required
-                           placeholder="Contoh: 081234567890"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 @error('no_hp') border-red-500 @enderror">
-                    @error('no_hp')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                           value="{{ auth()->user()->phone }}"
+                           readonly
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                    <p class="mt-1 text-xs text-gray-500">Diambil dari profil. Update di halaman Profil jika berbeda.</p>
                 </div>
             </div>
 

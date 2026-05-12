@@ -4,7 +4,6 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\VpnRegistration;
-use App\Models\UnitKerja;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,39 +20,25 @@ class VpnRegistrationController extends Controller
 
     public function create()
     {
-        $unitKerjas = UnitKerja::forLayananDigital()->orderBy('nama')->get();
-        return view('user.vpn.registration.create', compact('unitKerjas'));
+        return view('user.vpn.registration.create');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'nip' => 'required|string|max:255',
-            'is_kabupaten_kota' => 'required|boolean',
-            'kabupaten_kota' => 'nullable|in:Bulungan,Malinau,Tana Tidung,Tarakan,Nunukan',
-            'unit_kerja_manual' => 'nullable|string|max:255',
-            'unit_kerja_id' => 'nullable|exists:unit_kerjas,id',
             'uraian_kebutuhan' => 'required|string',
             'tipe' => 'required|in:VPN PPTP,VPN IPSec/L2TP,SDWAN,Metro-E',
             'bandwidth' => 'nullable|string|max:255',
         ]);
 
-        if ($validated['is_kabupaten_kota']) {
-            $request->validate([
-                'kabupaten_kota' => 'required|in:Bulungan,Malinau,Tana Tidung,Tarakan,Nunukan',
-                'unit_kerja_manual' => 'required|string|max:255',
-            ]);
-            $validated['unit_kerja_id'] = null;
-        } else {
-            $request->validate([
-                'unit_kerja_id' => 'required|exists:unit_kerjas,id',
-            ]);
-            $validated['kabupaten_kota'] = null;
-            $validated['unit_kerja_manual'] = null;
-        }
-
-        $validated['user_id'] = Auth::id();
+        $user = Auth::user();
+        $validated['nama'] = $user->name;
+        $validated['nip'] = $user->nik;
+        $validated['unit_kerja_id'] = $user->unit_kerja_id;
+        $validated['is_kabupaten_kota'] = false;
+        $validated['kabupaten_kota'] = null;
+        $validated['unit_kerja_manual'] = null;
+        $validated['user_id'] = $user->id;
         $validated['status'] = 'menunggu';
 
         VpnRegistration::create($validated);

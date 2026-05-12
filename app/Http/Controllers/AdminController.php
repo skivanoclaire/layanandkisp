@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Request as UserRequest;
 use App\Models\User;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -45,6 +46,7 @@ class AdminController extends Controller
             'tte_registration'        => ['label' => 'Registrasi TTE',              'table' => 'tte_registration_requests'],
             'tte_passphrase'          => ['label' => 'Reset Passphrase TTE',        'table' => 'tte_passphrase_reset_requests'],
             'tte_certificate_update'  => ['label' => 'Pembaruan Sertifikat TTE',    'table' => 'tte_certificate_update_requests'],
+            'shortlink'               => ['label' => 'Pemendek Tautan',             'table' => 'shortlink_requests'],
         ];
 
         // Alias status mencakup semua konvensi yang ditemukan di 21 table di atas:
@@ -414,15 +416,20 @@ public function deleteRequest(UserRequest $userRequest)
 
 public function verifyUser(User $user)
 {
-    // opsi: cegah memverifikasi admin lain via UI, kalau mau:
-    // if ($user->role === 'admin') { abort(403); }
-
     if (!$user->is_verified) {
         $user->forceFill([
             'is_verified' => true,
             'verified_at' => now(),
             'verified_by' => auth()->user()->email ?? 'admin',
         ])->save();
+
+        // Kirim notifikasi WA ke pengguna
+        if (!empty($user->phone)) {
+            (new FonnteWhatsappService('aptika'))
+                ->sendAccountVerifiedNotification($user->phone, $user->name, $user->email);
+        } else {
+            Log::warning("verifyUser: WA tidak dikirim — user {$user->email} tidak punya nomor HP.");
+        }
     }
 
     return back()->with('status', "User {$user->name} berhasil diverifikasi.");

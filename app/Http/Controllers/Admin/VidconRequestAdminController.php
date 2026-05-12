@@ -18,7 +18,7 @@ class VidconRequestAdminController extends Controller
     public function index(Request $r)
     {
         $status = $r->query('status'); // ?status=menunggu|proses|ditolak|selesai
-        $q = VidconRequest::with(['user', 'unitKerja'])
+        $q = VidconRequest::with(['user', 'unitKerja', 'operators'])
             ->orderByDesc('submitted_at');
 
         if ($status) {

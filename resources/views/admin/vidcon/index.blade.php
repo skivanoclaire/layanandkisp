@@ -112,6 +112,7 @@
                         <th class="px-3 py-2 text-left">Tanggal</th>
                         <th class="px-3 py-2 text-left">Platform</th>
                         <th class="px-3 py-2 text-left">Status</th>
+                        <th class="px-3 py-2 text-left">Operator</th>
                         <th class="px-3 py-2 text-left">Diajukan</th>
                         <th class="px-3 py-2 text-center">Aksi</th>
                     </tr>
@@ -140,6 +141,13 @@
                                     {{ $it->daysSinceLastUpdate() }}d
                                 </span>
                             @endif
+                        </td>
+                        <td class="px-3 py-2 text-sm">
+                            @forelse($it->operators as $op)
+                                <span class="inline-block text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full mb-0.5">{{ $op->name }}</span>
+                            @empty
+                                <span class="text-xs text-gray-400">—</span>
+                            @endforelse
                         </td>
                         <td class="px-3 py-2 text-sm">{{ $it->submitted_at->format('d/m/Y H:i') }}</td>
                         <td class="px-3 py-2 text-center">

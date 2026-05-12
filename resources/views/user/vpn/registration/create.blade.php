@@ -35,78 +35,28 @@
         @csrf
 
         <div class="space-y-4">
-            <!-- Nama -->
+            <!-- Nama (terkunci, ambil dari profil) -->
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">
-                    Nama <span class="text-red-500">*</span>
-                </label>
-                <input type="text" name="nama" value="{{ old('nama', Auth::user()->name) }}" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Nama</label>
+                <input type="text" name="nama" value="{{ Auth::user()->name }}" readonly
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
             </div>
 
-            <!-- NIP -->
+            <!-- NIP (terkunci, ambil dari profil) -->
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">
-                    NIP <span class="text-red-500">*</span>
-                </label>
-                <input type="text" name="nip" value="{{ old('nip', Auth::user()->nik) }}" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">NIP</label>
+                <input type="text" name="nip" value="{{ Auth::user()->nik }}" readonly
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
             </div>
 
-            <!-- Checkbox Kab/Kota -->
+            <!-- Instansi (terkunci, ambil dari profil) -->
             <input type="hidden" name="is_kabupaten_kota" value="0">
-            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <label class="flex items-center cursor-pointer">
-                    <input type="checkbox" name="is_kabupaten_kota" id="isKabKota" value="1"
-                           {{ old('is_kabupaten_kota') ? 'checked' : '' }}
-                           onchange="toggleKabKotaFields()"
-                           class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                    <span class="ml-2 text-sm font-semibold text-purple-800">
-                        Saya dari Kabupaten/Kota
-                    </span>
-                </label>
-            </div>
-
-            <!-- Kabupaten/Kota Fields (shown when checked) -->
-            <div id="kabKotaFields" style="display: {{ old('is_kabupaten_kota') ? 'block' : 'none' }};" class="space-y-4 pl-4 border-l-4 border-purple-300">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">
-                        Pilih Kabupaten/Kota <span class="text-red-500">*</span>
-                    </label>
-                    <select name="kabupaten_kota" id="kabupatenKota"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">-- Pilih Kabupaten/Kota --</option>
-                        @foreach(['Bulungan','Malinau','Tana Tidung','Tarakan','Nunukan'] as $kab)
-                            <option value="{{ $kab }}" {{ old('kabupaten_kota') == $kab ? 'selected' : '' }}>{{ $kab }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">
-                        Nama Instansi <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="unit_kerja_manual" id="unitKerjaManual" value="{{ old('unit_kerja_manual') }}"
-                           placeholder="Contoh: Dinas Komunikasi dan Informatika"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <p class="mt-1 text-xs text-gray-500">Isikan nama unit kerja Anda secara manual</p>
-                </div>
-            </div>
-
-            <!-- Provinsi Field (shown when unchecked) -->
-            <div id="provinsiField" style="display: {{ old('is_kabupaten_kota') ? 'none' : 'block' }};">
-                <label class="block text-sm font-semibold text-gray-700 mb-1">
-                    Instansi <span class="text-red-500">*</span>
-                </label>
-                <select name="unit_kerja_id" id="unitKerjaId"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option value="">-- Pilih Instansi --</option>
-                    @foreach($unitKerjas as $uk)
-                        <option value="{{ $uk->id }}" {{ old('unit_kerja_id') == $uk->id ? 'selected' : '' }}>
-                            {{ $uk->nama }}
-                        </option>
-                    @endforeach
-                </select>
+            <input type="hidden" name="unit_kerja_id" value="{{ Auth::user()->unit_kerja_id }}">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Instansi</label>
+                <input type="text" value="{{ Auth::user()->unitKerja->nama ?? '-' }}" readonly
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                <p class="mt-1 text-xs text-gray-500">Diambil dari profil. Hubungi admin jika perlu perubahan.</p>
             </div>
 
             <!-- Tipe VPN -->
@@ -160,31 +110,4 @@
     </form>
 </div>
 
-<script>
-function toggleKabKotaFields() {
-    const checkbox = document.getElementById('isKabKota');
-    const kabKotaFields = document.getElementById('kabKotaFields');
-    const provinsiField = document.getElementById('provinsiField');
-    const kabupatenKota = document.getElementById('kabupatenKota');
-    const unitKerjaManual = document.getElementById('unitKerjaManual');
-    const unitKerjaId = document.getElementById('unitKerjaId');
-
-    if (checkbox.checked) {
-        kabKotaFields.style.display = 'block';
-        provinsiField.style.display = 'none';
-        kabupatenKota.required = true;
-        unitKerjaManual.required = true;
-        unitKerjaId.required = false;
-        unitKerjaId.value = '';
-    } else {
-        kabKotaFields.style.display = 'none';
-        provinsiField.style.display = 'block';
-        kabupatenKota.required = false;
-        unitKerjaManual.required = false;
-        unitKerjaId.required = true;
-        kabupatenKota.value = '';
-        unitKerjaManual.value = '';
-    }
-}
-</script>
 @endsection

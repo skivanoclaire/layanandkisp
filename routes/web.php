@@ -11,6 +11,8 @@ use App\Http\Controllers\DigitalFormController;
 use App\Http\Controllers\RekomendasiAplikasiController;
 use App\Http\Controllers\User\EmailRequestController;
 use App\Http\Controllers\Admin\EmailRequestAdminController;
+use App\Http\Controllers\User\ShortlinkRequestController;
+use App\Http\Controllers\Admin\ShortlinkRequestAdminController;
 use App\Http\Controllers\User\RekomendasiUsulanController;
 use App\Http\Controllers\User\RekomendasiFasePengembanganController;
 use App\Http\Controllers\User\RekomendasiEvaluasiController;
@@ -49,10 +51,6 @@ Route::get('/download/{path}', function ($path) {
 
 Route::get('/request', function () {
     return view('request');
-});
-
-Route::get('/register', function () {
-    return view('register');
 });
 
 Route::get('/about', function () {
@@ -349,6 +347,10 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/role-permissions', [AdminController::class, 'rolePermissions'])->name('role-permissions');
     Route::post('/role-permissions', [AdminController::class, 'updateRolePermissions'])->name('role-permissions.update');
 
+    // Audit Logs
+    Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
+    Route::get('/audit-logs/{auditLog}', [\App\Http\Controllers\Admin\AuditLogController::class, 'show'])->name('audit-logs.show');
+
     // Master Data Email Accounts
     Route::get('/email-accounts', [\App\Http\Controllers\Admin\EmailAccountController::class, 'index'])->name('email-accounts.index');
     Route::post('/email-accounts/sync', [\App\Http\Controllers\Admin\EmailAccountController::class, 'sync'])->name('email-accounts.sync');
@@ -414,6 +416,38 @@ Route::middleware(['auth','role:Admin'])->prefix('admin/digital/email')->name('a
     Route::post('/{id}/status', [EmailRequestAdminController::class, 'updateStatus'])->name('status');
     Route::post('/{id}/update-password', [EmailRequestAdminController::class, 'updatePassword'])->name('update-password');
 });
+
+// ===================== Pemendek Tautan (link.kaltaraprov.go.id) =====================
+// Level pemohon (verified user)
+Route::middleware(['auth','verified.user','permission:user.shortlink.index,user.shortlink.create'])
+    ->prefix('digital/shortlink')
+    ->name('user.shortlink.')
+    ->group(function () {
+        Route::get('/',                 [ShortlinkRequestController::class, 'index'])->name('index');
+        Route::get('/create',           [ShortlinkRequestController::class, 'create'])->name('create');
+        Route::post('/',                [ShortlinkRequestController::class, 'store'])->name('store');
+        Route::get('/{shortlink}',      [ShortlinkRequestController::class, 'show'])->name('show');
+        Route::get('/{shortlink}/edit', [ShortlinkRequestController::class, 'edit'])->name('edit');
+        Route::put('/{shortlink}',      [ShortlinkRequestController::class, 'update'])->name('update');
+        Route::delete('/{shortlink}',   [ShortlinkRequestController::class, 'destroy'])->name('destroy');
+    });
+
+// Level admin
+Route::middleware(['auth','role:Admin'])
+    ->prefix('admin/digital/shortlink')
+    ->name('admin.shortlink.')
+    ->group(function () {
+        Route::get('/',                              [ShortlinkRequestAdminController::class, 'index'])->name('index');
+        Route::get('/{shortlink}',                   [ShortlinkRequestAdminController::class, 'show'])->name('show');
+        Route::post('/{shortlink}/process',          [ShortlinkRequestAdminController::class, 'process'])->name('process');
+        Route::post('/{shortlink}/approve',          [ShortlinkRequestAdminController::class, 'approve'])->name('approve');
+        Route::post('/{shortlink}/reject',           [ShortlinkRequestAdminController::class, 'reject'])->name('reject');
+        Route::post('/{shortlink}/update-destination',[ShortlinkRequestAdminController::class, 'updateDestination'])->name('update-destination');
+        Route::post('/{shortlink}/disable',          [ShortlinkRequestAdminController::class, 'disable'])->name('disable');
+        Route::post('/{shortlink}/enable',           [ShortlinkRequestAdminController::class, 'enable'])->name('enable');
+        Route::post('/{shortlink}/refresh-stats',    [ShortlinkRequestAdminController::class, 'refreshStats'])->name('refresh-stats');
+        Route::post('/{shortlink}/update-note',      [ShortlinkRequestAdminController::class, 'updateNote'])->name('update-note');
+    });
 
 // Form Permohonan Subdomain level Verified User
 Route::middleware(['auth','verified.user','permission:user.subdomain.index,user.subdomain.create'])
@@ -549,6 +583,7 @@ Route::middleware(['auth', 'verified.user', 'permission:Akses Video Conference']
         Route::get('/create', [\App\Http\Controllers\User\VidconRequestController::class, 'create'])->name('create');
         Route::post('/store', [\App\Http\Controllers\User\VidconRequestController::class, 'store'])->name('store');
         Route::get('/thanks/{vidconRequest}', [\App\Http\Controllers\User\VidconRequestController::class, 'thanks'])->name('thanks');
+        Route::get('/survey/{vidconRequest}', [\App\Http\Controllers\User\VidconRequestController::class, 'survey'])->name('survey');
         Route::get('/{vidconRequest}/edit', [\App\Http\Controllers\User\VidconRequestController::class, 'edit'])->name('edit');
         Route::put('/{vidconRequest}', [\App\Http\Controllers\User\VidconRequestController::class, 'update'])->name('update');
         Route::delete('/{vidconRequest}', [\App\Http\Controllers\User\VidconRequestController::class, 'destroy'])->name('destroy');
