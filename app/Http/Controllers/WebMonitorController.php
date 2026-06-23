@@ -35,6 +35,7 @@ class WebMonitorController extends Controller
             'jenis' => $request->get('jenis'),
             'status' => $request->get('status'),
             'ip_scope' => $request->get('ip_scope'),
+            'domain_scope' => $request->get('domain_scope'),
             'decommissioned' => $request->get('decommissioned'),
         ];
 
@@ -66,6 +67,22 @@ class WebMonitorController extends Controller
 
         if ($request->filled('decommissioned')) {
             $query->where('is_decommissioned', $request->get('decommissioned') === '1');
+        }
+
+        if ($request->filled('domain_scope')) {
+            $domainScope = $request->get('domain_scope');
+            if ($domainScope === 'kaltaraprov') {
+                // Subdomain *.kaltaraprov.go.id maupun domain apex kaltaraprov.go.id
+                $query->where(function ($q) {
+                    $q->where('subdomain', 'like', '%.kaltaraprov.go.id')
+                      ->orWhere('subdomain', 'kaltaraprov.go.id');
+                });
+            } elseif ($domainScope === 'luar') {
+                $query->whereNotNull('subdomain')
+                      ->where('subdomain', '!=', '')
+                      ->where('subdomain', 'not like', '%.kaltaraprov.go.id')
+                      ->where('subdomain', '!=', 'kaltaraprov.go.id');
+            }
         }
 
         if ($request->filled('ip_scope')) {
@@ -102,6 +119,9 @@ class WebMonitorController extends Controller
         }
         if ($request->filled('status')) {
             $filterLabels['Status'] = $request->get('status') === 'active' ? 'Aktif' : 'Tidak Aktif';
+        }
+        if ($request->filled('domain_scope')) {
+            $filterLabels['Lingkup Domain'] = $request->get('domain_scope') === 'kaltaraprov' ? '*.kaltaraprov.go.id' : 'Luar kaltaraprov.go.id';
         }
         if ($request->filled('ip_scope')) {
             $filterLabels['Lingkup IP'] = $request->get('ip_scope') === 'pemprov' ? 'IP Pemprov (103.156.110.0/24)' : 'Luar Pemprov';

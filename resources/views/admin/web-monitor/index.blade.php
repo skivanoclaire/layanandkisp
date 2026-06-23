@@ -115,6 +115,14 @@
                     </select>
                 </div>
                 <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Lingkup Domain</label>
+                    <select name="domain_scope" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">-- Semua Domain --</option>
+                        <option value="kaltaraprov" {{ ($filters['domain_scope'] ?? '') === 'kaltaraprov' ? 'selected' : '' }}>*.kaltaraprov.go.id</option>
+                        <option value="luar" {{ ($filters['domain_scope'] ?? '') === 'luar' ? 'selected' : '' }}>Luar kaltaraprov.go.id</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Lingkup IP</label>
                     <select name="ip_scope" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                         <option value="">-- Semua IP --</option>
