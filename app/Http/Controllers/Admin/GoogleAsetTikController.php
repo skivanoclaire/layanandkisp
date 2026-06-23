@@ -178,6 +178,52 @@ class GoogleAsetTikController extends Controller
     }
 
     /**
+     * Export CSV (ramah Excel) data hardware — streaming & ringan untuk
+     * dataset besar. Mengikuti filter aktif (boleh tanpa filter / seluruh data).
+     * Kolom sama dengan export PDF.
+     */
+    public function exportHardwareCsv(Request $request)
+    {
+        @set_time_limit(300);
+
+        $query = $this->hardwareQuery($request);
+
+        $filename = 'Data-Aset-TIK-Hardware-' . now()->format('Ymd-His') . '.csv';
+        $columns = [
+            'No', 'Nama OPD', 'Nama Aset', 'Merk/Type', 'Jenis Aset TIK',
+            'Tahun', 'Kondisi', 'Aset Vital', 'Tahun Pengadaan',
+        ];
+
+        return response()->streamDownload(function () use ($query, $columns) {
+            $out = fopen('php://output', 'w');
+            // BOM UTF-8 agar Excel menampilkan karakter dengan benar
+            fwrite($out, "\xEF\xBB\xBF");
+            // Delimiter ';' agar terbuka rapi di Excel (locale Indonesia)
+            fputcsv($out, $columns, ';');
+
+            $no = 0;
+            foreach ($query->cursor() as $item) {
+                $no++;
+                fputcsv($out, [
+                    $no,
+                    $item->nama_opd,
+                    $item->nama_aset,
+                    $item->merk_type,
+                    $item->jenis_aset_tik,
+                    $item->tahun,
+                    $item->keadaan_barang,
+                    $item->aset_vital,
+                    $item->tanggal_perolehan,
+                ], ';');
+            }
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    /**
      * List software dengan filter
      */
     public function software(Request $request)
