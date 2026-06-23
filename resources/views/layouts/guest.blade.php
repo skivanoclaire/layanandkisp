@@ -216,6 +216,8 @@
         </div>
     </div>
 @stack('scripts')
+
+    @include('partials.accessibility-widget')
 </body>
 
 </html>
