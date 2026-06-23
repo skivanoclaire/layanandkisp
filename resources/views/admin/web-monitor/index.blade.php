@@ -151,6 +151,16 @@
                         </svg>
                         Ekspor PDF
                     </button>
+                    <button type="submit"
+                            formaction="{{ route('admin.web-monitor.export-esc-pdf') }}"
+                            formtarget="_blank"
+                            title="Rekapitulasi Kategori Sistem Elektronik (hanya yang sudah mengisi ESC)"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-semibold inline-flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 0H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4"/>
+                        </svg>
+                        Ekspor PDF (ESC)
+                    </button>
                     <a href="{{ route('admin.web-monitor.index', $showAll ? ['show_all' => 'true'] : []) }}"
                        class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm font-semibold">
                         Reset

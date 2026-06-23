@@ -239,6 +239,9 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
         // Export filtered Master Data Subdomain to PDF
         Route::get('/export-pdf', [WebMonitorController::class, 'exportPdf'])->name('export-pdf');
 
+        // Export rekapitulasi Kategori Sistem Elektronik (ESC) ke PDF
+        Route::get('/export-esc-pdf', [WebMonitorController::class, 'exportEscPdf'])->name('export-esc-pdf');
+
         // PARAMETERIZED ROUTES LAST (with {webMonitor} parameter)
         Route::get('/{webMonitor}', [WebMonitorController::class, 'show'])->name('show');
         Route::get('/{webMonitor}/edit', [WebMonitorController::class, 'edit'])->name('edit');

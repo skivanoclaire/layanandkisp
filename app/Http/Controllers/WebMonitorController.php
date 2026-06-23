@@ -147,6 +147,60 @@ class WebMonitorController extends Controller
         return $dompdf->stream($filename, ['Attachment' => false]);
     }
 
+    /**
+     * Export rekapitulasi Kategori Sistem Elektronik (ESC) ke PDF.
+     * Satu baris per subdomain yang sudah mengisi ESC, mengikuti filter halaman.
+     */
+    public function exportEscPdf(Request $request)
+    {
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(300);
+
+        $showAll = $request->get('show_all', false);
+        $data = $this->applyFilters($request, $showAll)
+            ->whereNotNull('esc_category')
+            ->get();
+
+        $filterLabels = [];
+        if ($request->filled('instansi_id')) {
+            $instansi = UnitKerja::find($request->get('instansi_id'));
+            if ($instansi) {
+                $filterLabels['Instansi'] = $instansi->nama;
+            }
+        }
+        if ($request->filled('jenis')) {
+            $filterLabels['Jenis'] = $request->get('jenis');
+        }
+        if ($request->filled('status')) {
+            $filterLabels['Status'] = $request->get('status') === 'active' ? 'Aktif' : 'Tidak Aktif';
+        }
+        if ($request->filled('domain_scope')) {
+            $filterLabels['Lingkup Domain'] = $request->get('domain_scope') === 'kaltaraprov' ? '*.kaltaraprov.go.id' : 'Luar kaltaraprov.go.id';
+        }
+        if ($request->filled('ip_scope')) {
+            $filterLabels['Lingkup IP'] = $request->get('ip_scope') === 'pemprov' ? 'IP Pemprov (103.156.110.0/24)' : 'Luar Pemprov';
+        }
+
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $html = view('admin.web-monitor.esc-export-pdf', [
+            'data' => $data,
+            'filterLabels' => $filterLabels,
+            'tanggal' => now()->locale('id')->isoFormat('D MMMM YYYY, HH:mm') . ' WITA',
+        ])->render();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'Rekap-Kategori-Sistem-Elektronik-' . now()->format('Ymd-His') . '.pdf';
+
+        return $dompdf->stream($filename, ['Attachment' => false]);
+    }
+
     public function show($id)
     {
         $webMonitor = WebMonitor::with([
