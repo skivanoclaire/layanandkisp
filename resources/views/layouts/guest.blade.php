@@ -191,7 +191,7 @@
             </a>
         </div>
 
-        <div class="w-full sm:max-w-md mt-6 px-6 py-4 login-box shadow-xl overflow-hidden sm:rounded-lg" style="position: relative; z-index: 10;">
+        <div class="w-full sm:max-w-md mt-6 px-6 py-4 login-box shadow-xl sm:rounded-lg" style="position: relative; z-index: 10;">
             {{ $slot }}
 
             <!-- Copyright & Developer Info -->
@@ -215,6 +215,7 @@
             </div>
         </div>
     </div>
+@stack('scripts')
 </body>
 
 </html>

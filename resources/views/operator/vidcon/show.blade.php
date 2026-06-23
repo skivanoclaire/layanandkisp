@@ -80,6 +80,37 @@
         </div>
     </div>
 
+    {{-- Informasi Meeting --}}
+    @if($vidconData->link_meeting || $vidconData->meeting_id || $vidconData->meeting_password)
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-green-500">Informasi Meeting</h2>
+
+        <div class="space-y-3">
+            @if($vidconData->link_meeting)
+                <div>
+                    <strong class="text-gray-700">Link Meeting:</strong><br>
+                    <a href="{{ $vidconData->link_meeting }}" target="_blank"
+                       class="text-blue-600 hover:text-blue-800 underline break-all">{{ $vidconData->link_meeting }}</a>
+                </div>
+            @endif
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @if($vidconData->meeting_id)
+                    <p><strong class="text-gray-700">Meeting ID:</strong><br>{{ $vidconData->meeting_id }}</p>
+                @endif
+                @if($vidconData->meeting_password)
+                    <p><strong class="text-gray-700">Passcode:</strong><br>{{ $vidconData->meeting_password }}</p>
+                @endif
+            </div>
+            @if($vidconData->informasi_tambahan)
+                <div class="pt-2 border-t border-gray-200">
+                    <strong class="text-gray-700">Informasi Tambahan:</strong>
+                    <p class="mt-1 text-gray-600">{{ $vidconData->informasi_tambahan }}</p>
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
     {{-- Upload Dokumentasi Form --}}
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-purple-500">Upload Foto Dokumentasi</h2>
@@ -91,7 +122,6 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Foto (Multiple)</label>
                 <input type="file" name="photos[]" id="photos" multiple
                        accept="image/*,image/heic,image/heif"
-                       capture="environment"
                        class="w-full border-gray-300 rounded-md shadow-sm @error('photos') border-red-500 @enderror"
                        onchange="validateFiles(event)" required>
                 @error('photos')
@@ -99,7 +129,7 @@
                 @enderror
                 <p class="text-sm text-gray-500 mt-1">
                     Max 10MB per foto. Format: JPG, JPEG, PNG, HEIC (iPhone).
-                    <span class="text-blue-600 font-medium">Tip: Bisa langsung foto dengan kamera!</span>
+                    <span class="text-blue-600 font-medium">Bisa foto langsung atau pilih dari galeri.</span>
                 </p>
             </div>
 

@@ -10,8 +10,9 @@ class VidconRequest extends Model
 {
     protected $fillable = [
         'ticket_no', 'user_id', 'nama', 'nip', 'unit_kerja_id', 'email_pemohon', 'no_hp',
-        'judul_kegiatan', 'deskripsi_kegiatan', 'tanggal_mulai', 'tanggal_selesai',
-        'jam_mulai', 'jam_selesai', 'platform', 'platform_lainnya', 'jumlah_peserta', 'keperluan_khusus',
+        'judul_kegiatan', 'deskripsi_kegiatan', 'lokasi_kegiatan', 'tanggal_mulai', 'tanggal_selesai',
+        'jam_mulai', 'jam_selesai', 'platform', 'platform_lainnya', 'jenis_layanan', 'jumlah_peserta', 'keperluan_khusus',
+        'pemohon_link_meeting', 'pemohon_meeting_id', 'pemohon_meeting_password',
         'status', 'submitted_at', 'processing_at', 'completed_at', 'rejected_at',
         'processed_by', 'admin_notes',
         'link_meeting', 'meeting_id', 'meeting_password', 'informasi_tambahan', 'operator_assigned',
@@ -111,6 +112,16 @@ class VidconRequest extends Model
             return $this->platform_lainnya;
         }
         return $this->platform;
+    }
+
+    public function getJenisLayananDisplayAttribute(): string
+    {
+        return match($this->jenis_layanan) {
+            'link_host'          => 'Link Host saja',
+            'link_host_operator' => 'Link Host + Operator',
+            'operator'           => 'Operator saja',
+            default              => '-',
+        };
     }
 
     // Ticket Generator

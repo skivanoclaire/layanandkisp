@@ -35,6 +35,7 @@ class WebMonitorController extends Controller
             'jenis' => $request->get('jenis'),
             'status' => $request->get('status'),
             'ip_scope' => $request->get('ip_scope'),
+            'decommissioned' => $request->get('decommissioned'),
         ];
 
         return view('admin.web-monitor.index', compact('data', 'showAll', 'statistics', 'unitKerjas', 'filters'));
@@ -61,6 +62,10 @@ class WebMonitorController extends Controller
 
         if ($request->filled('status')) {
             $query->where('status', $request->get('status'));
+        }
+
+        if ($request->filled('decommissioned')) {
+            $query->where('is_decommissioned', $request->get('decommissioned') === '1');
         }
 
         if ($request->filled('ip_scope')) {
@@ -247,6 +252,7 @@ class WebMonitorController extends Controller
             'server_ownership' => 'nullable|in:Provinsi Kaltara,Pihak Ketiga',
             'server_owner_name' => 'nullable|string|max:200',
             'server_location_id' => 'nullable|exists:server_locations,id',
+            'is_decommissioned' => 'nullable|boolean',
             // Electronic System Category
             'esc_answers' => 'nullable|array',
             'esc_answers.1_1' => 'nullable|in:A,B,C',
@@ -327,6 +333,15 @@ class WebMonitorController extends Controller
                 $webMonitor->dc_updated_by = auth()->id();
                 $webMonitor->updateDcScore();
             }
+        }
+
+        // Penanda pensiun/non-aktif (terpisah dari `status` keterjangkauan).
+        $nowDecommissioned = $request->boolean('is_decommissioned');
+        $data['is_decommissioned'] = $nowDecommissioned;
+        if ($nowDecommissioned && !$webMonitor->is_decommissioned) {
+            $data['decommissioned_at'] = now();
+        } elseif (!$nowDecommissioned) {
+            $data['decommissioned_at'] = null;
         }
 
         $webMonitor->update($data);

@@ -8,6 +8,7 @@ use App\Models\VidconRequest;
 use App\Models\VidconRequestActivity;
 use App\Models\User;
 use App\Exports\VidconRequestExport;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -69,10 +70,16 @@ class VidconRequestAdminController extends Controller
     // POST /admin/digital/vidcon/{id}/approve
     public function approve(Request $r, $id)
     {
+        $item = VidconRequest::with(['unitKerja'])->findOrFail($id);
+
+        // Untuk "Operator saja", pemohon sudah menyediakan link/ID meeting sendiri,
+        // jadi admin tidak wajib mengisi ulang informasi meeting.
+        $meetingRule = $item->jenis_layanan === 'operator' ? 'nullable' : 'required';
+
         $r->validate([
-            'link_meeting'         => 'required|string|max:500',
-            'meeting_id'           => 'required|string|max:200',
-            'meeting_password'     => 'required|string|max:200',
+            'link_meeting'         => [$meetingRule, 'string', 'max:500'],
+            'meeting_id'           => [$meetingRule, 'string', 'max:200'],
+            'meeting_password'     => [$meetingRule, 'string', 'max:200'],
             'informasi_tambahan'   => 'nullable|string|max:1000',
             'operators'            => 'nullable|array',
             'operators.*'          => 'exists:users,id',
@@ -82,8 +89,6 @@ class VidconRequestAdminController extends Controller
             'meeting_id.required' => 'Meeting ID wajib diisi.',
             'meeting_password.required' => 'Password Meeting wajib diisi.',
         ]);
-
-        $item = VidconRequest::with(['unitKerja'])->findOrFail($id);
 
         // Update request status to completed
         $item->status           = 'selesai';
@@ -123,7 +128,7 @@ class VidconRequestAdminController extends Controller
             // Kegiatan Info
             'judul_kegiatan' => $item->judul_kegiatan,
             'deskripsi_kegiatan' => $item->deskripsi_kegiatan,
-            'lokasi' => 'Online',
+            'lokasi' => $item->lokasi_kegiatan ?: 'Online',
             'tanggal_mulai' => $item->tanggal_mulai,
             'tanggal_selesai' => $item->tanggal_selesai,
             'jam_mulai' => $item->jam_mulai,
@@ -132,10 +137,12 @@ class VidconRequestAdminController extends Controller
             'jumlah_peserta' => $item->jumlah_peserta,
             'keperluan_khusus' => $item->keperluan_khusus,
 
-            // Meeting Info
-            'link_meeting' => $item->link_meeting,
-            'meeting_id' => $item->meeting_id,
-            'meeting_password' => $item->meeting_password,
+            // Meeting Info — untuk "Operator saja", pemohon menyediakan link/ID
+            // sendiri (mis. dari Pusat), jadi pakai itu sebagai fallback bila
+            // admin tidak mengisi field meeting.
+            'link_meeting' => $item->link_meeting ?: $item->pemohon_link_meeting,
+            'meeting_id' => $item->meeting_id ?: $item->pemohon_meeting_id,
+            'meeting_password' => $item->meeting_password ?: $item->pemohon_meeting_password,
             'informasi_tambahan' => $item->informasi_tambahan,
 
             // Operator (legacy field)
@@ -175,8 +182,32 @@ class VidconRequestAdminController extends Controller
             'vidcon_data_id' => $vidconData->id,
         ]);
 
+        // Beri tahu pemohon via WhatsApp bahwa permohonannya disetujui beserta link meeting.
+        // Untuk "Operator saja" pakai link/ID dari pemohon sebagai fallback (sama seperti VidconData).
+        // Best-effort: kegagalan notifikasi tidak boleh menggagalkan persetujuan.
+        $waSent = false;
+        try {
+            $wa = new FonnteWhatsappService('aptika');
+            $waSent = $wa->sendVidconApprovedNotification(
+                $item->no_hp ?? '',
+                $item->ticket_no,
+                $item->judul_kegiatan,
+                $item->link_meeting ?: $item->pemohon_link_meeting,
+                $item->meeting_id ?: $item->pemohon_meeting_id,
+                $item->meeting_password ?: $item->pemohon_meeting_password,
+                $item->informasi_tambahan
+            );
+        } catch (\Exception $e) {
+            Log::error('WhatsApp vidcon approve notification failed: ' . $e->getMessage());
+        }
+
+        $message = "Permohonan {$item->ticket_no} telah disetujui dan otomatis ditambahkan ke Data Fasilitasi Vidcon.";
+        $message .= $waSent
+            ? ' Pemohon telah diberitahu melalui WhatsApp.'
+            : ' Namun notifikasi WhatsApp ke pemohon gagal dikirim — mohon informasikan secara manual.';
+
         return redirect()->route('admin.vidcon.show', $item->id)
-            ->with('success', "Permohonan {$item->ticket_no} telah disetujui dan otomatis ditambahkan ke Data Fasilitasi Vidcon.");
+            ->with('success', $message);
     }
 
     // POST /admin/digital/vidcon/{id}/reject
@@ -335,6 +366,115 @@ class VidconRequestAdminController extends Controller
 
         return redirect()->route('admin.vidcon.show', $item->id)
             ->with('success', 'Informasi permohonan berhasil diperbarui.');
+    }
+
+    // POST /admin/digital/vidcon/{id}/revise
+    // Revisi informasi meeting untuk permohonan yang sudah berstatus "selesai"
+    // (mis. admin terlanjur menyetujui dengan link yang salah).
+    public function revise(Request $r, $id)
+    {
+        $r->validate([
+            'link_meeting'         => 'required|string|max:500',
+            'meeting_id'           => 'nullable|string|max:200',
+            'meeting_password'     => 'nullable|string|max:200',
+            'informasi_tambahan'   => 'nullable|string|max:1000',
+            'admin_notes'          => 'nullable|string|max:1000',
+        ], [
+            'link_meeting.required' => 'Link Meeting wajib diisi.',
+        ]);
+
+        $item = VidconRequest::findOrFail($id);
+
+        // Hanya permohonan yang sudah selesai yang dapat direvisi melalui jalur ini.
+        if ($item->status !== 'selesai') {
+            return back()->with('error', 'Revisi hanya tersedia untuk permohonan yang sudah berstatus selesai.');
+        }
+
+        // Simpan nilai lama untuk log aktivitas
+        $oldValues = [
+            'link_meeting' => $item->link_meeting,
+            'meeting_id' => $item->meeting_id,
+            'meeting_password' => $item->meeting_password,
+            'informasi_tambahan' => $item->informasi_tambahan,
+            'admin_notes' => $item->admin_notes,
+        ];
+
+        // Update informasi meeting pada permohonan
+        $item->link_meeting       = $r->link_meeting;
+        $item->meeting_id         = $r->meeting_id;
+        $item->meeting_password   = $r->meeting_password;
+        $item->informasi_tambahan = $r->informasi_tambahan;
+        if ($r->filled('admin_notes')) {
+            $item->admin_notes = $r->admin_notes;
+        }
+        $item->last_info_updated_at = now();
+        $item->info_update_count    = $item->info_update_count + 1;
+        $item->last_updated_by      = auth()->id();
+        $item->save();
+
+        // Sinkronkan ke VidconData yang sudah dibuat saat approve agar data
+        // fasilitasi (yang dilihat operator/pemohon) ikut terkoreksi.
+        $vidconData = \App\Models\VidconData::where('vidcon_request_id', $item->id)->first();
+        if ($vidconData) {
+            $vidconData->link_meeting       = $item->link_meeting;
+            $vidconData->meeting_id         = $item->meeting_id;
+            $vidconData->meeting_password   = $item->meeting_password;
+            $vidconData->informasi_tambahan = $item->informasi_tambahan;
+            // Field backward-compatibility
+            $vidconData->dokumentasi        = $item->link_meeting ?? '-';
+            $vidconData->akun_zoom          = $item->meeting_id ?? '-';
+            $vidconData->save();
+        }
+
+        // Log aktivitas
+        VidconRequestActivity::create([
+            'vidcon_request_id' => $item->id,
+            'user_id' => auth()->id(),
+            'action' => 'info_updated',
+            'old_values' => $oldValues,
+            'new_values' => [
+                'link_meeting' => $item->link_meeting,
+                'meeting_id' => $item->meeting_id,
+                'meeting_password' => $item->meeting_password,
+                'informasi_tambahan' => $item->informasi_tambahan,
+                'admin_notes' => $item->admin_notes,
+            ],
+            'notes' => 'Revisi informasi meeting setelah status selesai'
+                . ($vidconData ? ' (VidconData ID: ' . $vidconData->id . ' ikut diperbarui)' : ''),
+        ]);
+
+        Log::info('Video conference request revised after completion', [
+            'ticket_no' => $item->ticket_no,
+            'revised_by' => auth()->id(),
+            'user_id' => $item->user_id,
+            'vidcon_data_id' => $vidconData->id ?? null,
+        ]);
+
+        // Beri tahu pemohon via WhatsApp bahwa informasi meeting telah berubah.
+        // Best-effort: kegagalan notifikasi tidak boleh menggagalkan revisi.
+        $waSent = false;
+        try {
+            $wa = new FonnteWhatsappService('aptika');
+            $waSent = $wa->sendVidconLinkRevisedNotification(
+                $item->no_hp ?? '',
+                $item->ticket_no,
+                $item->judul_kegiatan,
+                $item->link_meeting,
+                $item->meeting_id,
+                $item->meeting_password,
+                $item->informasi_tambahan
+            );
+        } catch (\Exception $e) {
+            Log::error('WhatsApp vidcon revise notification failed: ' . $e->getMessage());
+        }
+
+        $message = "Informasi meeting untuk permohonan {$item->ticket_no} berhasil direvisi.";
+        $message .= $waSent
+            ? ' Pemohon telah diberitahu melalui WhatsApp.'
+            : ' Namun notifikasi WhatsApp ke pemohon gagal dikirim — mohon informasikan secara manual.';
+
+        return redirect()->route('admin.vidcon.show', $item->id)
+            ->with('success', $message);
     }
 
     // GET /admin/digital/vidcon/export-excel

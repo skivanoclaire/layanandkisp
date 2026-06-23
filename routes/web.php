@@ -23,6 +23,7 @@ use App\Http\Controllers\Operator\TikBorrowingController as OpBorrow;
 use App\Http\Controllers\Admin\TikBorrowingAdminController as AdminBorrow;
 use App\Http\Controllers\Admin\SimpegCheckController;
 use App\Http\Controllers\Admin\UnitKerjaController;
+use App\Http\Controllers\Admin\ApiManagementController;
 use App\Http\Controllers\VerificationController;
 
 
@@ -136,6 +137,9 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
 
             // Download file kajian revisi dari verifikator
             Route::get('/{id}/download-kajian', [RekomendasiUsulanController::class, 'downloadKajian'])->name('download-kajian');
+
+            // Export dokumen usulan ke PDF (sama seperti level admin)
+            Route::get('/{id}/pdf', [RekomendasiUsulanController::class, 'exportPdf'])->name('pdf');
         });
 
     // FASE PENGEMBANGAN: Simple Document Upload (3 Phases)
@@ -190,6 +194,17 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
 // Untuk admin
 Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+
+    // Manajemen API (Whitelist, API Key, Daftar Endpoint untuk SPLP)
+    Route::prefix('api-management')->name('api-management.')->group(function () {
+        Route::get('/', [ApiManagementController::class, 'index'])->name('index');
+        Route::post('/keys', [ApiManagementController::class, 'storeKey'])->name('keys.store');
+        Route::patch('/keys/{apiKey}/toggle', [ApiManagementController::class, 'toggleKey'])->name('keys.toggle');
+        Route::delete('/keys/{apiKey}', [ApiManagementController::class, 'destroyKey'])->name('keys.destroy');
+        Route::post('/whitelist', [ApiManagementController::class, 'storeWhitelist'])->name('whitelist.store');
+        Route::patch('/whitelist/{apiWhitelist}/toggle', [ApiManagementController::class, 'toggleWhitelist'])->name('whitelist.toggle');
+        Route::delete('/whitelist/{apiWhitelist}', [ApiManagementController::class, 'destroyWhitelist'])->name('whitelist.destroy');
+    });
     Route::get('/dashboard/chart-data', [AdminController::class, 'getChartData'])->name('dashboard.chart-data');
     Route::get('/permohonan', [AdminController::class, 'permohonan'])->name('permohonan');
     Route::get('/users', [AdminController::class, 'users'])->name('users');
@@ -483,6 +498,16 @@ Route::middleware(['auth','verified.user','permission:user.subdomain.index,user.
             Route::get('/{id}', [\App\Http\Controllers\User\SubdomainNameChangeController::class, 'show'])->name('show');
             Route::post('/check-availability', [\App\Http\Controllers\User\SubdomainNameChangeController::class, 'checkAvailability'])->name('check-availability');
         });
+
+        // Subdomain Data Update (Pembaruan Data) Routes
+        Route::prefix('data-update')->name('data-update.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'create'])->name('create');
+            Route::post('/store', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'update'])->name('update');
+        });
     });
 
 // PSE Update Data - User Routes
@@ -524,6 +549,15 @@ Route::middleware(['auth','role:Admin'])->prefix('admin/digital/subdomain')->nam
         Route::post('/{id}/approve', [\App\Http\Controllers\Admin\SubdomainNameChangeAdminController::class, 'approve'])->name('approve');
         Route::post('/{id}/reject', [\App\Http\Controllers\Admin\SubdomainNameChangeAdminController::class, 'reject'])->name('reject');
         Route::post('/{id}/complete', [\App\Http\Controllers\Admin\SubdomainNameChangeAdminController::class, 'complete'])->name('complete');
+    });
+
+    // Subdomain Data Update (Pembaruan Data) - Admin Routes
+    Route::prefix('data-update')->name('data-update.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'show'])->name('show');
+        Route::post('/{id}/approve', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'approve'])->name('approve');
+        Route::post('/{id}/revisi', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'revisi'])->name('revisi');
+        Route::post('/{id}/reject', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'reject'])->name('reject');
     });
 
     // Route dengan parameter dinamis harus di akhir
@@ -602,6 +636,7 @@ Route::middleware(['auth', 'role:Admin'])
         Route::post('/{id}/reject', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'reject'])->name('reject');
         Route::post('/{id}/process', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'setProcess'])->name('process');
         Route::post('/{id}/update-info', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'updateInfo'])->name('update-info');
+        Route::post('/{id}/revise', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'revise'])->name('revise');
     });
 
 // ===== SURVEI KEPUASAN LAYANAN =====

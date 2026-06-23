@@ -179,7 +179,9 @@
                     <p class="mt-1 text-sm text-gray-500">Mulai dengan mengajukan permintaan reset password baru.</p>
                     <div class="mt-6">
                         <a href="{{ route('user.email-password-reset.create') }}"
-                           class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                           class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600"
+                           onmouseover="this.style.backgroundColor='#14532d'"
+                           onmouseout="this.style.backgroundColor=''">
                             <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>

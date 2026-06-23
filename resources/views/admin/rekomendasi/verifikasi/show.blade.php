@@ -286,7 +286,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Jenis Layanan</h3>
-                        <p class="text-gray-900">{{ ucfirst($proposal->jenis_layanan) }}</p>
+                        <p class="text-gray-900">{{ ['publik' => 'Layanan Publik', 'internal' => 'Layanan Administrasi Pemerintahan'][$proposal->jenis_layanan] ?? ucfirst($proposal->jenis_layanan ?? '-') }}</p>
                     </div>
 
                     <div>
@@ -299,10 +299,12 @@
                         <p class="text-gray-900">{{ number_format($proposal->estimasi_pengguna, 0, ',', '.') }} pengguna</p>
                     </div>
 
+                    {{-- Lingkup Aplikasi dinonaktifkan sementara
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Lingkup Aplikasi</h3>
                         <p class="text-gray-900">{{ ucfirst($proposal->lingkup_aplikasi) }}</p>
                     </div>
+                    --}}
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Platform</h3>
@@ -453,7 +455,7 @@
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Uraian Ruang Lingkup</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->uraian_ruang_lingkup)
                                 {!! $proposal->uraian_ruang_lingkup !!}
                             @else
@@ -464,7 +466,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Proses Bisnis</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->proses_bisnis)
                                 {!! $proposal->proses_bisnis !!}
                             @else
@@ -498,7 +500,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Kerangka Kerja</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->kerangka_kerja)
                                 {!! $proposal->kerangka_kerja !!}
                             @else
@@ -527,7 +529,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Peran Tanggung Jawab</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->peran_tanggung_jawab)
                                 {!! $proposal->peran_tanggung_jawab !!}
                             @else
@@ -538,7 +540,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Jadwal Pelaksanaan</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->jadwal_pelaksanaan)
                                 {!! $proposal->jadwal_pelaksanaan !!}
                             @else
@@ -549,7 +551,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Rencana Aksi</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->rencana_aksi)
                                 {!! $proposal->rencana_aksi !!}
                             @else
@@ -560,7 +562,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Keamanan Informasi</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->keamanan_informasi)
                                 {!! $proposal->keamanan_informasi !!}
                             @else
@@ -571,7 +573,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Sumber Daya Manusia</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->sumber_daya_manusia)
                                 {!! $proposal->sumber_daya_manusia !!}
                             @else
@@ -582,7 +584,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Sumber Daya Anggaran</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->sumber_daya_anggaran)
                                 {!! $proposal->sumber_daya_anggaran !!}
                             @else
@@ -593,7 +595,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Sumber Daya Sarana</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->sumber_daya_sarana)
                                 {!! $proposal->sumber_daya_sarana !!}
                             @else
@@ -604,7 +606,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Indikator Keberhasilan</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->indikator_keberhasilan)
                                 {!! $proposal->indikator_keberhasilan !!}
                             @else
@@ -615,7 +617,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Alih Pengetahuan</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->alih_pengetahuan)
                                 {!! $proposal->alih_pengetahuan !!}
                             @else
@@ -626,7 +628,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Pemantauan Pelaporan</h3>
-                        <div class="text-gray-900 prose max-w-none">
+                        <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->pemantauan_pelaporan)
                                 {!! $proposal->pemantauan_pelaporan !!}
                             @else

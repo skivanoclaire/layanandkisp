@@ -151,10 +151,19 @@
                         </td>
                         <td class="px-3 py-2 text-sm">{{ $it->submitted_at->format('d/m/Y H:i') }}</td>
                         <td class="px-3 py-2 text-center">
-                            <a href="{{ route('admin.vidcon.show', $it->id) }}"
-                               class="px-3 py-1 rounded bg-purple-600 hover:bg-purple-700 text-white text-sm">
-                                Detail
-                            </a>
+                            <div class="flex items-center justify-center gap-1">
+                                <a href="{{ route('admin.vidcon.show', $it->id) }}"
+                                   class="px-3 py-1 rounded bg-purple-600 hover:bg-purple-700 text-white text-sm">
+                                    Detail
+                                </a>
+                                @if($it->status === 'selesai')
+                                    <a href="{{ route('admin.vidcon.show', $it->id) }}#revisi"
+                                       class="px-3 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-sm"
+                                       title="Revisi informasi meeting (mis. link salah)">
+                                        Edit
+                                    </a>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @endforeach

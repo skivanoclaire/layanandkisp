@@ -176,7 +176,25 @@ class AdminController extends Controller
         $roles = \App\Models\Role::all();
         $unitKerjas = \App\Models\UnitKerja::active()->orderBy('nama')->get();
 
-        return view('admin.users', compact('users', 'roles', 'unitKerjas'));
+        // Statistik pengguna (global, tidak terpengaruh filter di atas)
+        $stats = [
+            'total'          => User::count(),
+            'verified'       => User::where('is_verified', true)->count(),
+            'unverified'     => User::where(function ($q) {
+                                    $q->where('is_verified', false)->orWhereNull('is_verified');
+                                })->count(),
+            'sso'            => User::where('is_sso_user', true)->count(),
+            'new_this_month' => User::whereYear('created_at', now()->year)
+                                    ->whereMonth('created_at', now()->month)
+                                    ->count(),
+        ];
+
+        // Jumlah pengguna per role (untuk rincian)
+        $roleStats = \App\Models\Role::withCount('users')
+            ->orderByDesc('users_count')
+            ->get();
+
+        return view('admin.users', compact('users', 'roles', 'unitKerjas', 'stats', 'roleStats'));
     }
 
     public function updateStatus(HttpRequest $request, UserRequest $userRequest)

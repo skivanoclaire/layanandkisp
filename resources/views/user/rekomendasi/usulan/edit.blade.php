@@ -1,57 +1,219 @@
 @extends('layouts.authenticated')
 
+@push('styles')
+@verbatim
+<style>
+/* ============================================================
+   Redesain Form Edit Usulan Rekomendasi Aplikasi — modern & rapi
+   Prefix .usulan-redesign agar tidak bocor ke halaman lain.
+   ============================================================ */
+.usulan-redesign { color:#1f2937; }
+.usulan-redesign .ck-editor__editable_inline { min-height: 200px; }
+
+/* ---- Hero / judul halaman ---- */
+.usulan-redesign .uf-hero {
+    background:linear-gradient(135deg,#1d4ed8 0%, #2563eb 45%, #0ea5e9 100%);
+    border-radius:1.1rem; padding:1.6rem 1.75rem; color:#fff;
+    box-shadow:0 18px 45px -20px rgba(29,78,216,.6);
+}
+.usulan-redesign .uf-hero h1 { font-size:1.5rem; font-weight:700; line-height:1.15; }
+.usulan-redesign .uf-hero p { color:#dbeafe; margin-top:.3rem; font-size:.9rem; }
+
+/* ---- Progress langkah ---- */
+.usulan-redesign .uf-steps { display:flex; align-items:center; }
+.usulan-redesign .uf-step { display:flex; align-items:center; }
+.usulan-redesign .uf-step-circle {
+    width:2.4rem; height:2.4rem; border-radius:999px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.95rem; flex:0 0 auto;
+    transition:all .25s ease; box-shadow:0 4px 10px -4px rgba(15,42,86,.25);
+}
+.usulan-redesign .uf-step-line { height:3px; border-radius:999px; background:#e2e8f0; flex:1 1 auto; margin:0 .5rem; transition:background .25s ease; }
+
+/* ---- Kartu langkah (step) ---- */
+.usulan-redesign .step-content {
+    border:1px solid #e8ecf2; border-radius:1.1rem;
+    box-shadow:0 16px 44px -22px rgba(15,42,86,.20), 0 2px 8px -4px rgba(15,42,86,.07);
+    padding:1.75rem;
+}
+.usulan-redesign .step-content > h2 { display:flex; align-items:center; gap:.6rem; }
+
+/* ---- Sub-kartu kelompok field ---- */
+.usulan-redesign .uf-section { border:1px solid #eaeef4; border-radius:.9rem; overflow:hidden; background:#fff; }
+.usulan-redesign .uf-section + .uf-section { margin-top:1.15rem; }
+.usulan-redesign .uf-section__head {
+    display:flex; align-items:center; gap:.7rem; padding:.8rem 1rem;
+    background:linear-gradient(180deg,#f8fafc,#f1f5fb); border-bottom:1px solid #eaeef4;
+}
+.usulan-redesign .uf-section__icon {
+    width:2.1rem; height:2.1rem; flex:0 0 2.1rem;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:.6rem; color:#fff; box-shadow:0 6px 14px -6px rgba(15,42,86,.4);
+}
+.usulan-redesign .uf-section__icon svg { width:1.15rem; height:1.15rem; }
+.usulan-redesign .uf-section__title { font-weight:700; font-size:.97rem; color:#1e293b; line-height:1.15; }
+.usulan-redesign .uf-section__sub { font-size:.73rem; color:#64748b; margin-top:.12rem; }
+.usulan-redesign .uf-section__body { padding:1.15rem 1rem 1.25rem; }
+
+/* tema warna ikon */
+.usulan-redesign .uf-icon-blue   { background:linear-gradient(135deg,#3b82f6,#2563eb); }
+.usulan-redesign .uf-icon-teal   { background:linear-gradient(135deg,#14b8a6,#0d9488); }
+.usulan-redesign .uf-icon-violet { background:linear-gradient(135deg,#8b5cf6,#6d28d9); }
+.usulan-redesign .uf-icon-amber  { background:linear-gradient(135deg,#f59e0b,#d97706); }
+.usulan-redesign .uf-icon-rose   { background:linear-gradient(135deg,#fb7185,#e11d48); }
+
+/* ---- Grid kolom responsif ---- */
+.usulan-redesign .uf-grid { display:grid; grid-template-columns:1fr; gap:1.05rem 1.3rem; }
+@media (min-width:768px){ .usulan-redesign .uf-grid-2 { grid-template-columns:1fr 1fr; } }
+.usulan-redesign .uf-col-full { grid-column:1 / -1; }
+
+/* ---- Field ---- */
+.usulan-redesign .uf-field { display:flex; flex-direction:column; min-width:0; }
+.usulan-redesign .uf-label {
+    font-size:.81rem; font-weight:600; color:#334155;
+    margin-bottom:.35rem; display:flex; align-items:center; gap:.3rem; flex-wrap:wrap;
+}
+.usulan-redesign .uf-req { color:#e11d48; font-weight:700; }
+.usulan-redesign .uf-hint-text { font-size:.72rem; color:#64748b; margin-top:.32rem; }
+
+/* ---- Input / select / textarea (override util Tailwind) ---- */
+.usulan-redesign input[type=text],
+.usulan-redesign input[type=number],
+.usulan-redesign input[type=email],
+.usulan-redesign input[type=date],
+.usulan-redesign select,
+.usulan-redesign textarea:not(.editor-field) {
+    width:100%; border:1px solid #d6dde8; border-radius:.65rem;
+    padding:.62rem .85rem; font-size:.88rem; background:#fff; color:#1f2937;
+    transition:border-color .15s ease, box-shadow .15s ease; box-shadow:0 1px 1px rgba(15,42,86,.03);
+}
+.usulan-redesign input[type=text]:hover,
+.usulan-redesign input[type=number]:hover,
+.usulan-redesign select:hover,
+.usulan-redesign textarea:not(.editor-field):hover { border-color:#b3c0d4; }
+.usulan-redesign input[type=text]:focus,
+.usulan-redesign input[type=number]:focus,
+.usulan-redesign input[type=email]:focus,
+.usulan-redesign input[type=date]:focus,
+.usulan-redesign select:focus,
+.usulan-redesign textarea:not(.editor-field):focus {
+    outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.16);
+}
+.usulan-redesign input::placeholder,
+.usulan-redesign textarea::placeholder { color:#9aa6b8; }
+
+/* select dengan panah custom */
+.usulan-redesign select {
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right .7rem center; padding-right:2.4rem;
+}
+
+/* ---- CKEditor tampil modern ---- */
+.usulan-redesign .ck.ck-toolbar {
+    border:1px solid #d6dde8 !important; border-bottom:none !important;
+    border-top-left-radius:.65rem !important; border-top-right-radius:.65rem !important;
+    background:#f8fafc !important;
+}
+.usulan-redesign .ck.ck-editor__main > .ck-editor__editable {
+    border:1px solid #d6dde8 !important; border-top:none !important;
+    border-bottom-left-radius:.65rem !important; border-bottom-right-radius:.65rem !important;
+}
+.usulan-redesign .ck.ck-editor__main > .ck-editor__editable.ck-focused {
+    box-shadow:0 0 0 3px rgba(37,99,235,.16) !important; border-color:#2563eb !important;
+}
+
+/* ---- Platform sebagai kartu pilih ---- */
+.usulan-redesign .uf-check {
+    display:inline-flex; align-items:center; gap:.5rem;
+    border:1px solid #d6dde8; border-radius:.65rem; padding:.55rem .9rem;
+    cursor:pointer; user-select:none; font-size:.88rem;
+    transition:border-color .15s, background .15s, box-shadow .15s;
+}
+.usulan-redesign .uf-check:hover { border-color:#93b4f5; background:#f5f9ff; }
+.usulan-redesign .uf-check input { width:1rem; height:1rem; accent-color:#2563eb; }
+.usulan-redesign .uf-check:has(input:checked) { border-color:#2563eb; background:#eff6ff; box-shadow:0 0 0 2px rgba(37,99,235,.12); }
+.usulan-redesign .uf-check:has(input:checked) span { color:#1d4ed8; font-weight:600; }
+
+/* ---- Petunjuk collapsible per-field (pakai <details>) ---- */
+.usulan-redesign details.uf-help { margin-top:.35rem; }
+.usulan-redesign details.uf-help > summary {
+    list-style:none; display:inline-flex; align-items:center; gap:.35rem;
+    font-size:.72rem; font-weight:600; color:#2563eb;
+    background:#eff6ff; border:1px solid #dbeafe; border-radius:999px;
+    padding:.2rem .65rem; cursor:pointer; transition:background .15s; width:max-content;
+}
+.usulan-redesign details.uf-help > summary::-webkit-details-marker { display:none; }
+.usulan-redesign details.uf-help > summary:hover { background:#dbeafe; }
+.usulan-redesign details.uf-help > summary .uf-caret { transition:transform .2s ease; }
+.usulan-redesign details.uf-help[open] > summary .uf-caret { transform:rotate(180deg); }
+.usulan-redesign .uf-help-box {
+    margin-top:.5rem; font-size:.78rem; color:#1e3a8a; line-height:1.55;
+    background:#f0f7ff; border:1px solid #dbeafe; border-left:3px solid #3b82f6;
+    border-radius:.55rem; padding:.7rem .85rem;
+}
+.usulan-redesign .uf-help-box strong { color:#1e40af; }
+.usulan-redesign .uf-help-box ul { list-style:disc; margin:.35rem 0 .35rem 1.1rem; }
+.usulan-redesign .uf-help-box li { margin:.12rem 0; }
+.usulan-redesign .uf-help-box .uf-example {
+    display:block; margin-top:.45rem; background:#fff;
+    border:1px solid #e0ecfb; border-radius:.45rem; padding:.5rem .65rem; color:#334155;
+}
+</style>
+@endverbatim
+@endpush
+
 @section('content')
-<div class="container mx-auto px-4 py-6">
-    <div class="max-w-4xl mx-auto">
+<div class="container mx-auto px-4 py-6 usulan-redesign">
+    <div class="max-w-5xl mx-auto">
         <!-- Header -->
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Edit Usulan Rekomendasi Aplikasi</h1>
-            <p class="text-gray-600 mt-1">{{ $proposal->nama_aplikasi }} - {{ $proposal->ticket_number }}</p>
+        <div class="uf-hero mb-7">
+            <div class="flex items-start gap-3">
+                <div class="hidden sm:flex w-12 h-12 rounded-xl bg-white/20 items-center justify-center flex-shrink-0">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Edit Usulan Rekomendasi Aplikasi</h1>
+                    <p>{{ $proposal->nama_aplikasi }} · {{ $proposal->ticket_number }}</p>
+                </div>
+            </div>
         </div>
 
         <!-- Progress Steps -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center flex-1" id="step-indicator-1">
-                    <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
-                        1
-                    </div>
+        <div class="mb-8 overflow-x-auto">
+            <div class="uf-steps min-w-[640px]">
+                <div class="uf-step flex-1" id="step-indicator-1">
+                    <div class="uf-step-circle bg-blue-600 text-white">1</div>
                     <div class="ml-3">
-                        <p class="text-sm font-medium text-blue-600">Informasi Dasar</p>
+                        <p class="text-sm font-semibold text-blue-700">Informasi Dasar</p>
                     </div>
                 </div>
-                <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
-                <div class="flex items-center flex-1" id="step-indicator-2">
-                    <div class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-semibold">
-                        2
-                    </div>
+                <div class="uf-step-line"></div>
+                <div class="uf-step flex-1" id="step-indicator-2">
+                    <div class="uf-step-circle bg-gray-200 text-gray-500">2</div>
                     <div class="ml-3">
                         <p class="text-sm font-medium text-gray-500">Analisis Kebutuhan</p>
                     </div>
                 </div>
-                <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
-                <div class="flex items-center flex-1" id="step-indicator-3">
-                    <div class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-semibold">
-                        3
-                    </div>
+                <div class="uf-step-line"></div>
+                <div class="uf-step flex-1" id="step-indicator-3">
+                    <div class="uf-step-circle bg-gray-200 text-gray-500">3</div>
                     <div class="ml-3">
                         <p class="text-sm font-medium text-gray-500">Perencanaan</p>
                     </div>
                 </div>
-                <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
-                <div class="flex items-center flex-1" id="step-indicator-4">
-                    <div class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-semibold">
-                        4
-                    </div>
+                <div class="uf-step-line"></div>
+                <div class="uf-step flex-1" id="step-indicator-4">
+                    <div class="uf-step-circle bg-gray-200 text-gray-500">4</div>
                     <div class="ml-3">
                         <p class="text-sm font-medium text-gray-500">Manajemen Risiko</p>
                     </div>
                 </div>
-                <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
-                <div class="flex items-center flex-1" id="step-indicator-5">
-                    <div class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-semibold">
-                        5
-                    </div>
+                <div class="uf-step-line"></div>
+                <div class="uf-step flex-1" id="step-indicator-5">
+                    <div class="uf-step-circle bg-gray-200 text-gray-500">5</div>
                     <div class="ml-3">
                         <p class="text-sm font-medium text-gray-500">Review</p>
                     </div>
@@ -105,324 +267,307 @@
 
             <!-- Step 1: Informasi Dasar -->
             <div id="step-1" class="step-content bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Informasi Dasar Aplikasi</h2>
+                <h2 class="text-xl font-semibold text-gray-800 mb-1">
+                    <span class="inline-flex w-7 h-7 rounded-lg bg-blue-100 text-blue-700 items-center justify-center text-sm font-bold">1</span>
+                    Informasi Dasar Aplikasi
+                </h2>
+                <p class="text-sm text-gray-500 mb-5 ml-9">Identitas, layanan, teknologi, dan anggaran aplikasi yang diusulkan. Klik <span class="text-blue-600 font-medium">"Lihat petunjuk &amp; contoh"</span> di tiap kolom bila butuh panduan pengisian.</p>
 
-                <!-- Petunjuk Pengisian Step 1 -->
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-                    <h3 class="text-base font-semibold text-blue-900 mb-2">📋 Petunjuk Pengisian</h3>
-                    <div class="text-sm text-blue-800 space-y-2">
-                        <p><strong>Contoh pengisian:</strong></p>
-                        <ul class="list-disc list-inside space-y-1 ml-2">
-                            <li><strong>Nama Aplikasi:</strong> "Sistem Informasi Kepegawaian Daerah (SIKD)" atau "E-Perizinan Terpadu"</li>
-                            <li><strong>Deskripsi:</strong> Jelaskan fungsi utama aplikasi, contoh: "Aplikasi untuk mengelola data kepegawaian ASN meliputi absensi, cuti, kenaikan pangkat, dan pensiun secara digital"</li>
-                            <li><strong>Tujuan:</strong> Sebutkan target yang ingin dicapai, contoh: "Meningkatkan efisiensi pengelolaan kepegawaian hingga 60% dan mengurangi penggunaan kertas"</li>
-                            <li><strong>Manfaat:</strong> Jelaskan keuntungan bagi stakeholder, contoh: "Pegawai dapat mengajukan cuti online, HRD dapat memantau real-time, Pimpinan mendapat dashboard analitik"</li>
-                            <li><strong>Platform:</strong> Pilih sesuai kebutuhan, Web untuk akses browser, Mobile untuk aplikasi HP, Desktop untuk aplikasi komputer</li>
-                            <li><strong>Estimasi Biaya:</strong> Perkiraan total biaya termasuk pengembangan, infrastruktur, dan maintenance tahun pertama</li>
-                        </ul>
+                {{-- ============ Bagian A: Identitas Aplikasi ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-blue">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div>
+                            <div class="uf-section__title">Identitas Aplikasi</div>
+                            <div class="uf-section__sub">Nama, deskripsi, tujuan, dan manfaat aplikasi</div>
+                        </div>
+                    </div>
+                    <div class="uf-section__body">
+                        <div class="uf-grid">
+                            <!-- Nama Aplikasi -->
+                            <div class="uf-field">
+                                <label for="nama_aplikasi" class="uf-label">Nama Aplikasi <span class="uf-req">*</span></label>
+                                <input type="text" id="nama_aplikasi" name="nama_aplikasi"
+                                    value="{{ old('nama_aplikasi', $proposal->nama_aplikasi) }}"
+                                    placeholder="Contoh: Sistem Informasi Kepegawaian Daerah (SIKD)"
+                                    required>
+                                @error('nama_aplikasi')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box">
+                                        Gunakan nama resmi yang mudah dikenali, lengkap dengan akronim bila ada.
+                                        <span class="uf-example">Contoh: "Sistem Informasi Kepegawaian Daerah (SIKD)" atau "E-Perizinan Terpadu".</span>
+                                    </div>
+                                </details>
+                            </div>
+
+                            <!-- Deskripsi -->
+                            <div class="uf-field">
+                                <label for="deskripsi" class="uf-label">Deskripsi Aplikasi <span class="uf-req">*</span></label>
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box">
+                                        Jelaskan fungsi utama aplikasi secara ringkas namun jelas.
+                                        <span class="uf-example">Contoh: "Aplikasi untuk mengelola data kepegawaian ASN meliputi absensi, cuti, kenaikan pangkat, dan pensiun secara digital."</span>
+                                    </div>
+                                </details>
+                                <textarea id="deskripsi" name="deskripsi" rows="4" class="editor-field">{{ old('deskripsi', $proposal->deskripsi) }}</textarea>
+                                @error('deskripsi')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+
+                            <!-- Tujuan -->
+                            <div class="uf-field">
+                                <label for="tujuan" class="uf-label">Tujuan Pengembangan <span class="uf-req">*</span></label>
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box">
+                                        Sebutkan target terukur yang ingin dicapai.
+                                        <span class="uf-example">Contoh: "Meningkatkan efisiensi pengelolaan kepegawaian hingga 60% dan mengurangi penggunaan kertas."</span>
+                                    </div>
+                                </details>
+                                <textarea id="tujuan" name="tujuan" rows="3" class="editor-field">{{ old('tujuan', $proposal->tujuan) }}</textarea>
+                                @error('tujuan')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+
+                            <!-- Manfaat -->
+                            <div class="uf-field">
+                                <label for="manfaat" class="uf-label">Manfaat yang Diharapkan <span class="uf-req">*</span></label>
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box">
+                                        Jelaskan keuntungan bagi tiap pemangku kepentingan.
+                                        <span class="uf-example">Contoh: "Pegawai dapat mengajukan cuti online, HRD memantau real-time, Pimpinan mendapat dashboard analitik."</span>
+                                    </div>
+                                </details>
+                                <textarea id="manfaat" name="manfaat" rows="3" class="editor-field">{{ old('manfaat', $proposal->manfaat) }}</textarea>
+                                @error('manfaat')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="space-y-4">
-                    <!-- Nama Aplikasi -->
-                    <div>
-                        <label for="nama_aplikasi" class="block text-sm font-medium text-gray-700 mb-1">
-                            Nama Aplikasi <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="nama_aplikasi" name="nama_aplikasi"
-                            value="{{ old('nama_aplikasi', $proposal->nama_aplikasi) }}"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            required>
-                        @error('nama_aplikasi')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Deskripsi -->
-                    <div>
-                        <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-1">
-                            Deskripsi Aplikasi <span class="text-red-500">*</span>
-                        </label>
-                        <textarea id="deskripsi" name="deskripsi" rows="4"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field"
-                            >{{ old('deskripsi', $proposal->deskripsi) }}</textarea>
-                        @error('deskripsi')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Tujuan -->
-                    <div>
-                        <label for="tujuan" class="block text-sm font-medium text-gray-700 mb-1">
-                            Tujuan Pengembangan <span class="text-red-500">*</span>
-                        </label>
-                        <textarea id="tujuan" name="tujuan" rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field"
-                            >{{ old('tujuan', $proposal->tujuan) }}</textarea>
-                        @error('tujuan')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Manfaat -->
-                    <div>
-                        <label for="manfaat" class="block text-sm font-medium text-gray-700 mb-1">
-                            Manfaat yang Diharapkan <span class="text-red-500">*</span>
-                        </label>
-                        <textarea id="manfaat" name="manfaat" rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field"
-                            >{{ old('manfaat', $proposal->manfaat) }}</textarea>
-                        @error('manfaat')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Pemilik Proses Bisnis -->
-                    <div>
-                        <label for="pemilik_proses_bisnis_id" class="block text-sm font-medium text-gray-700 mb-1">
-                            Pemilik Proses Bisnis <span class="text-red-500">*</span>
-                        </label>
-                        <select id="pemilik_proses_bisnis_id" name="pemilik_proses_bisnis_id"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            required>
-                            <option value="">Pilih Unit Kerja</option>
-                            @foreach($unitKerjaList as $uk)
-                                <option value="{{ $uk->id }}" {{ old('pemilik_proses_bisnis_id', $proposal->pemilik_proses_bisnis_id) == $uk->id ? 'selected' : '' }}>
-                                    {{ $uk->nama }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('pemilik_proses_bisnis_id')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Jenis Layanan -->
-                    <div>
-                        <label for="jenis_layanan" class="block text-sm font-medium text-gray-700 mb-1">
-                            Jenis Layanan <span class="text-red-500">*</span>
-                        </label>
-                        <select id="jenis_layanan" name="jenis_layanan"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            required>
-                            <option value="">Pilih Jenis Layanan</option>
-                            <option value="publik" {{ old('jenis_layanan', $proposal->jenis_layanan) == 'publik' ? 'selected' : '' }}>Layanan Publik</option>
-                            <option value="internal" {{ old('jenis_layanan', $proposal->jenis_layanan) == 'internal' ? 'selected' : '' }}>Layanan Internal</option>
-                        </select>
-                        @error('jenis_layanan')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Target Pengguna -->
-                    <div>
-                        <label for="target_pengguna" class="block text-sm font-medium text-gray-700 mb-1">
-                            Target Pengguna <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="target_pengguna" name="target_pengguna"
-                            value="{{ old('target_pengguna', $proposal->target_pengguna) }}"
-                            placeholder="Contoh: Pegawai Internal, Masyarakat Umum, UMKM"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            required>
-                        @error('target_pengguna')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Estimasi Pengguna -->
-                    <div>
-                        <label for="estimasi_pengguna_display" class="block text-sm font-medium text-gray-700 mb-1">
-                            Estimasi Jumlah Pengguna <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="estimasi_pengguna_display"
-                            value="{{ old('estimasi_pengguna', $proposal->estimasi_pengguna) ? number_format(old('estimasi_pengguna', $proposal->estimasi_pengguna), 0, ',', '.') : '' }}"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Contoh: 1.000"
-                            oninput="formatNumber(this, 'estimasi_pengguna')"
-                            required>
-                        <input type="hidden" id="estimasi_pengguna" name="estimasi_pengguna"
-                            value="{{ old('estimasi_pengguna', $proposal->estimasi_pengguna) }}">
-                        @error('estimasi_pengguna')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Lingkup Aplikasi -->
-                    <div>
-                        <label for="lingkup_aplikasi" class="block text-sm font-medium text-gray-700 mb-1">
-                            Lingkup Aplikasi <span class="text-red-500">*</span>
-                        </label>
-                        <select id="lingkup_aplikasi" name="lingkup_aplikasi"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            required>
-                            <option value="">Pilih Lingkup Aplikasi</option>
-                            <option value="lokal" {{ old('lingkup_aplikasi', $proposal->lingkup_aplikasi ?? '') == 'lokal' ? 'selected' : '' }}>Lokal</option>
-                            <option value="regional" {{ old('lingkup_aplikasi', $proposal->lingkup_aplikasi ?? '') == 'regional' ? 'selected' : '' }}>Regional</option>
-                            <option value="nasional" {{ old('lingkup_aplikasi', $proposal->lingkup_aplikasi ?? '') == 'nasional' ? 'selected' : '' }}>Nasional</option>
-                        </select>
-                        @error('lingkup_aplikasi')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Platform -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Platform <span class="text-red-500">*</span>
-                        </label>
-                        <div class="space-y-2">
-                            @php
-                                $platformValues = old('platform', $proposal->platform ?? []);
-                            @endphp
-                            <label class="inline-flex items-center mr-4">
-                                <input type="checkbox" name="platform[]" value="web"
-                                    {{ in_array('web', $platformValues) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="ml-2">Web</span>
-                            </label>
-                            <label class="inline-flex items-center mr-4">
-                                <input type="checkbox" name="platform[]" value="mobile"
-                                    {{ in_array('mobile', $platformValues) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="ml-2">Mobile</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="platform[]" value="desktop"
-                                    {{ in_array('desktop', $platformValues) ? 'checked' : '' }}
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="ml-2">Desktop</span>
-                            </label>
+                {{-- ============ Bagian B: Layanan & Pengguna ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-teal">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </div>
-                        @error('platform')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        <div>
+                            <div class="uf-section__title">Layanan &amp; Pengguna</div>
+                            <div class="uf-section__sub">Pemilik proses bisnis, jenis layanan, dan sasaran pengguna</div>
+                        </div>
                     </div>
+                    <div class="uf-section__body">
+                        <div class="uf-grid uf-grid-2">
+                            <!-- Pemilik Proses Bisnis -->
+                            <div class="uf-field">
+                                <label for="pemilik_proses_bisnis_id" class="uf-label">Pemilik Proses Bisnis <span class="uf-req">*</span></label>
+                                <select id="pemilik_proses_bisnis_id" name="pemilik_proses_bisnis_id" required>
+                                    <option value="">Pilih Unit Kerja</option>
+                                    @foreach($unitKerjaList as $uk)
+                                        <option value="{{ $uk->id }}" {{ old('pemilik_proses_bisnis_id', $proposal->pemilik_proses_bisnis_id) == $uk->id ? 'selected' : '' }}>{{ $uk->nama }}</option>
+                                    @endforeach
+                                </select>
+                                @error('pemilik_proses_bisnis_id')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
 
-                    <!-- Teknologi yang Diusulkan -->
-                    <div>
-                        <label for="teknologi_diusulkan" class="block text-sm font-medium text-gray-700 mb-1">
-                            Teknologi yang Diusulkan
-                        </label>
-                        <input type="text" id="teknologi_diusulkan" name="teknologi_diusulkan"
-                            value="{{ old('teknologi_diusulkan', $proposal->teknologi_diusulkan) }}"
-                            placeholder="Contoh: Laravel, React, PostgreSQL"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        @error('teknologi_diusulkan')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                            <!-- Jenis Layanan -->
+                            <div class="uf-field">
+                                <label for="jenis_layanan" class="uf-label">Jenis Layanan <span class="uf-req">*</span></label>
+                                <select id="jenis_layanan" name="jenis_layanan" required>
+                                    <option value="">Pilih Jenis Layanan</option>
+                                    <option value="publik" {{ old('jenis_layanan', $proposal->jenis_layanan) == 'publik' ? 'selected' : '' }}>Layanan Publik</option>
+                                    <option value="internal" {{ old('jenis_layanan', $proposal->jenis_layanan) == 'internal' ? 'selected' : '' }}>Layanan Administrasi Pemerintahan</option>
+                                </select>
+                                @error('jenis_layanan')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk</summary>
+                                    <div class="uf-help-box"><strong>Layanan Publik</strong> ditujukan untuk masyarakat umum. <strong>Layanan Administrasi Pemerintahan</strong> untuk kebutuhan internal instansi.</div>
+                                </details>
+                            </div>
+
+                            <!-- Target Pengguna -->
+                            <div class="uf-field">
+                                <label for="target_pengguna" class="uf-label">Target Pengguna <span class="uf-req">*</span></label>
+                                <input type="text" id="target_pengguna" name="target_pengguna"
+                                    value="{{ old('target_pengguna', $proposal->target_pengguna) }}"
+                                    placeholder="Contoh: Pegawai Internal, Masyarakat Umum, UMKM"
+                                    required>
+                                @error('target_pengguna')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+
+                            <!-- Estimasi Pengguna -->
+                            <div class="uf-field">
+                                <label for="estimasi_pengguna_display" class="uf-label">Estimasi Jumlah Pengguna <span class="uf-req">*</span></label>
+                                <input type="text" id="estimasi_pengguna_display"
+                                    value="{{ old('estimasi_pengguna', $proposal->estimasi_pengguna) ? number_format(old('estimasi_pengguna', $proposal->estimasi_pengguna), 0, ',', '.') : '' }}"
+                                    placeholder="Contoh: 1.000"
+                                    oninput="formatNumber(this, 'estimasi_pengguna')"
+                                    required>
+                                <input type="hidden" id="estimasi_pengguna" name="estimasi_pengguna" value="{{ old('estimasi_pengguna', $proposal->estimasi_pengguna) }}">
+                                @error('estimasi_pengguna')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                                <p class="uf-hint-text">Perkiraan total pengguna yang akan mengakses aplikasi.</p>
+                            </div>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Estimasi Waktu Pengembangan -->
-                    <div>
-                        <label for="estimasi_waktu_pengembangan" class="block text-sm font-medium text-gray-700 mb-1">
-                            Estimasi Waktu Pengembangan (bulan) <span class="text-red-500">*</span>
-                        </label>
-                        <input type="number" id="estimasi_waktu_pengembangan" name="estimasi_waktu_pengembangan"
-                            value="{{ old('estimasi_waktu_pengembangan', $proposal->estimasi_waktu_pengembangan) }}"
-                            min="1"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            required>
-                        @error('estimasi_waktu_pengembangan')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                {{-- ============ Bagian C: Teknologi & Platform ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-violet">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        </div>
+                        <div>
+                            <div class="uf-section__title">Teknologi &amp; Platform</div>
+                            <div class="uf-section__sub">Platform sasaran, teknologi, dan estimasi waktu pengembangan</div>
+                        </div>
                     </div>
+                    <div class="uf-section__body">
+                        <div class="uf-grid uf-grid-2">
+                            <!-- Platform -->
+                            <div class="uf-field uf-col-full">
+                                <label class="uf-label">Platform <span class="uf-req">*</span></label>
+                                @php
+                                    $platformValues = old('platform', $proposal->platform ?? []);
+                                @endphp
+                                <div class="flex flex-wrap gap-2.5">
+                                    <label class="uf-check">
+                                        <input type="checkbox" name="platform[]" value="web" {{ in_array('web', $platformValues) ? 'checked' : '' }}>
+                                        <span>🌐 Web</span>
+                                    </label>
+                                    <label class="uf-check">
+                                        <input type="checkbox" name="platform[]" value="mobile" {{ in_array('mobile', $platformValues) ? 'checked' : '' }}>
+                                        <span>📱 Mobile</span>
+                                    </label>
+                                    <label class="uf-check">
+                                        <input type="checkbox" name="platform[]" value="desktop" {{ in_array('desktop', $platformValues) ? 'checked' : '' }}>
+                                        <span>💻 Desktop</span>
+                                    </label>
+                                </div>
+                                @error('platform')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                                <p class="uf-hint-text">Pilih satu atau lebih: Web (browser), Mobile (HP), Desktop (komputer).</p>
+                            </div>
 
-                    <!-- Estimasi Biaya -->
-                    <div>
-                        <label for="estimasi_biaya_display" class="block text-sm font-medium text-gray-700 mb-1">
-                            Estimasi Biaya (Rp) <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="estimasi_biaya_display"
-                            value="{{ old('estimasi_biaya', $proposal->estimasi_biaya) ? number_format(old('estimasi_biaya', $proposal->estimasi_biaya), 0, ',', '.') : '' }}"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Contoh: 100.000.000"
-                            oninput="formatCurrency(this)"
-                            required>
-                        <input type="hidden" id="estimasi_biaya" name="estimasi_biaya"
-                            value="{{ old('estimasi_biaya', $proposal->estimasi_biaya) }}">
-                        @error('estimasi_biaya')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                            <!-- Teknologi yang Diusulkan -->
+                            <div class="uf-field">
+                                <label for="teknologi_diusulkan" class="uf-label">Teknologi yang Diusulkan</label>
+                                <input type="text" id="teknologi_diusulkan" name="teknologi_diusulkan"
+                                    value="{{ old('teknologi_diusulkan', $proposal->teknologi_diusulkan) }}"
+                                    placeholder="Contoh: Laravel, React, PostgreSQL">
+                                @error('teknologi_diusulkan')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+
+                            <!-- Estimasi Waktu Pengembangan -->
+                            <div class="uf-field">
+                                <label for="estimasi_waktu_pengembangan" class="uf-label">Estimasi Waktu Pengembangan (bulan) <span class="uf-req">*</span></label>
+                                <input type="number" id="estimasi_waktu_pengembangan" name="estimasi_waktu_pengembangan"
+                                    value="{{ old('estimasi_waktu_pengembangan', $proposal->estimasi_waktu_pengembangan) }}" min="1" placeholder="Contoh: 6" required>
+                                @error('estimasi_waktu_pengembangan')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Sumber Pendanaan -->
-                    <div>
-                        <label for="sumber_pendanaan" class="block text-sm font-medium text-gray-700 mb-1">
-                            Sumber Pendanaan <span class="text-red-500">*</span>
-                        </label>
-                        <select id="sumber_pendanaan" name="sumber_pendanaan"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            required>
-                            <option value="">Pilih Sumber Pendanaan</option>
-                            <option value="apbd" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'apbd' ? 'selected' : '' }}>APBD</option>
-                            <option value="apbn" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'apbn' ? 'selected' : '' }}>APBN</option>
-                            <option value="hibah" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'hibah' ? 'selected' : '' }}>Hibah</option>
-                            <option value="swasta" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'swasta' ? 'selected' : '' }}>Swasta</option>
-                            <option value="lainnya" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
-                        </select>
-                        @error('sumber_pendanaan')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                {{-- ============ Bagian D: Anggaran & Pendanaan ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-amber">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <div class="uf-section__title">Anggaran &amp; Pendanaan</div>
+                            <div class="uf-section__sub">Estimasi biaya dan sumber pembiayaan</div>
+                        </div>
                     </div>
+                    <div class="uf-section__body">
+                        <div class="uf-grid uf-grid-2">
+                            <!-- Estimasi Biaya -->
+                            <div class="uf-field">
+                                <label for="estimasi_biaya_display" class="uf-label">Estimasi Biaya (Rp) <span class="uf-req">*</span></label>
+                                <input type="text" id="estimasi_biaya_display"
+                                    value="{{ old('estimasi_biaya', $proposal->estimasi_biaya) ? number_format(old('estimasi_biaya', $proposal->estimasi_biaya), 0, ',', '.') : '' }}"
+                                    placeholder="Contoh: 100.000.000"
+                                    oninput="formatCurrency(this)"
+                                    required>
+                                <input type="hidden" id="estimasi_biaya" name="estimasi_biaya" value="{{ old('estimasi_biaya', $proposal->estimasi_biaya) }}">
+                                @error('estimasi_biaya')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                                <p class="uf-hint-text">Total perkiraan biaya termasuk pengembangan, infrastruktur, dan maintenance tahun pertama.</p>
+                            </div>
 
-                    <!-- Integrasi dengan Sistem Lain -->
-                    <div>
-                        <label for="integrasi_sistem_lain" class="block text-sm font-medium text-gray-700 mb-1">
-                            Integrasi dengan Sistem Lain?
-                        </label>
-                        <select id="integrasi_sistem_lain" name="integrasi_sistem_lain"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="tidak" {{ old('integrasi_sistem_lain', $proposal->integrasi_sistem_lain) == 'tidak' ? 'selected' : '' }}>Tidak</option>
-                            <option value="ya" {{ old('integrasi_sistem_lain', $proposal->integrasi_sistem_lain) == 'ya' ? 'selected' : '' }}>Ya</option>
-                        </select>
+                            <!-- Sumber Pendanaan -->
+                            <div class="uf-field">
+                                <label for="sumber_pendanaan" class="uf-label">Sumber Pendanaan <span class="uf-req">*</span></label>
+                                <select id="sumber_pendanaan" name="sumber_pendanaan" required>
+                                    <option value="">Pilih Sumber Pendanaan</option>
+                                    <option value="apbd" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'apbd' ? 'selected' : '' }}>APBD</option>
+                                    <option value="apbn" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'apbn' ? 'selected' : '' }}>APBN</option>
+                                    <option value="hibah" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'hibah' ? 'selected' : '' }}>Hibah</option>
+                                    <option value="swasta" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'swasta' ? 'selected' : '' }}>Swasta</option>
+                                    <option value="lainnya" {{ old('sumber_pendanaan', $proposal->sumber_pendanaan) == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                </select>
+                                @error('sumber_pendanaan')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Detail Integrasi (conditional) -->
-                    <div id="detail-integrasi-wrapper" style="display: {{ old('integrasi_sistem_lain', $proposal->integrasi_sistem_lain) == 'ya' ? 'block' : 'none' }}">
-                        <label for="detail_integrasi" class="block text-sm font-medium text-gray-700 mb-1">
-                            Detail Sistem yang Akan Diintegrasikan
-                        </label>
-                        <textarea id="detail_integrasi" name="detail_integrasi" rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('detail_integrasi', $proposal->detail_integrasi) }}</textarea>
+                {{-- ============ Bagian E: Integrasi & Prioritas ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-rose">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                        </div>
+                        <div>
+                            <div class="uf-section__title">Integrasi &amp; Prioritas</div>
+                            <div class="uf-section__sub">Keterhubungan sistem, prioritas, dan catatan tambahan</div>
+                        </div>
                     </div>
+                    <div class="uf-section__body">
+                        <div class="uf-grid uf-grid-2">
+                            <!-- Integrasi dengan Sistem Lain -->
+                            <div class="uf-field">
+                                <label for="integrasi_sistem_lain" class="uf-label">Integrasi dengan Sistem Lain?</label>
+                                <select id="integrasi_sistem_lain" name="integrasi_sistem_lain">
+                                    <option value="tidak" {{ old('integrasi_sistem_lain', $proposal->integrasi_sistem_lain) == 'tidak' ? 'selected' : '' }}>Tidak</option>
+                                    <option value="ya" {{ old('integrasi_sistem_lain', $proposal->integrasi_sistem_lain) == 'ya' ? 'selected' : '' }}>Ya</option>
+                                </select>
+                            </div>
 
-                    <!-- Kebutuhan Khusus -->
-                    <div>
-                        <label for="kebutuhan_khusus" class="block text-sm font-medium text-gray-700 mb-1">
-                            Kebutuhan Khusus (jika ada)
-                        </label>
-                        <textarea id="kebutuhan_khusus" name="kebutuhan_khusus" rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('kebutuhan_khusus', $proposal->kebutuhan_khusus) }}</textarea>
+                            <!-- Prioritas -->
+                            <div class="uf-field">
+                                <label for="prioritas" class="uf-label">Prioritas <span class="uf-req">*</span></label>
+                                <select id="prioritas" name="prioritas" required>
+                                    <option value="">Pilih Prioritas</option>
+                                    <option value="rendah" {{ old('prioritas', $proposal->prioritas) == 'rendah' ? 'selected' : '' }}>Rendah</option>
+                                    <option value="sedang" {{ old('prioritas', $proposal->prioritas) == 'sedang' ? 'selected' : '' }}>Sedang</option>
+                                    <option value="tinggi" {{ old('prioritas', $proposal->prioritas) == 'tinggi' ? 'selected' : '' }}>Tinggi</option>
+                                    <option value="sangat_tinggi" {{ old('prioritas', $proposal->prioritas) == 'sangat_tinggi' ? 'selected' : '' }}>Sangat Tinggi</option>
+                                </select>
+                                @error('prioritas')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+
+                            <!-- Detail Integrasi (conditional) -->
+                            <div id="detail-integrasi-wrapper" class="uf-field uf-col-full" style="display: {{ old('integrasi_sistem_lain', $proposal->integrasi_sistem_lain) == 'ya' ? 'block' : 'none' }}">
+                                <label for="detail_integrasi" class="uf-label">Detail Sistem yang Akan Diintegrasikan</label>
+                                <textarea id="detail_integrasi" name="detail_integrasi" rows="3" class="editor-field">{{ old('detail_integrasi', $proposal->detail_integrasi) }}</textarea>
+                            </div>
+
+                            <!-- Kebutuhan Khusus -->
+                            <div class="uf-field uf-col-full">
+                                <label for="kebutuhan_khusus" class="uf-label">Kebutuhan Khusus <span class="text-gray-400 font-normal text-xs">(jika ada)</span></label>
+                                <textarea id="kebutuhan_khusus" name="kebutuhan_khusus" rows="3" class="editor-field">{{ old('kebutuhan_khusus', $proposal->kebutuhan_khusus) }}</textarea>
+                            </div>
+
+                            <!-- Dampak Jika Tidak Dibangun -->
+                            <div class="uf-field uf-col-full">
+                                <label for="dampak_tidak_dibangun" class="uf-label">Dampak Jika Tidak Dibangun</label>
+                                <textarea id="dampak_tidak_dibangun" name="dampak_tidak_dibangun" rows="3" class="editor-field">{{ old('dampak_tidak_dibangun', $proposal->dampak_tidak_dibangun) }}</textarea>
+                            </div>
+                        </div>
                     </div>
-
-                    <!-- Dampak Jika Tidak Dibangun -->
-                    <div>
-                        <label for="dampak_tidak_dibangun" class="block text-sm font-medium text-gray-700 mb-1">
-                            Dampak Jika Tidak Dibangun
-                        </label>
-                        <textarea id="dampak_tidak_dibangun" name="dampak_tidak_dibangun" rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('dampak_tidak_dibangun', $proposal->dampak_tidak_dibangun) }}</textarea>
-                    </div>
-
-                    <!-- Prioritas -->
-                    <div>
-                        <label for="prioritas" class="block text-sm font-medium text-gray-700 mb-1">
-                            Prioritas <span class="text-red-500">*</span>
-                        </label>
-                        <select id="prioritas" name="prioritas"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            required>
-                            <option value="">Pilih Prioritas</option>
-                            <option value="rendah" {{ old('prioritas', $proposal->prioritas) == 'rendah' ? 'selected' : '' }}>Rendah</option>
-                            <option value="sedang" {{ old('prioritas', $proposal->prioritas) == 'sedang' ? 'selected' : '' }}>Sedang</option>
-                            <option value="tinggi" {{ old('prioritas', $proposal->prioritas) == 'tinggi' ? 'selected' : '' }}>Tinggi</option>
-                            <option value="sangat_tinggi" {{ old('prioritas', $proposal->prioritas) == 'sangat_tinggi' ? 'selected' : '' }}>Sangat Tinggi</option>
-                        </select>
-                        @error('prioritas')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                 </div>
 
                 <!-- Navigation -->
@@ -442,161 +587,124 @@
 
             <!-- Step 2: Analisis Kebutuhan -->
             <div id="step-2" class="step-content bg-white rounded-lg shadow-md p-6" style="display: none;">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Analisis Kebutuhan</h2>
-                <p class="text-sm text-gray-600 mb-6">Sesuai Permenkomdigi No. 6 Tahun 2025 tentang Pembangunan Aplikasi Khusus</p>
+                <h2 class="text-xl font-semibold text-gray-800 mb-1">
+                    <span class="inline-flex w-7 h-7 rounded-lg bg-teal-100 text-teal-700 items-center justify-center text-sm font-bold">2</span>
+                    Analisis Kebutuhan
+                </h2>
+                <p class="text-sm text-gray-500 mb-5 ml-9">Sesuai Permenkomdigi No. 6 Tahun 2025 tentang Pembangunan Aplikasi Khusus.</p>
 
-                <div class="space-y-4">
-                    <!-- Dasar Hukum -->
-                    <div>
-                        <label for="dasar_hukum" class="block text-sm font-medium text-gray-700 mb-1">
-                            Dasar Hukum
-                        </label>
-                        <p class="text-xs text-gray-500 mb-2">Peraturan perundang-undangan yang mendasari kebutuhan aplikasi</p>
-
-                        {{-- Petunjuk Pengisian Dasar Hukum --}}
-                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
-                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "UU No. 5 Tahun 2014 tentang ASN; PP No. 11 Tahun 2017 tentang Manajemen PNS; Permendagri No. 35 Tahun 2021 tentang Sistem Informasi Kepegawaian"</p>
+                {{-- ============ Bagian A: Dasar & Permasalahan ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-teal">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
                         </div>
-                        <textarea id="dasar_hukum" name="dasar_hukum" rows="4"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('dasar_hukum', $proposal->dasar_hukum) }}</textarea>
-                        @error('dasar_hukum')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Uraian Permasalahan -->
-                    <div>
-                        <label for="uraian_permasalahan" class="block text-sm font-medium text-gray-700 mb-1">
-                            Uraian Permasalahan
-                        </label>
-                        <p class="text-xs text-gray-500 mb-2">Deskripsi permasalahan atau kebutuhan yang mendasari pengembangan aplikasi</p>
-
-                        {{-- Petunjuk Pengisian Uraian Permasalahan --}}
-                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
-                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "Pengelolaan data kepegawaian masih manual menggunakan excel, sering terjadi duplikasi data, kesulitan dalam pelaporan berkala, dan proses pengajuan cuti memakan waktu hingga 5 hari kerja"</p>
+                        <div>
+                            <div class="uf-section__title">Dasar &amp; Permasalahan</div>
+                            <div class="uf-section__sub">Landasan hukum, permasalahan, dan pemangku kepentingan</div>
                         </div>
-                        <textarea id="uraian_permasalahan" name="uraian_permasalahan" rows="4"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('uraian_permasalahan', $proposal->uraian_permasalahan) }}</textarea>
-                        @error('uraian_permasalahan')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
                     </div>
+                    <div class="uf-section__body">
+                        <div class="space-y-4">
+                            <!-- Dasar Hukum -->
+                            <div class="uf-field">
+                                <label for="dasar_hukum" class="uf-label">Dasar Hukum</label>
+                                <p class="uf-hint-text" style="margin-top:-.1rem;margin-bottom:.45rem;">Peraturan perundang-undangan yang mendasari kebutuhan aplikasi.</p>
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box"><span class="uf-example">Contoh: "UU No. 5 Tahun 2014 tentang ASN; PP No. 11 Tahun 2017 tentang Manajemen PNS; Permendagri No. 35 Tahun 2021 tentang Sistem Informasi Kepegawaian."</span></div>
+                                </details>
+                                <textarea id="dasar_hukum" name="dasar_hukum" rows="4" class="editor-field">{{ old('dasar_hukum', $proposal->dasar_hukum) }}</textarea>
+                                @error('dasar_hukum')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
 
-                    <!-- Pihak Terkait -->
-                    <div>
-                        <label for="pihak_terkait" class="block text-sm font-medium text-gray-700 mb-1">
-                            Pihak Terkait (Stakeholder)
-                        </label>
-                        <p class="text-xs text-gray-500 mb-2">Unit kerja atau pihak-pihak yang terlibat dalam aplikasi</p>
+                            <!-- Uraian Permasalahan -->
+                            <div class="uf-field">
+                                <label for="uraian_permasalahan" class="uf-label">Uraian Permasalahan</label>
+                                <p class="uf-hint-text" style="margin-top:-.1rem;margin-bottom:.45rem;">Deskripsi permasalahan atau kebutuhan yang mendasari pengembangan aplikasi.</p>
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box"><span class="uf-example">Contoh: "Pengelolaan data kepegawaian masih manual menggunakan Excel, sering terjadi duplikasi data, kesulitan pelaporan berkala, dan proses pengajuan cuti memakan waktu hingga 5 hari kerja."</span></div>
+                                </details>
+                                <textarea id="uraian_permasalahan" name="uraian_permasalahan" rows="4" class="editor-field">{{ old('uraian_permasalahan', $proposal->uraian_permasalahan) }}</textarea>
+                                @error('uraian_permasalahan')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
 
-                        {{-- Petunjuk Pengisian Pihak Terkait --}}
-                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
-                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "BKD sebagai pengelola, Seluruh SKPD sebagai pengguna, Inspektorat sebagai pengawas, BPK sebagai auditor eksternal"</p>
-                        </div>
-                        <textarea id="pihak_terkait" name="pihak_terkait" rows="4"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('pihak_terkait', $proposal->pihak_terkait) }}</textarea>
-                        @error('pihak_terkait')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Ruang Lingkup -->
-                    {{-- Petunjuk Pengisian Ruang Lingkup --}}
-                    <div class="mb-3">
-                        <button type="button" onclick="toggleGuidance('ruang-lingkup-guidance')"
-                                class="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 focus:outline-none">
-                            <svg id="ruang-lingkup-guidance-icon-plus" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            <svg id="ruang-lingkup-guidance-icon-minus" class="w-4 h-4 mr-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                            </svg>
-                            <span id="ruang-lingkup-guidance-text">Lihat Petunjuk untuk Ruang Lingkup</span>
-                        </button>
-
-                        <div id="ruang-lingkup-guidance" class="hidden bg-blue-50 border-l-4 border-blue-500 p-4 mb-3">
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div class="ml-3 flex-1">
-                                    <h3 class="text-sm font-semibold text-blue-800 mb-2">📋 Petunjuk Pengisian: Ruang Lingkup</h3>
-                                    <div class="text-sm text-blue-700 space-y-2">
-                                        <p><strong>Fokus:</strong> Batasan dan cakupan dimensi aplikasi (kuantitatif)</p>
-
-                                        <p><strong>Apa yang perlu dijelaskan:</strong></p>
-                                        <ul class="list-disc list-inside space-y-1 text-xs ml-2">
-                                            <li>Cakupan geografis/organisasi (berapa SKPD/unit kerja terlibat?)</li>
-                                            <li>Jumlah pengguna yang akan menggunakan sistem</li>
-                                            <li>Area fungsional yang dicakup (contoh: kepegawaian, keuangan, layanan publik)</li>
-                                            <li>Batasan: apa yang TIDAK termasuk dalam scope</li>
-                                        </ul>
-
-                                        <div class="bg-white p-3 rounded border border-blue-200 mt-2">
-                                            <p class="font-semibold text-xs mb-1">💡 Contoh Pengisian (SIMPEG Kaltara):</p>
-                                            <p class="text-xs">"Aplikasi mencakup <strong>15 SKPD Pemprov Kaltara dengan 2.500 pegawai ASN</strong>. Meliputi pengelolaan <strong>data pegawai, absensi, cuti, penilaian kinerja, dan penggajian</strong>.
-                                            <br><br>
-                                            <strong>Tidak termasuk:</strong> sistem rekrutmen CPNS (sudah ditangani oleh sistem terpisah), pengelolaan dana pensiun (domain BKN)."</p>
-                                        </div>
-
-                                        <div class="bg-yellow-50 border border-yellow-200 p-2 rounded mt-2">
-                                            <p class="text-xs"><strong>⚠️ Catatan:</strong> Anda akan diminta mengisi "Uraian Ruang Lingkup" yang lebih detail di bagian Perencanaan nanti. Di sini cukup jelaskan batasan umum dan dimensi scope.</p>
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- Pihak Terkait -->
+                            <div class="uf-field">
+                                <label for="pihak_terkait" class="uf-label">Pihak Terkait (Stakeholder)</label>
+                                <p class="uf-hint-text" style="margin-top:-.1rem;margin-bottom:.45rem;">Unit kerja atau pihak-pihak yang terlibat dalam aplikasi.</p>
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box"><span class="uf-example">Contoh: "BKD sebagai pengelola, seluruh SKPD sebagai pengguna, Inspektorat sebagai pengawas, BPK sebagai auditor eksternal."</span></div>
+                                </details>
+                                <textarea id="pihak_terkait" name="pihak_terkait" rows="4" class="editor-field">{{ old('pihak_terkait', $proposal->pihak_terkait) }}</textarea>
+                                @error('pihak_terkait')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div>
-                        <label for="ruang_lingkup" class="block text-sm font-medium text-gray-700 mb-1">
-                            Ruang Lingkup
-                        </label>
-                        <p class="text-xs text-gray-500 mb-2">Batasan dan cakupan pengembangan aplikasi</p>
-                        <textarea id="ruang_lingkup" name="ruang_lingkup" rows="4"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('ruang_lingkup', $proposal->ruang_lingkup) }}</textarea>
-                        @error('ruang_lingkup')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Analisis Biaya Manfaat -->
-                    <div>
-                        <label for="analisis_biaya_manfaat" class="block text-sm font-medium text-gray-700 mb-1">
-                            Analisis Biaya dan Manfaat
-                        </label>
-                        <p class="text-xs text-gray-500 mb-2">Perbandingan biaya investasi dengan manfaat yang akan diperoleh</p>
-
-                        {{-- Petunjuk Pengisian Analisis Biaya Manfaat --}}
-                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
-                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "Investasi Rp 500 juta, efisiensi waktu 40%, penghematan kertas Rp 50 juta/tahun, ROI tercapai dalam 2 tahun"</p>
+                {{-- ============ Bagian B: Ruang Lingkup & Kelayakan ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-violet">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         </div>
-                        <textarea id="analisis_biaya_manfaat" name="analisis_biaya_manfaat" rows="4"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg editor-field">{{ old('analisis_biaya_manfaat', $proposal->analisis_biaya_manfaat) }}</textarea>
-                        @error('analisis_biaya_manfaat')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Lokasi Implementasi -->
-                    <div>
-                        <label for="lokasi_implementasi" class="block text-sm font-medium text-gray-700 mb-1">
-                            Lokasi Implementasi
-                        </label>
-
-                        {{-- Petunjuk Pengisian Lokasi Implementasi --}}
-                        <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
-                            <p class="text-xs text-green-800"><strong>💡 Contoh:</strong> "Kantor BKD (server utama), 15 SKPD (klien), dengan akses cloud untuk pegawai"</p>
+                        <div>
+                            <div class="uf-section__title">Ruang Lingkup &amp; Kelayakan</div>
+                            <div class="uf-section__sub">Cakupan, analisis biaya-manfaat, dan lokasi implementasi</div>
                         </div>
-                        <input type="text" id="lokasi_implementasi" name="lokasi_implementasi"
-                            value="{{ old('lokasi_implementasi', $proposal->lokasi_implementasi) }}"
-                            placeholder="Contoh: Seluruh wilayah Kota XYZ"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        @error('lokasi_implementasi')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                    </div>
+                    <div class="uf-section__body">
+                        <div class="space-y-4">
+                            <!-- Ruang Lingkup -->
+                            <div class="uf-field">
+                                <label for="ruang_lingkup" class="uf-label">Ruang Lingkup</label>
+                                <p class="uf-hint-text" style="margin-top:-.1rem;margin-bottom:.45rem;">Batasan dan cakupan pengembangan aplikasi (kuantitatif).</p>
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box">
+                                        <strong>Apa yang perlu dijelaskan:</strong>
+                                        <ul>
+                                            <li>Cakupan geografis/organisasi (berapa SKPD/unit kerja terlibat?)</li>
+                                            <li>Jumlah pengguna yang akan menggunakan sistem</li>
+                                            <li>Area fungsional yang dicakup (mis. kepegawaian, keuangan, layanan publik)</li>
+                                            <li>Batasan: apa yang TIDAK termasuk dalam scope</li>
+                                        </ul>
+                                        <span class="uf-example">Contoh (SIMPEG Kaltara): "Aplikasi mencakup 15 SKPD Pemprov Kaltara dengan 2.500 pegawai ASN. Meliputi data pegawai, absensi, cuti, penilaian kinerja, dan penggajian. Tidak termasuk: sistem rekrutmen CPNS dan pengelolaan dana pensiun (domain BKN)."</span>
+                                        <p style="margin-top:.45rem;"><strong>⚠️ Catatan:</strong> Uraian yang lebih detail akan diminta pada tahap Perencanaan. Di sini cukup jelaskan batasan umum dan dimensi scope.</p>
+                                    </div>
+                                </details>
+                                <textarea id="ruang_lingkup" name="ruang_lingkup" rows="4" class="editor-field">{{ old('ruang_lingkup', $proposal->ruang_lingkup) }}</textarea>
+                                @error('ruang_lingkup')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+
+                            <!-- Analisis Biaya Manfaat -->
+                            <div class="uf-field">
+                                <label for="analisis_biaya_manfaat" class="uf-label">Analisis Biaya dan Manfaat</label>
+                                <p class="uf-hint-text" style="margin-top:-.1rem;margin-bottom:.45rem;">Perbandingan biaya investasi dengan manfaat yang akan diperoleh.</p>
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box"><span class="uf-example">Contoh: "Investasi Rp 500 juta, efisiensi waktu 40%, penghematan kertas Rp 50 juta/tahun, ROI tercapai dalam 2 tahun."</span></div>
+                                </details>
+                                <textarea id="analisis_biaya_manfaat" name="analisis_biaya_manfaat" rows="4" class="editor-field">{{ old('analisis_biaya_manfaat', $proposal->analisis_biaya_manfaat) }}</textarea>
+                                @error('analisis_biaya_manfaat')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+
+                            <!-- Lokasi Implementasi -->
+                            <div class="uf-field">
+                                <label for="lokasi_implementasi" class="uf-label">Lokasi Implementasi</label>
+                                <details class="uf-help">
+                                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat petunjuk &amp; contoh</summary>
+                                    <div class="uf-help-box"><span class="uf-example">Contoh: "Kantor BKD (server utama), 15 SKPD (klien), dengan akses cloud untuk pegawai."</span></div>
+                                </details>
+                                <input type="text" id="lokasi_implementasi" name="lokasi_implementasi"
+                                    value="{{ old('lokasi_implementasi', $proposal->lokasi_implementasi) }}"
+                                    placeholder="Contoh: Seluruh wilayah Kota XYZ">
+                                @error('lokasi_implementasi')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -622,10 +730,25 @@
 
             <!-- Step 3: Perencanaan -->
             <div id="step-3" class="step-content bg-white rounded-lg shadow-md p-6" style="display: none;">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Perencanaan</h2>
-                <p class="text-sm text-gray-600 mb-6">Sesuai Permenkomdigi No. 6 Tahun 2025 tentang Pembangunan Aplikasi Khusus</p>
+                <h2 class="text-xl font-semibold text-gray-800 mb-1">
+                    <span class="inline-flex w-7 h-7 rounded-lg bg-violet-100 text-violet-700 items-center justify-center text-sm font-bold">3</span>
+                    Perencanaan
+                </h2>
+                <p class="text-sm text-gray-500 mb-5 ml-9">Sesuai Permenkomdigi No. 6 Tahun 2025 tentang Pembangunan Aplikasi Khusus.</p>
 
-                <div class="space-y-4">
+                {{-- ============ Bagian A: Ruang Lingkup & Proses Bisnis ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-blue">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        </div>
+                        <div>
+                            <div class="uf-section__title">Ruang Lingkup &amp; Proses Bisnis</div>
+                            <div class="uf-section__sub">Uraian ruang lingkup dan alur proses bisnis</div>
+                        </div>
+                    </div>
+                    <div class="uf-section__body">
+                        <div class="space-y-4">
                     <!-- Uraian Ruang Lingkup -->
                     {{-- Petunjuk Pengisian Uraian Ruang Lingkup --}}
                     <div class="mb-3">
@@ -779,7 +902,23 @@
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                        </div>
+                    </div>
+                </div>
 
+                {{-- ============ Bagian B: Metodologi, Tim & Jadwal ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-violet">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                        <div>
+                            <div class="uf-section__title">Metodologi, Tim &amp; Jadwal</div>
+                            <div class="uf-section__sub">Kerangka kerja, pelaksana, peran tim, jadwal, dan rencana aksi</div>
+                        </div>
+                    </div>
+                    <div class="uf-section__body">
+                        <div class="space-y-4">
                     <!-- Kerangka Kerja -->
                     {{-- Petunjuk Pengisian Kerangka Kerja/Metodologi --}}
                     <div class="mb-3">
@@ -1198,7 +1337,23 @@
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                        </div>
+                    </div>
+                </div>
 
+                {{-- ============ Bagian C: Keamanan, Sumber Daya & Pemantauan ============ --}}
+                <div class="uf-section">
+                    <div class="uf-section__head">
+                        <div class="uf-section__icon uf-icon-rose">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <div>
+                            <div class="uf-section__title">Keamanan, Sumber Daya &amp; Pemantauan</div>
+                            <div class="uf-section__sub">Keamanan informasi, SDM/anggaran/sarana, indikator, dan pelaporan</div>
+                        </div>
+                    </div>
+                    <div class="uf-section__body">
+                        <div class="space-y-4">
                     <!-- Keamanan Informasi -->
                     {{-- Petunjuk Pengisian Keamanan Informasi --}}
                     <div class="mb-3">
@@ -1445,6 +1600,8 @@
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Navigation -->
@@ -1469,8 +1626,11 @@
 
             <!-- Step 4: Manajemen Risiko -->
             <div id="step-4" class="step-content bg-white rounded-lg shadow-md p-6" style="display: none;">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Manajemen Risiko SPBE</h2>
-                <p class="text-sm text-gray-600 mb-4">Identifikasi dan kelola risiko sesuai Permenkomdigi No. 6 Tahun 2025</p>
+                <h2 class="text-xl font-semibold text-gray-800 mb-1">
+                    <span class="inline-flex w-7 h-7 rounded-lg bg-amber-100 text-amber-700 items-center justify-center text-sm font-bold">4</span>
+                    Manajemen Risiko SPBE
+                </h2>
+                <p class="text-sm text-gray-500 mb-5 ml-9">Identifikasi dan kelola risiko sesuai Permenkomdigi No. 6 Tahun 2025.</p>
 
                 <!-- Edit Instructions -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -1489,8 +1649,10 @@
                     </div>
                 </div>
 
-                <!-- Petunjuk Pengisian -->
-                <div class="bg-orange-50 border-l-4 border-orange-500 p-4 mb-6">
+                <!-- Petunjuk Pengisian (collapsible) -->
+                <details class="uf-help" style="margin-bottom:1.25rem;">
+                    <summary><svg class="uf-caret w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg> Lihat panduan &amp; contoh pengisian Manajemen Risiko SPBE</summary>
+                <div class="bg-orange-50 border-l-4 border-orange-500 p-4 mt-2">
                     <h3 class="text-base font-semibold text-orange-900 mb-2">📋 Petunjuk Pengisian Manajemen Risiko SPBE</h3>
                     <p class="text-sm text-orange-800 mb-3">
                         Manajemen Risiko SPBE merupakan bagian penting dari perencanaan aplikasi. Silakan baca pedoman dan panduan berikut sebelum mengisi:
@@ -1525,6 +1687,7 @@
                         </ul>
                     </div>
                 </div>
+                </details>
 
                 <!-- Warning Container -->
                 <div id="risiko-warning" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
@@ -1720,7 +1883,11 @@
 
             <!-- Step 5: Review -->
             <div id="step-5" class="step-content bg-white rounded-lg shadow-md p-6" style="display: none;">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Review & Submit</h2>
+                <h2 class="text-xl font-semibold text-gray-800 mb-1">
+                    <span class="inline-flex w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 items-center justify-center text-sm font-bold">5</span>
+                    Review &amp; Submit
+                </h2>
+                <p class="text-sm text-gray-500 mb-5 ml-9">Periksa kembali seluruh data sebelum menyimpan draft atau mengajukan untuk verifikasi.</p>
 
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                     <div class="flex">
@@ -1865,13 +2032,13 @@ function updateStepIndicator(activeStep) {
         const text = indicator.querySelector('p');
 
         if (i === activeStep) {
-            circle.className = 'w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold';
-            text.className = 'text-sm font-medium text-blue-600';
+            circle.className = 'uf-step-circle bg-blue-600 text-white';
+            text.className = 'text-sm font-semibold text-blue-700';
         } else if (i < activeStep) {
-            circle.className = 'w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-semibold';
+            circle.className = 'uf-step-circle bg-green-600 text-white';
             text.className = 'text-sm font-medium text-green-600';
         } else {
-            circle.className = 'w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-semibold';
+            circle.className = 'uf-step-circle bg-gray-200 text-gray-500';
             text.className = 'text-sm font-medium text-gray-500';
         }
     }
@@ -1884,7 +2051,7 @@ function validateStep(step) {
 
         const requiredFields = [
             'nama_aplikasi', 'pemilik_proses_bisnis_id', 'jenis_layanan', 'target_pengguna',
-            'estimasi_pengguna', 'lingkup_aplikasi', 'estimasi_waktu_pengembangan',
+            'estimasi_pengguna', 'estimasi_waktu_pengembangan',
             'estimasi_biaya', 'sumber_pendanaan', 'prioritas'
         ];
 
@@ -2489,7 +2656,6 @@ function populateReview() {
     reviewHTML += `<div><span class="text-gray-600">Nama Aplikasi:</span> <span class="font-medium">${formData.get('nama_aplikasi') || '-'}</span></div>`;
     reviewHTML += `<div><span class="text-gray-600">Prioritas:</span> <span class="font-medium">${formData.get('prioritas') || '-'}</span></div>`;
     reviewHTML += `<div><span class="text-gray-600">Jenis Layanan:</span> <span class="font-medium">${formData.get('jenis_layanan') || '-'}</span></div>`;
-    reviewHTML += `<div><span class="text-gray-600">Lingkup:</span> <span class="font-medium">${formData.get('lingkup_aplikasi') || '-'}</span></div>`;
     reviewHTML += `<div><span class="text-gray-600">Estimasi Waktu:</span> <span class="font-medium">${formData.get('estimasi_waktu_pengembangan') || '-'} bulan</span></div>`;
     reviewHTML += `<div><span class="text-gray-600">Estimasi Biaya:</span> <span class="font-medium">Rp ${parseInt(formData.get('estimasi_biaya') || 0).toLocaleString('id-ID')}</span></div>`;
     reviewHTML += `</div></div>`;

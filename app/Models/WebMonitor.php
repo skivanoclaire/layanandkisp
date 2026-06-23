@@ -20,6 +20,8 @@ class WebMonitor extends Model
         'ip_address',
         'is_proxied',
         'status',
+        'is_decommissioned',
+        'decommissioned_at',
         'keterangan',
         'jenis',
         'last_checked_at',
@@ -67,6 +69,8 @@ class WebMonitor extends Model
 
     protected $casts = [
         'is_proxied' => 'boolean',
+        'is_decommissioned' => 'boolean',
+        'decommissioned_at' => 'datetime',
         'last_checked_at' => 'datetime',
         'esc_answers' => 'array',
         'esc_filled_at' => 'datetime',

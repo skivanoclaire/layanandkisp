@@ -371,6 +371,25 @@
                 </div>
             </div>
 
+            <!-- Status Pensiun / Non-aktif -->
+            <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <h3 class="font-semibold text-amber-800 mb-2">Status Pensiun / Non-aktif</h3>
+                <p class="text-xs text-amber-700 mb-3">
+                    Penanda ini terpisah dari status keterjangkauan domain (yang dicek otomatis tiap jam).
+                    Menandai "Dipensiunkan" <strong>tidak menghapus data</strong> — record tetap tersimpan untuk pemeriksaan di masa depan.
+                </p>
+                <label class="inline-flex items-center gap-2">
+                    <input type="hidden" name="is_decommissioned" value="0">
+                    <input type="checkbox" name="is_decommissioned" value="1"
+                           class="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                           {{ old('is_decommissioned', $webMonitor->is_decommissioned) ? 'checked' : '' }}>
+                    <span class="text-sm font-medium text-gray-700">Tandai aplikasi/subdomain ini sebagai dipensiunkan (non-aktif)</span>
+                </label>
+                @if($webMonitor->is_decommissioned && $webMonitor->decommissioned_at)
+                    <p class="text-xs text-amber-700 mt-2">Ditandai pensiun sejak: {{ $webMonitor->decommissioned_at->format('d/m/Y H:i') }}</p>
+                @endif
+            </div>
+
             <!-- Kategori Sistem Elektronik (ESC) -->
             <div class="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
                 <h3 class="font-semibold text-indigo-800 mb-4">Kategori Sistem Elektronik (ESC)</h3>

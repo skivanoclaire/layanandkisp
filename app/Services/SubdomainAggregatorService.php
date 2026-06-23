@@ -253,10 +253,30 @@ class SubdomainAggregatorService
             ->orderBy('month')
             ->get();
 
+        // Total seluruh subdomain yang ada di sistem (WebMonitor), mencakup
+        // yang berasal dari permohonan disetujui maupun entri existing manual.
+        // Dihitung per bulan berdasarkan created_at, lalu diakumulasi.
+        $monitorsPerMonth = WebMonitor::select(
+            DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+            DB::raw('count(*) as total')
+        )
+            ->where('status', '!=', 'no-domain')
+            ->where('created_at', '>=', $startDate)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // Baseline: jumlah subdomain yang sudah ada SEBELUM rentang periode,
+        // sebagai titik awal akumulasi total subdomain.
+        $cumulative = (int) WebMonitor::where('status', '!=', 'no-domain')
+            ->where('created_at', '<', $startDate)
+            ->count();
+
         // Format data for Chart.js
         $labels = [];
         $totalData = [];
         $approvedData = [];
+        $cumulativeData = [];
 
         for ($i = $months - 1; $i >= 0; $i--) {
             $month = now()->subMonths($i)->format('Y-m');
@@ -265,13 +285,27 @@ class SubdomainAggregatorService
             $labels[] = $monthLabel;
 
             $dataPoint = $requestsData->firstWhere('month', $month);
-            $totalData[] = $dataPoint ? $dataPoint->total : 0;
-            $approvedData[] = $dataPoint ? $dataPoint->approved : 0;
+            $total = $dataPoint ? (int) $dataPoint->total : 0;
+            $approved = $dataPoint ? (int) $dataPoint->approved : 0;
+
+            $totalData[] = $total;
+            $approvedData[] = $approved;
+
+            // Akumulasi: total seluruh subdomain di sistem sampai dengan bulan ini.
+            $monitorPoint = $monitorsPerMonth->firstWhere('month', $month);
+            $cumulative += $monitorPoint ? (int) $monitorPoint->total : 0;
+            $cumulativeData[] = $cumulative;
         }
 
         return [
             'labels' => $labels,
             'datasets' => [
+                [
+                    'label' => 'Total Subdomain (Akumulasi)',
+                    'data' => $cumulativeData,
+                    'borderColor' => 'rgb(168, 85, 247)',
+                    'backgroundColor' => 'rgba(168, 85, 247, 0.1)',
+                ],
                 [
                     'label' => 'Total Permohonan',
                     'data' => $totalData,

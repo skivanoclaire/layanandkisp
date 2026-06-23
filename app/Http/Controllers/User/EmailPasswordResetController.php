@@ -26,7 +26,9 @@ class EmailPasswordResetController extends Controller
         }
 
         // Check if email exists in email_accounts (master data) by matching NIP
-        $emailAccount = \App\Models\EmailAccount::where('nip', $user->nip)->first();
+        $emailAccount = \App\Models\EmailAccount::where('nip', $user->nip)
+            ->orWhere('requester_nip', $user->nip)
+            ->first();
 
         if (!$emailAccount) {
             return redirect()->route('user.email-password-reset.index')
@@ -52,7 +54,9 @@ class EmailPasswordResetController extends Controller
         }
 
         // Check if email exists in email_accounts (master data) by matching NIP
-        $emailAccount = \App\Models\EmailAccount::where('nip', $user->nip)->first();
+        $emailAccount = \App\Models\EmailAccount::where('nip', $user->nip)
+            ->orWhere('requester_nip', $user->nip)
+            ->first();
 
         if (!$emailAccount) {
             return back()->with('error', 'Email Anda belum terverifikasi, hubungi Admin untuk pembaruan data.');

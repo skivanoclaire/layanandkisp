@@ -45,16 +45,22 @@ class VidconRequestController extends Controller
         $data = $r->validate([
             'judul_kegiatan'     => ['required', 'string', 'max:255'],
             'deskripsi_kegiatan' => ['nullable', 'string'],
+            'lokasi_kegiatan'    => ['required', 'string', 'max:255'],
             'tanggal_mulai'      => ['required', 'date', 'after_or_equal:today'],
             'tanggal_selesai'    => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             'jam_mulai'          => ['required', 'date_format:H:i'],
             'jam_selesai'        => ['required', 'date_format:H:i', 'after:jam_mulai'],
             'platform'           => ['required', Rule::in(['Zoom', 'Google Meet', 'Microsoft Teams', 'YouTube Live', 'Lainnya'])],
             'platform_lainnya'   => ['required_if:platform,Lainnya', 'nullable', 'string', 'max:100'],
+            'jenis_layanan'      => ['required', Rule::in(['link_host', 'link_host_operator', 'operator'])],
+            'pemohon_link_meeting'     => ['required_if:jenis_layanan,operator', 'nullable', 'string', 'max:2000'],
+            'pemohon_meeting_id'       => ['nullable', 'string', 'max:255'],
+            'pemohon_meeting_password' => ['nullable', 'string', 'max:255'],
             'jumlah_peserta'     => ['nullable', 'integer', 'min:1', 'max:10000'],
             'keperluan_khusus'   => ['nullable', 'string'],
         ], [
             'judul_kegiatan.required'          => 'Judul Kegiatan wajib diisi.',
+            'lokasi_kegiatan.required'         => 'Lokasi Kegiatan wajib diisi.',
             'tanggal_mulai.required'           => 'Tanggal Mulai wajib diisi.',
             'tanggal_mulai.after_or_equal'     => 'Tanggal Mulai tidak boleh kurang dari hari ini.',
             'tanggal_selesai.required'         => 'Tanggal Selesai wajib diisi.',
@@ -64,6 +70,8 @@ class VidconRequestController extends Controller
             'jam_selesai.after'                => 'Jam Selesai harus lebih besar dari Jam Mulai.',
             'platform.required'                => 'Platform wajib dipilih.',
             'platform_lainnya.required_if'     => 'Nama platform wajib diisi jika memilih "Lainnya".',
+            'jenis_layanan.required'           => 'Jenis Layanan wajib dipilih.',
+            'pemohon_link_meeting.required_if' => 'Link Meeting wajib diisi jika memilih "Operator saja".',
         ]);
 
         // Create vidcon request — instansi & no_hp dipaksa dari profil user
@@ -153,12 +161,17 @@ class VidconRequestController extends Controller
         $data = $r->validate([
             'judul_kegiatan'     => ['required', 'string', 'max:255'],
             'deskripsi_kegiatan' => ['nullable', 'string'],
+            'lokasi_kegiatan'    => ['required', 'string', 'max:255'],
             'tanggal_mulai'      => ['required', 'date', 'after_or_equal:today'],
             'tanggal_selesai'    => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             'jam_mulai'          => ['required', 'date_format:H:i'],
             'jam_selesai'        => ['required', 'date_format:H:i', 'after:jam_mulai'],
             'platform'           => ['required', Rule::in(['Zoom', 'Google Meet', 'Microsoft Teams', 'YouTube Live', 'Lainnya'])],
             'platform_lainnya'   => ['required_if:platform,Lainnya', 'nullable', 'string', 'max:100'],
+            'jenis_layanan'      => ['required', Rule::in(['link_host', 'link_host_operator', 'operator'])],
+            'pemohon_link_meeting'     => ['required_if:jenis_layanan,operator', 'nullable', 'string', 'max:2000'],
+            'pemohon_meeting_id'       => ['nullable', 'string', 'max:255'],
+            'pemohon_meeting_password' => ['nullable', 'string', 'max:255'],
             'jumlah_peserta'     => ['nullable', 'integer', 'min:1', 'max:10000'],
             'keperluan_khusus'   => ['nullable', 'string'],
         ]);

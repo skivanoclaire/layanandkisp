@@ -179,6 +179,92 @@ class FonnteWhatsappService
         return $this->sendMessage($phoneNumber, $message);
     }
 
+    /**
+     * Beri tahu pemohon vidcon bahwa permohonannya telah disetujui beserta
+     * link meeting yang dapat digunakan.
+     */
+    public function sendVidconApprovedNotification(
+        string $phoneNumber,
+        string $ticketNo,
+        string $judulKegiatan,
+        string $linkMeeting,
+        ?string $meetingId = null,
+        ?string $meetingPassword = null,
+        ?string $informasiTambahan = null
+    ): bool {
+        if (empty($phoneNumber)) {
+            Log::warning("FonnteWhatsapp: phone empty for vidcon approve {$ticketNo}");
+            return false;
+        }
+
+        $message = "*{$this->header}*\n\n"
+            . "Yth. Bapak/Ibu,\n\n"
+            . "Permohonan Video Conference Anda telah *disetujui*. Berikut informasi meeting Anda.\n\n"
+            . "No. Tiket: {$ticketNo}\n"
+            . "Kegiatan: {$judulKegiatan}\n"
+            . "Status: *Selesai*\n\n"
+            . "*Informasi Meeting:*\n"
+            . "Link: {$linkMeeting}\n";
+
+        if (!empty($meetingId)) {
+            $message .= "Meeting ID: {$meetingId}\n";
+        }
+        if (!empty($meetingPassword)) {
+            $message .= "Passcode: {$meetingPassword}\n";
+        }
+        if (!empty($informasiTambahan)) {
+            $message .= "Informasi Tambahan: {$informasiTambahan}\n";
+        }
+
+        $message .= "\nTerima kasih.\n"
+            . "Helpdesk DKISP Kaltara";
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
+    /**
+     * Beri tahu pemohon vidcon bahwa informasi meeting (mis. link) telah direvisi
+     * setelah permohonan disetujui/selesai.
+     */
+    public function sendVidconLinkRevisedNotification(
+        string $phoneNumber,
+        string $ticketNo,
+        string $judulKegiatan,
+        string $linkMeeting,
+        ?string $meetingId = null,
+        ?string $meetingPassword = null,
+        ?string $informasiTambahan = null
+    ): bool {
+        if (empty($phoneNumber)) {
+            Log::warning("FonnteWhatsapp: phone empty for vidcon revise {$ticketNo}");
+            return false;
+        }
+
+        $message = "*{$this->header}*\n\n"
+            . "Yth. Bapak/Ibu,\n\n"
+            . "Terdapat *perubahan informasi meeting* untuk permohonan Video Conference Anda. Mohon gunakan informasi terbaru di bawah ini.\n\n"
+            . "No. Tiket: {$ticketNo}\n"
+            . "Kegiatan: {$judulKegiatan}\n\n"
+            . "*Informasi Meeting Terbaru:*\n"
+            . "Link: {$linkMeeting}\n";
+
+        if (!empty($meetingId)) {
+            $message .= "Meeting ID: {$meetingId}\n";
+        }
+        if (!empty($meetingPassword)) {
+            $message .= "Passcode: {$meetingPassword}\n";
+        }
+        if (!empty($informasiTambahan)) {
+            $message .= "Informasi Tambahan: {$informasiTambahan}\n";
+        }
+
+        $message .= "\n_Informasi sebelumnya tidak berlaku lagi. Mohon gunakan link terbaru di atas._\n\n"
+            . "Terima kasih.\n"
+            . "Helpdesk DKISP Kaltara";
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
     protected function getStatusLabel(string $status): string
     {
         return match ($status) {

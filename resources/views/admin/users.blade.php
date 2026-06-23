@@ -19,6 +19,50 @@
         </div>
     @endif
 
+    {{-- Statistik Pengguna --}}
+    <div class="mb-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <p class="text-xs font-medium text-gray-500">Total Pengguna</p>
+            <p class="mt-1 text-2xl font-bold text-gray-800">{{ number_format($stats['total']) }}</p>
+        </div>
+        <div class="rounded-lg border border-green-200 bg-green-50 p-4">
+            <p class="text-xs font-medium text-green-700">Terverifikasi</p>
+            <p class="mt-1 text-2xl font-bold text-green-700">{{ number_format($stats['verified']) }}</p>
+            <p class="text-xs text-green-600 mt-0.5">
+                {{ $stats['total'] > 0 ? round($stats['verified'] / $stats['total'] * 100) : 0 }}% dari total
+            </p>
+        </div>
+        <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+            <p class="text-xs font-medium text-yellow-700">Belum Terverifikasi</p>
+            <p class="mt-1 text-2xl font-bold text-yellow-700">{{ number_format($stats['unverified']) }}</p>
+        </div>
+        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <p class="text-xs font-medium text-blue-700">Pengguna SSO</p>
+            <p class="mt-1 text-2xl font-bold text-blue-700">{{ number_format($stats['sso']) }}</p>
+        </div>
+        <div class="rounded-lg border border-purple-200 bg-purple-50 p-4">
+            <p class="text-xs font-medium text-purple-700">Baru Bulan Ini</p>
+            <p class="mt-1 text-2xl font-bold text-purple-700">{{ number_format($stats['new_this_month']) }}</p>
+        </div>
+    </div>
+
+    {{-- Rincian per Role --}}
+    @if($roleStats->count() > 0)
+        <div class="mb-5 rounded-lg border border-gray-200 bg-white p-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Jumlah Pengguna per Role</p>
+            <div class="flex flex-wrap gap-2">
+                @foreach($roleStats as $role)
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                        {{ $role->display_name ?? $role->name }}
+                        <span class="inline-flex items-center justify-center rounded-full bg-gray-700 text-white px-1.5 min-w-[1.25rem] text-[11px] font-semibold">
+                            {{ number_format($role->users_count) }}
+                        </span>
+                    </span>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     {{-- Search and Filter Form --}}
     <form method="GET" action="{{ route('admin.users') }}" class="mb-5">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

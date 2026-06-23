@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use App\Exceptions\SimpegException;
 use Illuminate\Support\Facades\Log;
 
@@ -34,7 +35,13 @@ class SimpegClient
 
         try {
             $resp = Http::timeout(10)
-                ->retry(2, 500) // Retry 2 times with 500ms delay
+                // Retry only transient failures (connection errors / 5xx). Crucially, do NOT let
+                // retry() throw on 4xx — a 404 (NIK not found) / 422 (NIK invalid) must reach
+                // handleResponse() so it can be classified, not bubble up as a RequestException.
+                ->retry(2, 500, function ($exception) {
+                    return $exception instanceof ConnectionException
+                        || ($exception instanceof RequestException && $exception->response?->serverError());
+                }, throw: false)
                 ->withOptions(['verify' => false]) // Disable SSL verification for SPLP
                 ->withHeaders([
                     'apikey' => $apiKey,
@@ -47,6 +54,14 @@ class SimpegClient
                 'error' => $e->getMessage()
             ]);
             throw new SimpegException('Timeout/connection error to SIMPEG API', 0, $e->getMessage());
+        } catch (RequestException $e) {
+            // Safety net: if a transient retry is exhausted and Laravel re-throws, still route the
+            // final response through handleResponse() so 4xx is classified rather than treated as
+            // an unexpected error.
+            if ($e->response) {
+                return $this->handleResponse($e->response);
+            }
+            throw new SimpegException('SIMPEG request failed', 0, $e->getMessage());
         }
 
         return $this->handleResponse($resp);
@@ -73,14 +88,25 @@ class SimpegClient
             'body_preview' => is_array($json) ? array_keys($json) : substr($body, 0, 200)
         ]);
 
-        // === NIK not found (404, 400, 422) ===
-        if (in_array($status, [404, 400, 422], true)) {
-            return ['ok' => true, 'valid' => false, 'data' => null];
+        // === Invalid NIK format (422, e.g. {"ok":false,"error":"Parameter nik wajib 16 digit"}) ===
+        if ($status === 422) {
+            return [
+                'ok' => false,
+                'valid' => false,
+                'data' => null,
+                'reason' => 'invalid_nik',
+                'message' => is_array($json) ? ($json['error'] ?? null) : null,
+            ];
+        }
+
+        // === NIK not found (404, 400) ===
+        if (in_array($status, [404, 400], true)) {
+            return ['ok' => true, 'valid' => false, 'data' => null, 'reason' => 'not_found'];
         }
 
         // === Check for explicit "valid: false" response ===
         if ($resp->clientError() && is_array($json) && array_key_exists('valid', $json) && $json['valid'] === false) {
-            return ['ok' => (bool)($json['ok'] ?? true), 'valid' => false, 'data' => null];
+            return ['ok' => (bool)($json['ok'] ?? true), 'valid' => false, 'data' => null, 'reason' => 'not_found'];
         }
 
         // === Authentication / Permission / Rate limit errors ===
@@ -99,7 +125,7 @@ class SimpegClient
             if (array_key_exists('mapData', $json)) {
                 $data = $json['mapData'];
                 if (empty($data)) {
-                    return ['ok' => true, 'valid' => false, 'data' => null];
+                    return ['ok' => true, 'valid' => false, 'data' => null, 'reason' => 'not_found'];
                 }
                 return ['ok' => true, 'valid' => true, 'data' => $data];
             }
@@ -108,7 +134,7 @@ class SimpegClient
             if (array_key_exists('data', $json)) {
                 $data = $json['data'];
                 if (empty($data)) {
-                    return ['ok' => true, 'valid' => false, 'data' => null];
+                    return ['ok' => true, 'valid' => false, 'data' => null, 'reason' => 'not_found'];
                 }
                 return ['ok' => true, 'valid' => true, 'data' => $data];
             }
@@ -123,10 +149,10 @@ class SimpegClient
                 return ['ok' => true, 'valid' => true, 'data' => $json];
             }
 
-            return ['ok' => true, 'valid' => false, 'data' => null];
+            return ['ok' => true, 'valid' => false, 'data' => null, 'reason' => 'not_found'];
         }
 
         // === Unexpected response ===
-        return ['ok' => true, 'valid' => false, 'data' => null];
+        return ['ok' => true, 'valid' => false, 'data' => null, 'reason' => 'not_found'];
     }
 }

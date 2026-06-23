@@ -80,6 +80,13 @@
                     </div>
                 @endif
 
+                @if($vidconRequest->lokasi_kegiatan)
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Kegiatan:</label>
+                        <p class="text-gray-800">{{ $vidconRequest->lokasi_kegiatan }}</p>
+                    </div>
+                @endif
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Mulai:</label>
@@ -106,6 +113,25 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Platform:</label>
                     <p class="text-gray-800">{{ $vidconRequest->platform_display }}</p>
                 </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Layanan:</label>
+                    <p class="text-gray-800">{{ $vidconRequest->jenis_layanan_display }}</p>
+                </div>
+
+                @if($vidconRequest->pemohon_link_meeting)
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Link Meeting (dari Pemohon):</label>
+                        <a href="{{ $vidconRequest->pemohon_link_meeting }}" target="_blank"
+                           class="text-blue-600 hover:text-blue-800 underline break-all">{{ $vidconRequest->pemohon_link_meeting }}</a>
+                        @if($vidconRequest->pemohon_meeting_id)
+                            <p class="text-gray-800 text-sm mt-1">Meeting ID: {{ $vidconRequest->pemohon_meeting_id }}</p>
+                        @endif
+                        @if($vidconRequest->pemohon_meeting_password)
+                            <p class="text-gray-800 text-sm">Passcode: {{ $vidconRequest->pemohon_meeting_password }}</p>
+                        @endif
+                    </div>
+                @endif
 
                 @if($vidconRequest->jumlah_peserta)
                     <div>
@@ -167,6 +193,16 @@
                     </label>
                     <textarea id="deskripsi_kegiatan" name="deskripsi_kegiatan" rows="3"
                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">{{ old('deskripsi_kegiatan', $vidconRequest->deskripsi_kegiatan) }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="lokasi_kegiatan" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Lokasi Kegiatan <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="lokasi_kegiatan" name="lokasi_kegiatan" required
+                           value="{{ old('lokasi_kegiatan', $vidconRequest->lokasi_kegiatan) }}"
+                           placeholder="Contoh: Ruang Rapat Lantai 3, Kantor Diskominfo Kaltara"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -234,6 +270,56 @@
                 </div>
 
                 <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Jenis Layanan <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        @foreach(['link_host' => 'Link Host saja', 'link_host_operator' => 'Link Host + Operator', 'operator' => 'Operator saja'] as $value => $label)
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="jenis_layanan" value="{{ $value }}" required
+                                       {{ old('jenis_layanan', $vidconRequest->jenis_layanan) == $value ? 'checked' : '' }}
+                                       class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500">
+                                <span class="text-sm text-gray-700">{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div id="pemohon_meeting_wrapper" style="display: none;" class="mb-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <p class="text-sm text-purple-700 font-semibold mb-3">Informasi Meeting dari Pemohon</p>
+                    <p class="text-xs text-purple-600 mb-4">
+                        Karena Anda memilih <strong>Operator saja</strong>, masukkan link/ID meeting yang sudah Anda peroleh (misalnya dari Pusat). Informasi ini akan digunakan oleh operator.
+                    </p>
+
+                    <div class="mb-4">
+                        <label for="pemohon_link_meeting" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Link Meeting <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="pemohon_link_meeting" name="pemohon_link_meeting"
+                               value="{{ old('pemohon_link_meeting', $vidconRequest->pemohon_link_meeting) }}"
+                               placeholder="Contoh: https://zoom.us/j/123456789"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="pemohon_meeting_id" class="block text-sm font-semibold text-gray-700 mb-2">Meeting ID</label>
+                            <input type="text" id="pemohon_meeting_id" name="pemohon_meeting_id"
+                                   value="{{ old('pemohon_meeting_id', $vidconRequest->pemohon_meeting_id) }}"
+                                   placeholder="Contoh: 123 456 789"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label for="pemohon_meeting_password" class="block text-sm font-semibold text-gray-700 mb-2">Passcode</label>
+                            <input type="text" id="pemohon_meeting_password" name="pemohon_meeting_password"
+                                   value="{{ old('pemohon_meeting_password', $vidconRequest->pemohon_meeting_password) }}"
+                                   placeholder="Contoh: abc123"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
                     <label for="jumlah_peserta" class="block text-sm font-semibold text-gray-700 mb-2">
                         Estimasi Jumlah Peserta
                     </label>
@@ -273,6 +359,21 @@
 
                 platformSelect.addEventListener('change', togglePlatformLainnya);
                 togglePlatformLainnya();
+
+                // Toggle "Informasi Meeting dari Pemohon" when "Operator saja" is chosen
+                const jenisLayananRadios = document.querySelectorAll('input[name="jenis_layanan"]');
+                const pemohonMeetingWrapper = document.getElementById('pemohon_meeting_wrapper');
+                const pemohonLinkMeeting = document.getElementById('pemohon_link_meeting');
+
+                function togglePemohonMeeting() {
+                    const selected = document.querySelector('input[name="jenis_layanan"]:checked');
+                    const isOperatorOnly = selected && selected.value === 'operator';
+                    pemohonMeetingWrapper.style.display = isOperatorOnly ? 'block' : 'none';
+                    pemohonLinkMeeting.required = isOperatorOnly;
+                }
+
+                jenisLayananRadios.forEach(radio => radio.addEventListener('change', togglePemohonMeeting));
+                togglePemohonMeeting();
             });
             </script>
         @endif

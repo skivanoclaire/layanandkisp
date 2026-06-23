@@ -82,7 +82,9 @@
             </x-primary-button>
         </div>
     </form>
-    {!! app('nocaptcha')->renderJs() !!}
+    @push('scripts')
+        {!! app('nocaptcha')->renderJs() !!}
+    @endpush
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

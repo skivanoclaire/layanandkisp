@@ -10,6 +10,8 @@ use App\Http\Requests\Rekomendasi\StoreUsulanV2Request;
 use App\Http\Requests\Rekomendasi\UploadDokumenRequest;
 use App\Services\RekomendasiDocumentService;
 use Illuminate\Http\Request;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class RekomendasiUsulanController extends Controller
 {
@@ -131,6 +133,74 @@ class RekomendasiUsulanController extends Controller
             ->firstOrFail();
 
         return view('user.rekomendasi.usulan.show', compact('proposal'));
+    }
+
+    /**
+     * Export dokumen usulan milik pengguna ke PDF.
+     * Menggunakan template & format yang sama dengan level admin
+     * (resources/views/admin/rekomendasi/verifikasi/pdf.blade.php).
+     */
+    public function exportPdf($id)
+    {
+        // Hanya pemilik usulan yang boleh mengunduh PDF-nya.
+        // Di luar try-catch agar usulan milik orang lain / tidak ada => 404 bersih.
+        $proposal = RekomendasiAplikasiForm::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->with([
+                'user.unitKerja',
+                'pemilikProsesBisnis',
+                'dokumenUsulan.uploader',
+                'verifikasi.verifikator',
+                'historiAktivitas.user',
+                'statusKementerian',
+            ])
+            ->firstOrFail();
+
+        try {
+            // Konfigurasi DomPDF (sama seperti level admin)
+            $options = new Options();
+            $options->set('isRemoteEnabled', true);
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isPhpEnabled', true);
+            $options->set('defaultFont', 'DejaVu Sans');
+
+            $dompdf = new Dompdf($options);
+
+            // Logo untuk disematkan ke PDF
+            $logoPath = public_path('logokaltarafix.png');
+            $logoBase64 = '';
+            if (file_exists($logoPath)) {
+                $logoBase64 = base64_encode(file_get_contents($logoPath));
+            }
+
+            // Pakai ulang template PDF level admin agar isi & format identik
+            $html = view('admin.rekomendasi.verifikasi.pdf', compact('proposal', 'logoBase64'))->render();
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            $filename = 'Usulan_Rekomendasi_' . $proposal->ticket_number . '.pdf';
+
+            $proposal->logActivity(
+                'PDF Diekspor',
+                'Dokumen usulan rekomendasi diekspor ke PDF oleh ' . auth()->user()->name
+            );
+
+            return response()->streamDownload(function () use ($dompdf) {
+                echo $dompdf->output();
+            }, $filename, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('User PDF Export Error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage());
+        }
     }
 
     /**

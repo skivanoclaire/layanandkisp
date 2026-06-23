@@ -24,8 +24,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('nocaptcha', function () {
             return new \Anhskohbo\NoCaptcha\NoCaptcha(
                 env('NOCAPTCHA_SECRET'),
-                env('NOCAPTCHA_SITEKEY'),
-                ['timeout' => 30]
+                env('NOCAPTCHA_SITEKEY')
             );
         });
     }
@@ -69,14 +68,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.authenticated', function ($view) {
             $user = auth()->user();
-            $counts = [];
-            if ($user && $user->hasAnyPermission([
-                'admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi',
-                'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE',
-                'Kelola Permohonan PSE',
-            ])) {
-                $counts = app(\App\Services\AdminPendingCountsService::class)->counts();
-            }
+            $counts = app(\App\Services\AdminPendingCountsService::class)->countsFor($user);
             $view->with('pendingCounts', $counts);
         });
     }

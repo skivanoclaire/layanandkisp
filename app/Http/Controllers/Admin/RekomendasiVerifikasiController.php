@@ -133,7 +133,7 @@ class RekomendasiVerifikasiController extends Controller
 
         if (!$verifikasi || $verifikasi->status === 'menunggu') {
             return redirect()
-                ->route('admin.rekomendasi.verifikasi.startVerification', $id)
+                ->route('admin.rekomendasi.verifikasi.start', $id)
                 ->with('info', 'Silakan mulai verifikasi terlebih dahulu.');
         }
 

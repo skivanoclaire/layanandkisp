@@ -75,4 +75,12 @@ class UnitKerja extends Model
     {
         return $this->hasMany(Jabatan::class);
     }
+
+    /**
+     * Get all web monitors (subdomain) belonging to this unit kerja (instansi)
+     */
+    public function webMonitors()
+    {
+        return $this->hasMany(WebMonitor::class, 'instansi_id');
+    }
 }

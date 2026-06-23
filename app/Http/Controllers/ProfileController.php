@@ -120,6 +120,13 @@ class ProfileController extends Controller
         }
 
         if (empty($api['valid'])) {
+            if (($api['reason'] ?? null) === 'invalid_nik') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'NIK Anda tidak valid — NIK harus 16 digit angka. Perbaiki NIK di profil, simpan, lalu coba lagi.',
+                ], 422);
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'NIK Anda tidak ditemukan di SIMPEG.',

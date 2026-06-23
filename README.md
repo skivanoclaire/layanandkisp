@@ -31,7 +31,18 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 - Pendaftaran subdomain baru (*.kaltaraprov.go.id)
 - Perubahan IP/pointing
 - Perubahan nama subdomain
+- **Pembaruan Data Aplikasi** — pemilik (per unit kerja) memperbarui data aplikasi/teknologi/server miliknya, melalui alur persetujuan admin (Setujui / Revisi / Tolak)
+- **Usulan non-aktif (pensiun)** aplikasi — menandai aplikasi yang akan dipensiunkan tanpa menghapus data, sebagai bahan evaluasi
 - Monitoring status website
+
+### 🗂️ Pendaftaran Sistem Elektronik (PSE)
+- Pendaftaran & pembaruan data Sistem Elektronik (Permenkominfo/Permenkomdigi)
+- Kategori Sistem Elektronik (KSE/ESC) dan Klasifikasi Data
+- Pengajuan pembaruan data PSE per subdomain dengan persetujuan admin
+
+### 😊 Survei Kepuasan Layanan
+- Pengisian survei kepuasan terhadap layanan/website yang dikelola
+- Rekapitulasi hasil survei untuk admin
 
 ### ✂️ Pemendek Tautan (URL Shortener)
 - Permohonan pemendek tautan resmi pada domain [link.kaltaraprov.go.id](https://link.kaltaraprov.go.id)
@@ -64,8 +75,9 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 - Starlink Jelajah
 
 ### 🔐 Jaringan Privat/VPN
-- Permohonan akses VPN
-- Konfigurasi jaringan privat
+- Pendaftaran akses VPN baru
+- Reset akun VPN
+- Akses JIP PDNS (Jaringan Intra Pemerintah / Pusat Data Nasional)
 
 ### 🖥️ Pusat Data/Komputasi
 - Kunjungan/Colocation
@@ -81,18 +93,42 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 - Deteksi website down
 - Grafik pertumbuhan layanan
 
-### Master Data
-- Master Data Subdomain
-- Master Data Instansi
-- Master Data Email
-- Master Data IP
-- Master Data Aset TIK
+### Kelola Permohonan (Approval)
+- Pusat persetujuan seluruh layanan (Email, Subdomain, PSE, TTE, VPN, Internet, Pusat Data, Vidcon, dll.)
+- Badge jumlah permohonan menunggu per kategori pada menu
+- Alur Setujui / Revisi / Tolak dengan catatan admin (mis. Pembaruan Data Subdomain)
+- Notifikasi status ke pemohon via WhatsApp (Fonnte)
 
-### Manajemen
-- User Management
-- Kelola Role
-- Kelola Kewenangan
-- Cek via SIMPEG
+### Web Monitor & Keamanan Sistem Elektronik
+- Monitoring status website (cek otomatis terjadwal) & sinkronisasi DNS Cloudflare
+- Data aplikasi lengkap: teknologi, server, developer, kontak
+- **Kategori Sistem Elektronik (KSE/ESC)** — kuesioner & skoring kategori (Strategis/Tinggi/Rendah)
+- **Klasifikasi Data** — penilaian Kerahasiaan/Integritas/Ketersediaan (CIA)
+- **Laporan Trafik** website berbasis Cloudflare Analytics + ekspor PDF
+- **Penanda Pensiun (decommission)** dengan badge & filter — menandai aplikasi non-aktif tanpa menghapus data
+- Generate & unduh dokumen TTE (PDF)
+
+### Master Data
+- Master Data Subdomain (Web Monitor)
+- Master Data Instansi/Unit Kerja
+- Master Data Email & Akun Email (WHM/cPanel)
+- Master Data IP (cek IP terpakai pada rentang 103.156.110.0/24)
+- Master Data Aset TIK (perangkat keras, perangkat lunak, kategori, peminjaman & pengembalian)
+
+### Rekomendasi Aplikasi & Fase Pengembangan
+- Verifikasi & penilaian kelayakan usulan aplikasi (checklist, kajian, ekspor PDF)
+- Pemantauan fase pengembangan: milestone, tim, dokumen, dan catatan
+
+### Manajemen API (SPLP)
+- Pengelolaan **API Key** (buat, aktif/nonaktif, hapus)
+- **IP Whitelist** untuk akses API publik
+- Daftar endpoint untuk integrasi Sistem Penghubung Layanan Pemerintah (SPLP)
+
+### Manajemen Sistem
+- User Management & verifikasi via SIMPEG
+- Kelola Role & Kewenangan (permission)
+- Audit Log aktivitas
+- Kelola Operator (Vidcon/Sandi)
 
 ## Integrasi Sistem
 
@@ -106,6 +142,17 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 | **YOURLS** | Pembuatan & pengelolaan short link otomatis di [link.kaltaraprov.go.id](https://link.kaltaraprov.go.id) (API signature passwordless) |
 | **Fonnte WhatsApp** | Notifikasi status permohonan via WhatsApp |
 
+## API Publik (SPLP)
+
+Aplikasi menyediakan API untuk integrasi dengan **SPLP (Sistem Penghubung Layanan Pemerintah)**, diamankan **dua lapis**: IP Whitelist + API Key. Pengelolaan key dan whitelist dilakukan melalui menu **Manajemen API** pada panel admin.
+
+| Method | Endpoint | Fungsi |
+|--------|----------|--------|
+| `GET` | `/api/v1/master/instansi` | Data master instansi/unit kerja |
+| `GET` | `/api/v1/master/subdomain` | Data master subdomain (Web Monitor) |
+
+Autentikasi API key via header `X-API-Key: <api-key>` (alternatif: `Authorization: Bearer <api-key>`). Permintaan dari IP di luar daftar whitelist atau tanpa API key yang valid akan ditolak.
+
 ## Tech Stack
 
 - **Framework:** Laravel 12
@@ -116,6 +163,9 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 - **DNS Management:** Cloudflare API
 - **Email Management:** WHM/cPanel API
 - **URL Shortener:** YOURLS API (link.kaltaraprov.go.id)
+- **API Publik:** REST `/api/v1/*` untuk SPLP (pengamanan API Key + IP Whitelist)
+- **Notifikasi:** Fonnte WhatsApp API
+- **Penjadwalan:** Laravel Scheduler (cek status website, sinkronisasi Cloudflare per jam)
 - **Containerization:** Docker / Docker Compose
 
 ## Persyaratan Sistem
@@ -204,21 +254,27 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Admin/          # Controller admin
+│   │   │   ├── Api/            # Controller API publik (SPLP)
 │   │   │   ├── Operator/       # Controller operator
 │   │   │   └── User/           # Controller user
-│   │   └── Middleware/
-│   ├── Models/
+│   │   ├── Middleware/         # Termasuk ApiKeyAuth & ApiIpWhitelist
+│   │   └── Resources/          # API Resources (transformasi respons API)
+│   ├── Models/                 # Termasuk ApiKey, ApiWhitelist, WebMonitor, dll.
 │   └── Services/
-│       ├── SimpegClient.php          # Service integrasi SIMPEG
-│       ├── YourlsClient.php          # Service integrasi YOURLS (pemendek tautan)
-│       ├── CloudflareService.php     # Service integrasi Cloudflare DNS
-│       ├── WhmApiService.php         # Service integrasi WHM/cPanel
-│       └── FonnteWhatsappService.php # Service notifikasi WhatsApp
+│       ├── SimpegClient.php             # Service integrasi SIMPEG
+│       ├── YourlsClient.php             # Service integrasi YOURLS (pemendek tautan)
+│       ├── CloudflareService.php        # Service integrasi Cloudflare DNS
+│       ├── WhmApiService.php            # Service integrasi WHM/cPanel
+│       ├── AdminPendingCountsService.php# Hitung badge permohonan menunggu
+│       └── FonnteWhatsappService.php    # Service notifikasi WhatsApp
 ├── database/
 │   └── migrations/
 ├── resources/
 │   └── views/
 ├── routes/
+│   ├── web.php                 # Rute aplikasi (user, admin, operator)
+│   ├── api.php                 # Rute API publik /api/v1/* (SPLP)
+│   └── console.php             # Scheduler (cek status website, sync Cloudflare)
 └── public/
 ```
 

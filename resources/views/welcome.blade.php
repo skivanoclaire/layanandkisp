@@ -102,7 +102,7 @@
                             'slug' => 'SPBE',
                             'image' => 'spbe.png',
                             'link' =>
-                                'https://lookerstudio.google.com/u/1/reporting/f768fb19-c4d8-4cb3-9373-81752c9deadc/page/p_8p0vzpu3ad',
+                                'https://datastudio.google.com/u/0/reporting/d61f71a0-a197-4310-8657-f61412ede27e/page/p_qmjsse6gad',
                         ],
                         // ['icon' => '📹', 'label' => 'Peliputan', 'slug' => 'peliputan', 'image' => 'peliputan.png', 'link' => '/login'],
                         // ['icon' => '📰', 'label' => 'Publikasi', 'slug' => 'publikasi', 'image' => 'publikasi.png', 'link' => '/login'],

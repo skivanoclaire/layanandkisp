@@ -14,6 +14,14 @@
                     class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
                     Kembali
                 </a>
+                <a href="{{ route('user.rekomendasi.usulan.pdf', $proposal->id) }}" target="_blank"
+                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-6 4h4" />
+                    </svg>
+                    Export PDF
+                </a>
                 @if(in_array($proposal->status, ['draft', 'perlu_revisi']))
                     <a href="{{ route('user.rekomendasi.usulan.edit', $proposal->id) }}"
                         class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
@@ -342,7 +350,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Jenis Layanan</h3>
-                        <p class="text-gray-900">{{ ucfirst($proposal->jenis_layanan) }}</p>
+                        <p class="text-gray-900">{{ ['publik' => 'Layanan Publik', 'internal' => 'Layanan Administrasi Pemerintahan'][$proposal->jenis_layanan] ?? ucfirst($proposal->jenis_layanan ?? '-') }}</p>
                     </div>
 
                     <div>
@@ -355,10 +363,12 @@
                         <p class="text-gray-900">{{ number_format($proposal->estimasi_pengguna, 0, ',', '.') }} pengguna</p>
                     </div>
 
+                    {{-- Lingkup Aplikasi dinonaktifkan sementara
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Lingkup Aplikasi</h3>
                         <p class="text-gray-900">{{ ucfirst($proposal->lingkup_aplikasi) }}</p>
                     </div>
+                    --}}
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Platform</h3>

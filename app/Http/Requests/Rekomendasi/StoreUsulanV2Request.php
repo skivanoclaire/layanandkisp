@@ -85,7 +85,7 @@ class StoreUsulanV2Request extends FormRequest
             'jenis_layanan' => 'required|in:publik,internal',
             'target_pengguna' => 'required|string|max:255',
             'estimasi_pengguna' => 'required|integer|min:1',
-            'lingkup_aplikasi' => 'required|in:lokal,regional,nasional',
+            'lingkup_aplikasi' => 'nullable|in:lokal,regional,nasional', // dinonaktifkan sementara
             'platform' => 'required|array|min:1',
             'platform.*' => 'in:web,mobile,desktop',
             'teknologi_diusulkan' => 'nullable|string|max:500',
@@ -221,7 +221,7 @@ class StoreUsulanV2Request extends FormRequest
             'pemilik_proses_bisnis_id.required' => 'Pemilik proses bisnis wajib dipilih',
             'pemilik_proses_bisnis_id.exists' => 'Pemilik proses bisnis tidak valid',
             'jenis_layanan.required' => 'Jenis layanan wajib dipilih',
-            'jenis_layanan.in' => 'Jenis layanan harus Layanan Publik atau Layanan Internal',
+            'jenis_layanan.in' => 'Jenis layanan harus Layanan Publik atau Layanan Administrasi Pemerintahan',
             'target_pengguna.required' => 'Target pengguna wajib diisi',
             'estimasi_pengguna.required' => 'Estimasi jumlah pengguna wajib diisi',
             'estimasi_pengguna.integer' => 'Estimasi jumlah pengguna harus berupa angka',

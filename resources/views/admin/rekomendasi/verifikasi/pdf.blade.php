@@ -264,7 +264,7 @@
             </div>
             <div class="info-row">
                 <div class="info-label">Jenis Layanan</div>
-                <div class="info-value">{{ ucfirst($proposal->jenis_layanan) }}</div>
+                <div class="info-value">{{ ['publik' => 'Layanan Publik', 'internal' => 'Layanan Administrasi Pemerintahan'][$proposal->jenis_layanan] ?? ucfirst($proposal->jenis_layanan ?? '-') }}</div>
             </div>
             <div class="info-row">
                 <div class="info-label">Target Pengguna</div>
@@ -278,10 +278,12 @@
                 <div class="info-label">Pemilik Proses Bisnis</div>
                 <div class="info-value">{{ $proposal->pemilikProsesBisnis?->nama ?? '-' }}</div>
             </div>
+            {{-- Lingkup Aplikasi dinonaktifkan sementara
             <div class="info-row">
                 <div class="info-label">Lingkup Aplikasi</div>
                 <div class="info-value">{{ ucfirst($proposal->lingkup_aplikasi) }}</div>
             </div>
+            --}}
             <div class="info-row">
                 <div class="info-label">Platform</div>
                 <div class="info-value">

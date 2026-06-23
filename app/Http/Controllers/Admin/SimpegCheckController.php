@@ -80,11 +80,15 @@ class SimpegCheckController extends Controller
             return back()->withInput()->with('flash_error', 'NIK Tidak ditemukan/Gangguan tidak terduga ke SIMPEG');
         }
 
-        // === Jika tidak ditemukan → alert kuning & stop ===
+        // === Jika tidak ditemukan / tidak valid → alert kuning & stop ===
         if (empty($api['valid'])) {
+            $warning = ($api['reason'] ?? null) === 'invalid_nik'
+                ? 'NIK tidak valid — NIK harus 16 digit angka.'
+                : 'NIK tersebut tidak ditemukan pada SIMPEG.';
+
             return back()
                 ->withInput()
-                ->with('flash_warning', 'NIK tersebut tidak ditemukan pada SIMPEG.');
+                ->with('flash_warning', $warning);
         }
 
         // === Mapping hasil bila ditemukan ===
@@ -396,6 +400,14 @@ class SimpegCheckController extends Controller
                 'nik_digits'     => $nik,
                 'api_response'   => $api,
             ]);
+
+            if (($api['reason'] ?? null) === 'invalid_nik') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'NIK tidak valid — NIK harus 16 digit angka. Periksa & perbaiki NIK user lewat Edit User.',
+                ], 422);
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'NIK tidak ditemukan di SIMPEG. SIMPEG hanya menyimpan data ASN/pegawai terdaftar — verifikasi ke admin SIMPEG / Kepegawaian apakah NIK ini seharusnya ada di sana.',

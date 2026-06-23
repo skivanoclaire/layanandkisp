@@ -171,7 +171,8 @@
                                 $atAdminSubdomainNew = request()->routeIs('admin.subdomain.index') || request()->routeIs('admin.subdomain.show');
                                 $atAdminSubdomainIpChange = request()->routeIs('admin.subdomain.ip-change.*');
                                 $atAdminSubdomainNameChange = request()->routeIs('admin.subdomain.name-change.*');
-                                $openAdminSubdomain = $atAdminSubdomainNew || $atAdminSubdomainIpChange || $atAdminSubdomainNameChange;
+                                $atAdminSubdomainDataUpdate = request()->routeIs('admin.subdomain.data-update.*');
+                                $openAdminSubdomain = $atAdminSubdomainNew || $atAdminSubdomainIpChange || $atAdminSubdomainNameChange || $atAdminSubdomainDataUpdate;
                             @endphp
                             <div x-data="{ openAdminSubdomain: {{ $openAdminSubdomain ? 'true' : 'false' }} }">
                                 <button @click="openAdminSubdomain = !openAdminSubdomain"
@@ -204,6 +205,13 @@
                                        {{ $atAdminSubdomainNameChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                         <span>Perubahan Nama</span>
                                         {!! $badge($pc['subdomain_name_change'] ?? 0) !!}
+                                    </a>
+
+                                    <a href="{{ route('admin.subdomain.data-update.index') }}"
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                                       {{ $atAdminSubdomainDataUpdate ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        <span>Pembaruan Data</span>
+                                        {!! $badge($pc['subdomain_data_update'] ?? 0) !!}
                                     </a>
                                 </div>
                             </div>
@@ -611,10 +619,11 @@
 
                         @if (auth()->user()?->hasAnyPermission(['user.subdomain.index', 'user.subdomain.create', 'user.subdomain.show', 'user.subdomain.name-change.index', 'user.subdomain.name-change.create', 'user.subdomain.name-change.show']))
                             @php
-                                $atSubdomainRegistration = request()->routeIs('user.subdomain.*') && !request()->routeIs('user.subdomain.ip-change.*') && !request()->routeIs('user.subdomain.name-change.*');
+                                $atSubdomainRegistration = request()->routeIs('user.subdomain.*') && !request()->routeIs('user.subdomain.ip-change.*') && !request()->routeIs('user.subdomain.name-change.*') && !request()->routeIs('user.subdomain.data-update.*');
                                 $atSubdomainIpChange = request()->routeIs('user.subdomain.ip-change.*');
                                 $atSubdomainNameChange = request()->routeIs('user.subdomain.name-change.*');
-                                $openSubdomainUser = $atSubdomainRegistration || $atSubdomainIpChange || $atSubdomainNameChange;
+                                $atSubdomainDataUpdate = request()->routeIs('user.subdomain.data-update.*');
+                                $openSubdomainUser = $atSubdomainRegistration || $atSubdomainIpChange || $atSubdomainNameChange || $atSubdomainDataUpdate;
                             @endphp
                             <div x-data="{ openSubdomain: {{ $openSubdomainUser ? 'true' : 'false' }} }">
                                 <button @click="openSubdomain = !openSubdomain"
@@ -640,6 +649,12 @@
                                         class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
                                           {{ $atSubdomainNameChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                         Perubahan Nama
+                                    </a>
+
+                                    <a href="{{ route('user.subdomain.data-update.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                          {{ $atSubdomainDataUpdate ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Pembaruan Data
                                     </a>
                                 </div>
                             </div>
@@ -1209,6 +1224,15 @@
                         @endif
                     </div>
                 </div>
+            @endif
+
+            {{-- Manajemen API --}}
+            @if (auth()->user()?->hasRole('Admin'))
+                <a href="{{ route('admin.api-management.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.api-management.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Manajemen API
+                </a>
             @endif
 
             {{-- Profile Pengguna --}}

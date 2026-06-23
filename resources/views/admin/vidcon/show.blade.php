@@ -154,6 +154,12 @@
                         <p class="text-gray-800">{{ $item->deskripsi_kegiatan }}</p>
                     </div>
                 @endif
+                @if($item->lokasi_kegiatan)
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Kegiatan:</label>
+                        <p class="text-gray-800">{{ $item->lokasi_kegiatan }}</p>
+                    </div>
+                @endif
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Mulai:</label>
@@ -177,6 +183,10 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Platform:</label>
                         <p class="text-gray-800">{{ $item->platform_display }}</p>
                     </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Layanan:</label>
+                        <p class="text-gray-800">{{ $item->jenis_layanan_display }}</p>
+                    </div>
                     @if($item->jumlah_peserta)
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Jumlah Peserta:</label>
@@ -188,6 +198,24 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Keperluan Khusus:</label>
                         <p class="text-gray-800">{{ $item->keperluan_khusus }}</p>
+                    </div>
+                @endif
+                @if($item->jenis_layanan === 'operator' && $item->pemohon_link_meeting)
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <label class="block text-sm font-semibold text-purple-800 mb-2">Informasi Meeting dari Pemohon</label>
+                        <div class="space-y-1">
+                            <div>
+                                <span class="text-xs font-semibold text-gray-600">Link Meeting:</span><br>
+                                <a href="{{ $item->pemohon_link_meeting }}" target="_blank"
+                                   class="text-blue-600 hover:text-blue-800 underline break-all">{{ $item->pemohon_link_meeting }}</a>
+                            </div>
+                            @if($item->pemohon_meeting_id)
+                                <div><span class="text-xs font-semibold text-gray-600">Meeting ID:</span> <span class="text-gray-800">{{ $item->pemohon_meeting_id }}</span></div>
+                            @endif
+                            @if($item->pemohon_meeting_password)
+                                <div><span class="text-xs font-semibold text-gray-600">Passcode:</span> <span class="text-gray-800">{{ $item->pemohon_meeting_password }}</span></div>
+                            @endif
+                        </div>
                     </div>
                 @endif
             </div>
@@ -237,6 +265,71 @@
                     @endif
                 </div>
             </div>
+
+            <!-- Revisi Informasi Meeting (untuk permohonan yang sudah selesai) -->
+            <div id="revisi" class="mb-6 bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-amber-800">Revisi Informasi Meeting</h2>
+                    <button type="button" id="toggleRevisiBtn"
+                            class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        Edit
+                    </button>
+                </div>
+                <p class="text-sm text-amber-700 mt-1">
+                    Gunakan ini jika terjadi kesalahan (mis. link meeting salah) setelah permohonan diproses selesai. Perubahan juga akan memperbarui Data Fasilitasi Vidcon.
+                </p>
+
+                <form action="{{ route('admin.vidcon.revise', $item->id) }}" method="POST"
+                      id="revisiForm" class="mt-4 {{ $errors->any() ? '' : 'hidden' }}">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="block text-sm font-semibold text-amber-800 mb-1">Link Meeting <span class="text-red-500">*</span></label>
+                        <input type="text" name="link_meeting" required
+                               value="{{ old('link_meeting', $item->link_meeting) }}"
+                               class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                               placeholder="https://zoom.us/j/123456789">
+                        @error('link_meeting')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-amber-800 mb-1">Meeting ID:</label>
+                            <input type="text" name="meeting_id"
+                                   value="{{ old('meeting_id', $item->meeting_id) }}"
+                                   class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                                   placeholder="123 456 789">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-amber-800 mb-1">Password:</label>
+                            <input type="text" name="meeting_password"
+                                   value="{{ old('meeting_password', $item->meeting_password) }}"
+                                   class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                                   placeholder="abc123">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block text-sm font-semibold text-amber-800 mb-1">Informasi Tambahan:</label>
+                        <textarea name="informasi_tambahan" rows="3"
+                                  class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                                  placeholder="Informasi penting lainnya untuk peserta">{{ old('informasi_tambahan', $item->informasi_tambahan) }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block text-sm font-semibold text-amber-800 mb-1">Catatan Admin:</label>
+                        <textarea name="admin_notes" rows="2"
+                                  class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                                  placeholder="Catatan internal (mis. alasan revisi)">{{ old('admin_notes', $item->admin_notes) }}</textarea>
+                    </div>
+                    <button type="submit"
+                            onclick="return confirm('Simpan revisi informasi meeting?')"
+                            class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded font-semibold">
+                        Simpan Revisi
+                    </button>
+                </form>
+            </div>
         @endif
 
         <!-- Admin Notes -->
@@ -283,9 +376,16 @@
             <h3 class="font-semibold text-green-800 mb-3">Setujui Permohonan</h3>
             <form action="{{ route('admin.vidcon.approve', $item->id) }}" method="POST">
                 @csrf
+                @php $isOperatorOnly = $item->jenis_layanan === 'operator'; @endphp
+                @if($isOperatorOnly)
+                    <div class="mb-3 bg-purple-50 border border-purple-200 rounded p-3 text-sm text-purple-700">
+                        Permohonan <strong>Operator saja</strong> — link/ID di bawah sudah terisi dari informasi yang diberikan pemohon dan tidak wajib diubah.
+                    </div>
+                @endif
                 <div class="mb-3">
-                    <label class="block text-sm font-semibold text-green-700 mb-1">Link Meeting <span class="text-red-500">*</span></label>
-                    <input type="text" name="link_meeting" required
+                    <label class="block text-sm font-semibold text-green-700 mb-1">Link Meeting @unless($isOperatorOnly)<span class="text-red-500">*</span>@endunless</label>
+                    <input type="text" name="link_meeting" {{ $isOperatorOnly ? '' : 'required' }}
+                           value="{{ old('link_meeting', $isOperatorOnly ? $item->pemohon_link_meeting : '') }}"
                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500"
                            placeholder="https://zoom.us/j/123456789">
                     @error('link_meeting')
@@ -296,12 +396,14 @@
                     <div>
                         <label class="block text-sm font-semibold text-green-700 mb-1">Meeting ID:</label>
                         <input type="text" name="meeting_id"
+                               value="{{ old('meeting_id', $isOperatorOnly ? $item->pemohon_meeting_id : '') }}"
                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500"
                                placeholder="123 456 789">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-green-700 mb-1">Password:</label>
                         <input type="text" name="meeting_password"
+                               value="{{ old('meeting_password', $isOperatorOnly ? $item->pemohon_meeting_password : '') }}"
                                class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500"
                                placeholder="abc123">
                     </div>
@@ -406,10 +508,16 @@
             </p>
             <form method="POST" action="{{ route('admin.vidcon.update-info', $item->id) }}">
                 @csrf
+                @php $isOperatorOnly = $item->jenis_layanan === 'operator'; @endphp
+                @if($isOperatorOnly)
+                    <div class="mb-3 bg-purple-50 border border-purple-200 rounded p-3 text-sm text-purple-700">
+                        Permohonan <strong>Operator saja</strong> — link/ID di bawah sudah terisi dari informasi yang diberikan pemohon dan tidak wajib diubah saat menyetujui.
+                    </div>
+                @endif
                 <div class="mb-3">
-                    <label class="block text-sm font-semibold text-blue-700 mb-1">Link Meeting <span class="text-red-500">*</span></label>
-                    <input type="text" name="link_meeting" required
-                           value="{{ old('link_meeting', $item->link_meeting) }}"
+                    <label class="block text-sm font-semibold text-blue-700 mb-1">Link Meeting @unless($isOperatorOnly)<span class="text-red-500">*</span>@endunless</label>
+                    <input type="text" name="link_meeting" {{ $isOperatorOnly ? '' : 'required' }}
+                           value="{{ old('link_meeting', $item->link_meeting ?: ($isOperatorOnly ? $item->pemohon_link_meeting : '')) }}"
                            class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                            placeholder="https://zoom.us/j/123456789">
                     @error('link_meeting')
@@ -418,9 +526,9 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-3">
                     <div>
-                        <label class="block text-sm font-semibold text-blue-700 mb-1">Meeting ID <span class="text-red-500">*</span></label>
-                        <input type="text" name="meeting_id" required
-                               value="{{ old('meeting_id', $item->meeting_id) }}"
+                        <label class="block text-sm font-semibold text-blue-700 mb-1">Meeting ID @unless($isOperatorOnly)<span class="text-red-500">*</span>@endunless</label>
+                        <input type="text" name="meeting_id" {{ $isOperatorOnly ? '' : 'required' }}
+                               value="{{ old('meeting_id', $item->meeting_id ?: ($isOperatorOnly ? $item->pemohon_meeting_id : '')) }}"
                                class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                placeholder="123 456 789">
                         @error('meeting_id')
@@ -428,9 +536,9 @@
                         @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-blue-700 mb-1">Password <span class="text-red-500">*</span></label>
-                        <input type="text" name="meeting_password" required
-                               value="{{ old('meeting_password', $item->meeting_password) }}"
+                        <label class="block text-sm font-semibold text-blue-700 mb-1">Password @unless($isOperatorOnly)<span class="text-red-500">*</span>@endunless</label>
+                        <input type="text" name="meeting_password" {{ $isOperatorOnly ? '' : 'required' }}
+                               value="{{ old('meeting_password', $item->meeting_password ?: ($isOperatorOnly ? $item->pemohon_meeting_password : '')) }}"
                                class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                placeholder="abc123">
                         @error('meeting_password')
@@ -658,6 +766,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification(`AI memilih ${recommendedOperatorIds.length} operator dengan beban kerja paling ringan`, 'success');
             } else {
                 showNotification('Tidak ada operator tersedia untuk rekomendasi', 'info');
+            }
+        });
+    }
+
+    // Toggle revisi form (untuk permohonan selesai)
+    const toggleRevisiBtn = document.getElementById('toggleRevisiBtn');
+    const revisiForm = document.getElementById('revisiForm');
+    if (toggleRevisiBtn && revisiForm) {
+        toggleRevisiBtn.addEventListener('click', function() {
+            revisiForm.classList.toggle('hidden');
+            if (!revisiForm.classList.contains('hidden')) {
+                revisiForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         });
     }

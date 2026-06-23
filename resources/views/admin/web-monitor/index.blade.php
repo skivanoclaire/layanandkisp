@@ -122,6 +122,14 @@
                         <option value="luar" {{ ($filters['ip_scope'] ?? '') === 'luar' ? 'selected' : '' }}>Luar Pemprov</option>
                     </select>
                 </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Pensiun</label>
+                    <select name="decommissioned" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">-- Semua --</option>
+                        <option value="1" {{ ($filters['decommissioned'] ?? '') === '1' ? 'selected' : '' }}>Dipensiunkan</option>
+                        <option value="0" {{ ($filters['decommissioned'] ?? '') === '0' ? 'selected' : '' }}>Masih Berjalan</option>
+                    </select>
+                </div>
                 <div class="flex flex-wrap items-end gap-2">
                     <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm font-semibold">
                         Terapkan Filter
@@ -229,6 +237,14 @@
                             <a href="https://{{ $item->subdomain }}" target="_blank" class="text-blue-600 hover:underline">
                                 {{ $item->subdomain }}
                             </a>
+                            @if($item->is_decommissioned)
+                                <div class="mt-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300"
+                                          title="{{ $item->decommissioned_at ? 'Sejak ' . $item->decommissioned_at->format('d/m/Y') : '' }}">
+                                        Dipensiunkan
+                                    </span>
+                                </div>
+                            @endif
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-center">
                             @if($item->esc_category)
