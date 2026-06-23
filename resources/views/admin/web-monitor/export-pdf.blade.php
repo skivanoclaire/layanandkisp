@@ -37,10 +37,11 @@
         <thead>
             <tr>
                 <th style="width: 3%;">No</th>
-                <th style="width: 18%;">Instansi</th>
-                <th style="width: 18%;">Nama Sistem</th>
-                <th style="width: 22%;">Subdomain</th>
-                <th style="width: 18%;">Jenis</th>
+                <th style="width: 17%;">Instansi</th>
+                <th style="width: 16%;">Nama Sistem</th>
+                <th style="width: 20%;">Subdomain</th>
+                <th style="width: 15%;">Jenis</th>
+                <th style="width: 8%;" class="text-center">Tahun Pembuatan</th>
                 <th style="width: 12%;">IP Address</th>
                 <th style="width: 9%;" class="text-center">Status</th>
             </tr>
@@ -53,6 +54,7 @@
                     <td>{{ $item->nama_aplikasi ?: $item->nama_sistem }}</td>
                     <td>{{ $item->subdomain ?: '-' }}</td>
                     <td>{{ $item->jenis ?? '-' }}</td>
+                    <td class="text-center">{{ $item->tahun_pembuatan ?? '-' }}</td>
                     <td>{{ $item->ip_address ?? '-' }}</td>
                     <td class="text-center">
                         @if($item->status === 'active')
@@ -64,7 +66,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center">Tidak ada data.</td>
+                    <td colspan="8" class="text-center">Tidak ada data.</td>
                 </tr>
             @endforelse
         </tbody>
