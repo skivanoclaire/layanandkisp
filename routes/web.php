@@ -1019,6 +1019,7 @@ Route::middleware(['auth', 'role:Admin'])
 
         // Hardware
         Route::get('/hardware', [\App\Http\Controllers\Admin\GoogleAsetTikController::class, 'hardware'])->name('hardware.index');
+        Route::get('/hardware/export-pdf', [\App\Http\Controllers\Admin\GoogleAsetTikController::class, 'exportHardwarePdf'])->name('hardware.export-pdf');
         Route::get('/hardware/{id}', [\App\Http\Controllers\Admin\GoogleAsetTikController::class, 'showHardware'])->name('hardware.show');
 
         // Software

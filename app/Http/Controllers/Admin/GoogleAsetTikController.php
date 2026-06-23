@@ -61,9 +61,9 @@ class GoogleAsetTikController extends Controller
     }
 
     /**
-     * List hardware dengan filter dan search
+     * Bangun query hardware dengan filter & search yang sama untuk index & export.
      */
-    public function hardware(Request $request)
+    private function hardwareQuery(Request $request)
     {
         $query = GoogleAsetTikHardware::query();
 
@@ -102,7 +102,15 @@ class GoogleAsetTikController extends Controller
         $sortDir = $request->get('sort_dir', 'desc');
         $query->orderBy($sortBy, $sortDir);
 
-        $hardware = $query->paginate(25)->withQueryString();
+        return $query;
+    }
+
+    /**
+     * List hardware dengan filter dan search
+     */
+    public function hardware(Request $request)
+    {
+        $hardware = $this->hardwareQuery($request)->paginate(25)->withQueryString();
 
         // Data untuk filter
         $opdList = GoogleAsetTikHardware::select('nama_opd')->distinct()->pluck('nama_opd');
@@ -127,6 +135,46 @@ class GoogleAsetTikController extends Controller
         $hardware = GoogleAsetTikHardware::findOrFail($id);
 
         return view('admin.google-aset-tik.hardware.show', compact('hardware'));
+    }
+
+    /**
+     * Export PDF custom data hardware (mengikuti filter yang aktif).
+     * Kolom: No, Nama OPD, Nama Aset, Merk/Type, Jenis Aset TIK, Tahun,
+     * Kondisi (Keadaan Barang), Aset Vital, Tahun Pengadaan.
+     */
+    public function exportHardwarePdf(Request $request)
+    {
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(300);
+
+        $data = $this->hardwareQuery($request)->get();
+
+        // Label filter aktif untuk ditampilkan di header PDF
+        $filterLabels = [];
+        if ($request->filled('opd'))     $filterLabels['OPD'] = $request->opd;
+        if ($request->filled('jenis'))   $filterLabels['Jenis Aset'] = $request->jenis;
+        if ($request->filled('kondisi')) $filterLabels['Kondisi'] = $request->kondisi;
+        if ($request->filled('tahun'))   $filterLabels['Tahun'] = $request->tahun;
+        if ($request->filled('search'))  $filterLabels['Pencarian'] = $request->search;
+
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $html = view('admin.google-aset-tik.hardware.export-pdf', [
+            'data' => $data,
+            'filterLabels' => $filterLabels,
+            'tanggal' => now()->locale('id')->isoFormat('D MMMM YYYY, HH:mm') . ' WITA',
+        ])->render();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'Data-Aset-TIK-Hardware-' . now()->format('Ymd-His') . '.pdf';
+
+        return $dompdf->stream($filename, ['Attachment' => false]);
     }
 
     /**
