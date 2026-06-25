@@ -579,6 +579,124 @@ Route::middleware(['auth','role:Admin','permission:Kelola Permohonan PSE'])
         Route::post('/{id}/update-status', [\App\Http\Controllers\Admin\PseUpdateAdminController::class, 'updateStatus'])->name('update-status');
     });
 
+/*
+|--------------------------------------------------------------------------
+| Integrasi SPLP (Sistem Penghubung Layanan Pemerintah)
+|--------------------------------------------------------------------------
+| V1 Pendaftaran Endpoint Penyedia (provider) & V2 Pendaftaran Akses Konsumen (consumer).
+*/
+
+// SPLP - User Routes (Layanan → Integrasi SPLP)
+Route::middleware(['auth', 'verified.user', 'permission:Akses SPLP'])
+    ->prefix('digital/splp')
+    ->name('user.splp.')
+    ->group(function () {
+        // V1 — Pendaftaran Endpoint Penyedia
+        Route::prefix('provider')->name('provider.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Splp\ProviderRequestController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Splp\ProviderRequestController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Splp\ProviderRequestController::class, 'store'])->name('store');
+            Route::get('/thanks/{ticket}', [\App\Http\Controllers\User\Splp\ProviderRequestController::class, 'thanks'])->name('thanks');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\Splp\ProviderRequestController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\Splp\ProviderRequestController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\User\Splp\ProviderRequestController::class, 'destroy'])->name('destroy');
+        });
+
+        // V2 — Pendaftaran Akses Konsumen
+        Route::prefix('consumer')->name('consumer.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Splp\ConsumerRequestController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Splp\ConsumerRequestController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Splp\ConsumerRequestController::class, 'store'])->name('store');
+            Route::get('/thanks/{ticket}', [\App\Http\Controllers\User\Splp\ConsumerRequestController::class, 'thanks'])->name('thanks');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\Splp\ConsumerRequestController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\Splp\ConsumerRequestController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\User\Splp\ConsumerRequestController::class, 'destroy'])->name('destroy');
+        });
+
+        // V3 — Uji Coba / Sandbox
+        Route::prefix('sandbox')->name('sandbox.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Splp\SandboxRequestController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Splp\SandboxRequestController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Splp\SandboxRequestController::class, 'store'])->name('store');
+            Route::get('/thanks/{ticket}', [\App\Http\Controllers\User\Splp\SandboxRequestController::class, 'thanks'])->name('thanks');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\Splp\SandboxRequestController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\Splp\SandboxRequestController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\User\Splp\SandboxRequestController::class, 'destroy'])->name('destroy');
+        });
+
+        // V4 — Perubahan / Perpanjangan
+        Route::prefix('change')->name('change.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Splp\ChangeRequestController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Splp\ChangeRequestController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Splp\ChangeRequestController::class, 'store'])->name('store');
+            Route::get('/thanks/{ticket}', [\App\Http\Controllers\User\Splp\ChangeRequestController::class, 'thanks'])->name('thanks');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\Splp\ChangeRequestController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\Splp\ChangeRequestController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\User\Splp\ChangeRequestController::class, 'destroy'])->name('destroy');
+        });
+
+        // V5 — Penonaktifan / Pencabutan
+        Route::prefix('deactivation')->name('deactivation.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Splp\DeactivationRequestController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Splp\DeactivationRequestController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Splp\DeactivationRequestController::class, 'store'])->name('store');
+            Route::get('/thanks/{ticket}', [\App\Http\Controllers\User\Splp\DeactivationRequestController::class, 'thanks'])->name('thanks');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\Splp\DeactivationRequestController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\Splp\DeactivationRequestController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\User\Splp\DeactivationRequestController::class, 'destroy'])->name('destroy');
+        });
+    });
+
+// SPLP - Admin Routes (Kelola Permohonan + Master Data)
+Route::middleware(['auth', 'role:Admin'])
+    ->prefix('admin/splp')
+    ->name('admin.splp.')
+    ->group(function () {
+        // Kelola Permohonan V1
+        Route::prefix('provider')->name('provider.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\Splp\SplpProviderRequestAdminController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\Splp\SplpProviderRequestAdminController::class, 'show'])->name('show');
+            Route::post('/{id}/status', [\App\Http\Controllers\Admin\Splp\SplpProviderRequestAdminController::class, 'updateStatus'])->name('status');
+        });
+
+        // Kelola Permohonan V2
+        Route::prefix('consumer')->name('consumer.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\Splp\SplpConsumerRequestAdminController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\Splp\SplpConsumerRequestAdminController::class, 'show'])->name('show');
+            Route::post('/{id}/status', [\App\Http\Controllers\Admin\Splp\SplpConsumerRequestAdminController::class, 'updateStatus'])->name('status');
+        });
+
+        // Kelola Permohonan V3 — Sandbox
+        Route::prefix('sandbox')->name('sandbox.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\Splp\SplpSandboxRequestAdminController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\Splp\SplpSandboxRequestAdminController::class, 'show'])->name('show');
+            Route::post('/{id}/status', [\App\Http\Controllers\Admin\Splp\SplpSandboxRequestAdminController::class, 'updateStatus'])->name('status');
+        });
+
+        // Kelola Permohonan V4 — Perubahan/Perpanjangan
+        Route::prefix('change')->name('change.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\Splp\SplpChangeRequestAdminController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\Splp\SplpChangeRequestAdminController::class, 'show'])->name('show');
+            Route::post('/{id}/status', [\App\Http\Controllers\Admin\Splp\SplpChangeRequestAdminController::class, 'updateStatus'])->name('status');
+        });
+
+        // Kelola Permohonan V5 — Penonaktifan/Pencabutan
+        Route::prefix('deactivation')->name('deactivation.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\Splp\SplpDeactivationRequestAdminController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\Splp\SplpDeactivationRequestAdminController::class, 'show'])->name('show');
+            Route::post('/{id}/status', [\App\Http\Controllers\Admin\Splp\SplpDeactivationRequestAdminController::class, 'updateStatus'])->name('status');
+        });
+
+        // Master Data Integrasi SPLP
+        Route::post('services/import', [\App\Http\Controllers\Admin\Splp\SplpServiceController::class, 'import'])->name('services.import');
+        Route::resource('services', \App\Http\Controllers\Admin\Splp\SplpServiceController::class)
+            ->parameters(['services' => 'service']);
+        Route::resource('consumers', \App\Http\Controllers\Admin\Splp\SplpConsumerController::class)
+            ->parameters(['consumers' => 'consumer'])
+            ->except(['show']);
+        Route::get('audit-log', [\App\Http\Controllers\Admin\Splp\SplpAuditLogController::class, 'index'])->name('audit.index');
+    });
+
 // Unified Subdomain Management - Admin Routes
 Route::middleware(['auth','role:Admin'])->prefix('admin/unified-subdomain')->name('admin.unified-subdomain.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\UnifiedSubdomainController::class, 'index'])->name('index');

@@ -71,7 +71,7 @@
             @endif
 
             {{-- Kelola Permohonan (Accordion untuk Admin) --}}
-            @if (auth()->user()?->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Permohonan PSE']))
+            @if (auth()->user()?->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Permohonan PSE', 'Kelola SPLP']))
                 @php
                     $atPermohonan = request()->routeIs('admin.permohonan');
                     $atEmail = request()->routeIs('admin.email.*') || request()->routeIs('admin.email-password-reset.*');
@@ -84,7 +84,8 @@
                     $atAdminTte = request()->routeIs('admin.tte.*');
                     $atAdminPse = request()->routeIs('admin.pse-update.*');
                     $atAdminSurveiKepuasan = request()->routeIs('admin.survei-kepuasan.*');
-                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan;
+                    $atAdminSplpPermohonan = request()->routeIs('admin.splp.provider.*', 'admin.splp.consumer.*', 'admin.splp.sandbox.*', 'admin.splp.change.*', 'admin.splp.deactivation.*');
+                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan || $atAdminSplpPermohonan;
                    
                 @endphp
                 @php
@@ -523,6 +524,53 @@
                                 {!! $badge($pc['pse_update'] ?? 0) !!}
                             </a>
                         @endif
+
+                        {{-- Integrasi SPLP Submenu (Admin) — diletakkan paling bawah --}}
+                        @if (auth()->user()?->hasPermission('Kelola SPLP'))
+                            @php
+                                $atAdminSplpProvider = request()->routeIs('admin.splp.provider.*');
+                                $atAdminSplpConsumer = request()->routeIs('admin.splp.consumer.*');
+                                $atAdminSplpSandbox = request()->routeIs('admin.splp.sandbox.*');
+                                $atAdminSplpChange = request()->routeIs('admin.splp.change.*');
+                                $atAdminSplpDeactivation = request()->routeIs('admin.splp.deactivation.*');
+                                $openAdminSplp = $atAdminSplpProvider || $atAdminSplpConsumer || $atAdminSplpSandbox || $atAdminSplpChange || $atAdminSplpDeactivation;
+                            @endphp
+                            <div x-data="{ openAdminSplp: {{ $openAdminSplp ? 'true' : 'false' }} }">
+                                <button @click="openAdminSplp = !openAdminSplp"
+                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminSplp ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span class="flex items-center">
+                                        <span>Integrasi (SPLP)</span>
+                                        {!! $badge($pc['splp'] ?? 0) !!}
+                                    </span>
+                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminSplp }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openAdminSplp" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('admin.splp.provider.index') }}"
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminSplpProvider ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        <span>Endpoint Penyedia</span>
+                                    </a>
+                                    <a href="{{ route('admin.splp.consumer.index') }}"
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminSplpConsumer ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        <span>Akses Konsumen</span>
+                                    </a>
+                                    <a href="{{ route('admin.splp.sandbox.index') }}"
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminSplpSandbox ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        <span>Uji Coba (Sandbox)</span>
+                                    </a>
+                                    <a href="{{ route('admin.splp.change.index') }}"
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminSplpChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        <span>Perubahan / Perpanjangan</span>
+                                    </a>
+                                    <a href="{{ route('admin.splp.deactivation.index') }}"
+                                        class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminSplpDeactivation ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        <span>Penonaktifan / Pencabutan</span>
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -553,6 +601,7 @@
                         'Akses Konsultasi SPBE AI',
                         'Akses Update Data PSE',
                         'Akses Survei Kepuasan',
+                        'Akses SPLP',
                     ]))
                 @php
                     $atEmailDigital = request()->routeIs('user.email.*');
@@ -569,8 +618,9 @@
                     $atTteUser = request()->routeIs('user.tte.*');
                     $atPseUser = request()->routeIs('user.pse-update.*');
                     $atSurveiKepuasan = request()->routeIs('survei-kepuasan.*');
+                    $atSplpUser = request()->routeIs('user.splp.*');
                     $openUserPermohonan =
-                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan;
+                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan || $atSplpUser;
                     
     
                 @endphp
@@ -909,6 +959,49 @@
                                 </div>
                             </div>
                         @endif
+
+                        {{-- Integrasi SPLP (User) — diletakkan paling bawah, setelah Pusat Data/Komputasi --}}
+                        @if (auth()->user()?->hasPermission('Akses SPLP'))
+                            @php
+                                $atSplpProvider = request()->routeIs('user.splp.provider.*');
+                                $atSplpConsumer = request()->routeIs('user.splp.consumer.*');
+                                $atSplpSandbox = request()->routeIs('user.splp.sandbox.*');
+                                $atSplpChange = request()->routeIs('user.splp.change.*');
+                                $atSplpDeactivation = request()->routeIs('user.splp.deactivation.*');
+                                $openSplpUser = $atSplpProvider || $atSplpConsumer || $atSplpSandbox || $atSplpChange || $atSplpDeactivation;
+                            @endphp
+                            <div x-data="{ openSplp: {{ $openSplpUser ? 'true' : 'false' }} }">
+                                <button @click="openSplp = !openSplp"
+                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openSplpUser ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Integrasi (SPLP)</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{'rotate-180': openSplp}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openSplp" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('user.splp.provider.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atSplpProvider ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Pendaftaran Endpoint Penyedia
+                                    </a>
+                                    <a href="{{ route('user.splp.consumer.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atSplpConsumer ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Pendaftaran Akses Konsumen
+                                    </a>
+                                    <a href="{{ route('user.splp.sandbox.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atSplpSandbox ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Uji Coba (Sandbox)
+                                    </a>
+                                    <a href="{{ route('user.splp.change.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atSplpChange ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Perubahan / Perpanjangan
+                                    </a>
+                                    <a href="{{ route('user.splp.deactivation.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atSplpDeactivation ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Penonaktifan / Pencabutan
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -954,19 +1047,24 @@
                 $atMasterIp = request()->routeIs('admin.web-monitor.check-ip-publik');
                 $atMasterVidcon = request()->routeIs('admin.vidcon-data.*');
                 $atMasterAsetTik = request()->routeIs('admin.google-aset-tik.*');
+                $atMasterSplp = request()->routeIs('admin.splp.services.*')
+                    || request()->routeIs('admin.splp.consumers.*')
+                    || request()->routeIs('admin.splp.audit.*');
                 $openMasterData = $atMasterInstansi
                     || $atMasterSubdomain
                     || $atMasterEmail
                     || $atMasterIp
                     || $atMasterVidcon
-                    || $atMasterAsetTik;
+                    || $atMasterAsetTik
+                    || $atMasterSplp;
 
                 $canSeeMasterData = auth()->user()?->hasPermission('admin.unit-kerja')
                     || auth()->user()?->hasPermission('admin.web-monitor')
                     || auth()->user()?->hasRole('Admin')
                     || auth()->user()?->hasPermission('admin.web-monitor.check-ip-publik')
                     || auth()->user()?->hasPermission('admin.vidcon.data')
-                    || auth()->user()?->hasPermission('admin.google-aset-tik');
+                    || auth()->user()?->hasPermission('admin.google-aset-tik')
+                    || auth()->user()?->hasAnyPermission(['admin.splp.services', 'admin.splp.consumers', 'admin.splp.audit']);
             @endphp
             @if ($canSeeMasterData)
                 <div x-data="{ openMasterData: {{ $openMasterData ? 'true' : 'false' }} }">
@@ -1033,6 +1131,36 @@
                        {{ $atMasterAsetTik ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Master Data Aset TIK
                             </a>
+                        @endif
+
+                        {{-- Master Data Integrasi (SPLP) --}}
+                        @if (auth()->user()?->hasAnyPermission(['admin.splp.services', 'admin.splp.consumers', 'admin.splp.audit']))
+                            @php
+                                $atMasterSplpServices = request()->routeIs('admin.splp.services.*');
+                                $atMasterSplpConsumers = request()->routeIs('admin.splp.consumers.*');
+                                $atMasterSplpAudit = request()->routeIs('admin.splp.audit.*');
+                            @endphp
+                            <div class="pt-2 mt-1 border-t border-gray-200">
+                                <p class="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Integrasi (SPLP)</p>
+                                @if (auth()->user()?->hasPermission('admin.splp.services'))
+                                    <a href="{{ route('admin.splp.services.index') }}"
+                                        class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atMasterSplpServices ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Layanan SPLP
+                                    </a>
+                                @endif
+                                @if (auth()->user()?->hasPermission('admin.splp.consumers'))
+                                    <a href="{{ route('admin.splp.consumers.index') }}"
+                                        class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atMasterSplpConsumers ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Konsumen SPLP
+                                    </a>
+                                @endif
+                                @if (auth()->user()?->hasPermission('admin.splp.audit'))
+                                    <a href="{{ route('admin.splp.audit.index') }}"
+                                        class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atMasterSplpAudit ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Audit Log SPLP
+                                    </a>
+                                @endif
+                            </div>
                         @endif
                     </div>
                 </div>
