@@ -20,7 +20,7 @@ class OperatorVidconController extends Controller
         $user = auth()->user();
 
         // Get vidcon data where current user is assigned as operator
-        $query = VidconData::with(['unitKerja', 'operators', 'documentations'])
+        $query = VidconData::with(['unitKerja', 'operators', 'documentations', 'vidconRequest'])
             ->whereHas('operators', function($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
@@ -44,7 +44,7 @@ class OperatorVidconController extends Controller
      */
     public function show($id)
     {
-        $vidconData = VidconData::with(['unitKerja', 'operators', 'documentations.uploader'])
+        $vidconData = VidconData::with(['unitKerja', 'operators', 'documentations.uploader', 'vidconRequest'])
             ->findOrFail($id);
 
         // Check if current user is assigned to this task

@@ -43,6 +43,14 @@
                     {{ $vidconData->jam_selesai ? $vidconData->jam_selesai->format('H:i') : '-' }} WIB
                 </p>
                 <p class="mb-3"><strong class="text-gray-700">Platform:</strong><br>{{ $vidconData->platform }}</p>
+                @if($vidconData->vidconRequest)
+                    <p class="mb-3">
+                        <strong class="text-gray-700">Jenis Layanan:</strong><br>
+                        <span class="inline-block px-3 py-1 text-sm font-semibold rounded bg-purple-100 text-purple-800">
+                            {{ $vidconData->vidconRequest->jenis_layanan_display }}
+                        </span>
+                    </p>
+                @endif
                 @if($vidconData->platform === 'Zoom' && $vidconData->akun_zoom)
                     <p class="mb-3">
                         <strong class="text-gray-700">Akun Zoom:</strong><br>
