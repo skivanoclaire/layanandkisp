@@ -85,6 +85,14 @@
                     <p class="text-sm text-gray-600">
                         <strong>Platform:</strong> {{ $task->platform }}
                     </p>
+                    @if($task->vidconRequest)
+                        <p class="text-sm text-gray-600">
+                            <strong>Jenis Layanan:</strong>
+                            <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-purple-100 text-purple-800">
+                                {{ $task->vidconRequest->jenis_layanan_display }}
+                            </span>
+                        </p>
+                    @endif
                     @if($task->platform === 'Zoom' && $task->akun_zoom)
                         <p class="text-sm text-gray-600">
                             <strong>Akun Zoom:</strong>
