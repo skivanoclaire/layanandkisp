@@ -18,13 +18,21 @@
                 <label for="subdomain_name" class="block text-sm font-medium text-gray-700 mb-2">
                     Nama Subdomain <span class="text-red-500">*</span>
                 </label>
-                <input type="text" name="subdomain_name" id="subdomain_name"
+                <select name="subdomain_name" id="subdomain_name"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('subdomain_name') border-red-500 @enderror"
-                    value="{{ old('subdomain_name') }}" placeholder="contoh: subdomain.example.com" required>
+                    required>
+                    <option value="">- Pilih Subdomain -</option>
+                    @foreach ($subdomains as $sd)
+                        <option value="{{ $sd->subdomain }}" data-ip="{{ $sd->ip_address }}"
+                            {{ old('subdomain_name') == $sd->subdomain ? 'selected' : '' }}>
+                            {{ $sd->subdomain }}@if($sd->nama_aplikasi) — {{ $sd->nama_aplikasi }}@endif
+                        </option>
+                    @endforeach
+                </select>
                 @error('subdomain_name')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
-                <p class="mt-1 text-xs text-gray-500">Masukkan nama subdomain lengkap yang akan diubah IP-nya</p>
+                <p class="mt-1 text-xs text-gray-500">Hanya menampilkan subdomain *.kaltaraprov.go.id milik unit kerja Anda</p>
             </div>
 
             <!-- Old IP Address -->
@@ -124,7 +132,24 @@
         const charCountSpan = document.getElementById('charCount');
         const oldIpInput = document.getElementById('old_ip_address');
         const newIpInput = document.getElementById('new_ip_address');
+        const subdomainSelect = document.getElementById('subdomain_name');
         const form = document.getElementById('ipChangeForm');
+
+        // Auto-fill the current IP based on the selected subdomain
+        function fillOldIpFromSubdomain() {
+            const option = subdomainSelect.options[subdomainSelect.selectedIndex];
+            const ip = option ? option.getAttribute('data-ip') : '';
+            if (ip) {
+                oldIpInput.value = ip;
+            }
+        }
+
+        subdomainSelect.addEventListener('change', fillOldIpFromSubdomain);
+
+        // Pre-fill on load if a subdomain is already selected
+        if (subdomainSelect.value) {
+            fillOldIpFromSubdomain();
+        }
 
         // Update character count
         reasonTextarea.addEventListener('input', function() {

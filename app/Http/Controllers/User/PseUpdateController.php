@@ -36,9 +36,16 @@ class PseUpdateController extends Controller
      */
     public function create()
     {
-        // Get all subdomains (not just user's own requests)
-        // This allows users to update PSE data for any existing subdomain
-        $webMonitors = WebMonitor::whereNotNull('subdomain')
+        $user = auth()->user();
+
+        if (!$user->unit_kerja_id) {
+            return redirect()->route('user.pse-update.index')
+                ->with('error', 'Akun Anda belum terhubung ke unit kerja. Silakan hubungi Administrator.');
+        }
+
+        // Hanya subdomain milik unit kerja pengguna
+        $webMonitors = WebMonitor::where('instansi_id', $user->unit_kerja_id)
+            ->whereNotNull('subdomain')
             ->orderBy('subdomain')
             ->get();
 
@@ -50,8 +57,9 @@ class PseUpdateController extends Controller
      */
     public function createForm($webMonitorId)
     {
-        // Allow any user to update any subdomain's PSE data
-        $webMonitor = WebMonitor::findOrFail($webMonitorId);
+        // Hanya boleh memperbarui subdomain milik unit kerja pengguna
+        $webMonitor = WebMonitor::where('instansi_id', auth()->user()->unit_kerja_id)
+            ->findOrFail($webMonitorId);
 
         return view('user.pse-update.form', compact('webMonitor'));
     }
@@ -103,8 +111,9 @@ class PseUpdateController extends Controller
         $updateEsc = true;
         $updateDc = true;
 
-        // Get web monitor (any user can update any subdomain)
-        $webMonitor = WebMonitor::findOrFail($data['web_monitor_id']);
+        // Get web monitor — wajib milik unit kerja pengguna
+        $webMonitor = WebMonitor::where('instansi_id', auth()->user()->unit_kerja_id)
+            ->findOrFail($data['web_monitor_id']);
 
         // Create request
         $pseRequest = new PseUpdateRequest();

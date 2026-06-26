@@ -47,20 +47,15 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="unit_kerja_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
                         Instansi <span class="text-red-500">*</span>
                     </label>
-                    <select id="unit_kerja_id"
-                            name="unit_kerja_id"
-                            required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 @error('unit_kerja_id') border-red-500 @enderror">
-                        <option value="">-- Pilih Instansi --</option>
-                        @foreach($unitKerjaList as $uk)
-                            <option value="{{ $uk->id }}" {{ old('unit_kerja_id') == $uk->id ? 'selected' : '' }}>
-                                {{ $uk->nama }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <input type="text"
+                           value="{{ auth()->user()->unitKerja?->nama ?? '-' }}"
+                           disabled
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                    <input type="hidden" name="unit_kerja_id" value="{{ auth()->user()->unit_kerja_id }}">
+                    <p class="text-xs text-gray-500 mt-1">Instansi diambil dari data akun Anda</p>
                     @error('unit_kerja_id')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror

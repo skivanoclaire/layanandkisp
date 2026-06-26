@@ -45,14 +45,10 @@
 
                 <div>
                     <label class="block text-sm font-medium mb-1">Instansi <span class="text-red-500">*</span></label>
-                    <select name="unit_kerja_id" required class="w-full border rounded p-2 @error('unit_kerja_id') border-red-500 @enderror">
-                        <option value="">- Pilih Instansi -</option>
-                        @foreach($unitKerjaList as $uk)
-                            <option value="{{ $uk->id }}" {{ old('unit_kerja_id') == $uk->id ? 'selected' : '' }}>
-                                {{ $uk->nama }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <input type="text" value="{{ auth()->user()->unitKerja?->nama ?? '-' }}" readonly
+                        class="w-full border rounded p-2 bg-gray-100 cursor-not-allowed @error('unit_kerja_id') border-red-500 @enderror">
+                    <input type="hidden" name="unit_kerja_id" value="{{ auth()->user()->unit_kerja_id }}">
+                    <p class="text-xs text-gray-500 mt-1">Instansi diambil dari data akun Anda</p>
                     @error('unit_kerja_id')
                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                     @enderror

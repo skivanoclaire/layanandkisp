@@ -30,8 +30,16 @@ class SubdomainNameChangeController extends Controller
      */
     public function create()
     {
-        // Get ALL approved/active subdomains - any user can propose name changes
-        $userSubdomains = WebMonitor::whereNotNull('subdomain')
+        $user = Auth::user();
+
+        if (!$user->unit_kerja_id) {
+            return redirect()->route('user.subdomain.name-change.index')
+                ->with('error', 'Akun Anda belum terhubung ke unit kerja. Silakan hubungi Administrator.');
+        }
+
+        // Hanya subdomain aktif milik unit kerja pengguna
+        $userSubdomains = WebMonitor::where('instansi_id', $user->unit_kerja_id)
+            ->whereNotNull('subdomain')
             ->whereNotNull('cloudflare_record_id')
             ->where('status', 'active')
             ->orderBy('subdomain', 'asc')
@@ -40,7 +48,7 @@ class SubdomainNameChangeController extends Controller
         // Check if there are any approved subdomains
         if ($userSubdomains->isEmpty()) {
             return redirect()->route('user.subdomain.name-change.index')
-                ->with('error', 'Belum ada subdomain aktif yang tersedia untuk diubah.');
+                ->with('error', 'Belum ada subdomain aktif milik unit kerja Anda yang tersedia untuk diubah.');
         }
 
         return view('user.subdomain.name-change.create', compact('userSubdomains'));
@@ -60,6 +68,12 @@ class SubdomainNameChangeController extends Controller
                     $webMonitor = WebMonitor::find($value);
                     if (!$webMonitor || !$webMonitor->cloudflare_record_id) {
                         $fail('Subdomain yang dipilih tidak valid atau tidak memiliki Cloudflare record.');
+                        return;
+                    }
+
+                    // Pastikan subdomain milik unit kerja pengguna
+                    if ($webMonitor->instansi_id != Auth::user()->unit_kerja_id) {
+                        $fail('Subdomain yang dipilih bukan milik unit kerja Anda.');
                     }
 
                     // Check no pending request for this subdomain

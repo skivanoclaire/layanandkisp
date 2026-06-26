@@ -667,6 +667,39 @@
                             </div>
                         @endif
 
+                        {{-- Rekomendasi Aplikasi V2 Submenu (User) --}}
+                        @if (auth()->user()?->hasAnyPermission(['user.rekomendasi.usulan.create', 'user.fase-pengembangan']))
+                            @php
+                                $openRekomendasiUserV2 = $atRekomendasiUsulan || $atFasePengembangan;
+                            @endphp
+                            <div x-data="{ openRekomendasiUserV2: {{ $openRekomendasiUserV2 ? 'true' : 'false' }} }">
+                                <button @click="openRekomendasiUserV2 = !openRekomendasiUserV2"
+                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openRekomendasiUserV2 ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Rekomendasi Aplikasi</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openRekomendasiUserV2 }"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openRekomendasiUserV2" class="ml-4 space-y-1 mt-1">
+                                    @if (auth()->user()?->hasPermission('user.rekomendasi.usulan.create'))
+                                        <a href="{{ route('user.rekomendasi.usulan.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ $atRekomendasiUsulan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Usulan Pertimbangan
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()?->hasPermission('user.fase-pengembangan'))
+                                        <a href="{{ route('fase-pengembangan.index') }}"
+                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
+                                           {{ request()->routeIs('fase-pengembangan.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            Fase Pengembangan
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
                         @if (auth()->user()?->hasAnyPermission(['user.subdomain.index', 'user.subdomain.create', 'user.subdomain.show', 'user.subdomain.name-change.index', 'user.subdomain.name-change.create', 'user.subdomain.name-change.show']))
                             @php
                                 $atSubdomainRegistration = request()->routeIs('user.subdomain.*') && !request()->routeIs('user.subdomain.ip-change.*') && !request()->routeIs('user.subdomain.name-change.*') && !request()->routeIs('user.subdomain.data-update.*');
@@ -726,39 +759,6 @@
                               {{ $atPseUser ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Pendaftaran Sistem Elektronik (PSE)
                             </a>
-                        @endif
-
-                        {{-- Rekomendasi Aplikasi V2 Submenu (User) --}}
-                        @if (auth()->user()?->hasAnyPermission(['user.rekomendasi.usulan.create', 'user.fase-pengembangan']))
-                            @php
-                                $openRekomendasiUserV2 = $atRekomendasiUsulan || $atFasePengembangan;
-                            @endphp
-                            <div x-data="{ openRekomendasiUserV2: {{ $openRekomendasiUserV2 ? 'true' : 'false' }} }">
-                                <button @click="openRekomendasiUserV2 = !openRekomendasiUserV2"
-                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openRekomendasiUserV2 ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                    <span>Rekomendasi Aplikasi</span>
-                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openRekomendasiUserV2 }"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </button>
-                                <div x-show="openRekomendasiUserV2" class="ml-4 space-y-1 mt-1">
-                                    @if (auth()->user()?->hasPermission('user.rekomendasi.usulan.create'))
-                                        <a href="{{ route('user.rekomendasi.usulan.index') }}"
-                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
-                                           {{ $atRekomendasiUsulan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Usulan Pertimbangan
-                                        </a>
-                                    @endif
-                                    @if (auth()->user()?->hasPermission('user.fase-pengembangan'))
-                                        <a href="{{ route('fase-pengembangan.index') }}"
-                                            class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm
-                                           {{ request()->routeIs('fase-pengembangan.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                            Fase Pengembangan
-                                        </a>
-                                    @endif
-                                </div>
-                            </div>
                         @endif
 
                         {{-- Konsultasi SPBE Berbasis AI --}}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\SubdomainIpChangeRequest;
+use App\Models\WebMonitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -37,7 +38,30 @@ class SubdomainIpChangeController extends Controller
                 ->with('error', 'Anda masih memiliki permohonan yang sedang diproses. Mohon tunggu hingga permohonan sebelumnya selesai.');
         }
 
-        return view('user.subdomain.ip-change.create');
+        $subdomains = $this->ownedSubdomains(Auth::user());
+
+        if ($subdomains->isEmpty()) {
+            return redirect()->route('user.subdomain.ip-change.index')
+                ->with('error', 'Belum ada subdomain milik unit kerja Anda yang dapat diajukan perubahan IP-nya. Pastikan akun Anda terhubung ke unit kerja yang benar.');
+        }
+
+        return view('user.subdomain.ip-change.create', compact('subdomains'));
+    }
+
+    /**
+     * Subdomain *.kaltaraprov.go.id milik unit kerja pengguna.
+     */
+    private function ownedSubdomains($user)
+    {
+        if (!$user || !$user->unit_kerja_id) {
+            return collect();
+        }
+
+        return WebMonitor::where('instansi_id', $user->unit_kerja_id)
+            ->whereNotNull('subdomain')
+            ->where('subdomain', '!=', '')
+            ->orderBy('subdomain')
+            ->get();
     }
 
     /**
