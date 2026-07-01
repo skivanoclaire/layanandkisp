@@ -173,11 +173,11 @@
                 @foreach ($items as $item)
                 @php $delay = ($loop->index % 8) * 60; @endphp
                     <a href="#{{ $item['slug'] }}"
-                        class="bg-white border border-gray-200 shadow rounded-xl p-6 text-center hover:shadow-xl hover:-translate-y-1 hover:scale-105 hover:border-emerald-400 transition-all duration-300"
+                        class="bg-white border border-gray-200 shadow rounded-xl p-3 sm:p-4 lg:p-6 text-center flex flex-col items-center hover:shadow-xl hover:-translate-y-1 hover:scale-105 hover:border-emerald-400 transition-all duration-300"
                         data-aos="fade-up"
                         data-aos-delay="{{ $delay }}">
-                        <div class="text-5xl mb-2">{{ $item['icon'] }}</div>
-                        <div class="text-sm font-semibold text-gray-800">{{ $item['label'] }}</div>
+                        <div class="text-3xl sm:text-4xl lg:text-5xl mb-2 leading-none">{{ $item['icon'] }}</div>
+                        <div class="text-xs sm:text-sm font-semibold text-gray-800 break-words leading-tight w-full">{{ $item['label'] }}</div>
                     </a>
                 @endforeach
             </div>
@@ -362,9 +362,7 @@
                                         pemerintahan, portal data, dan aplikasi e-government lainnya.
                                         <br>
                                         📌 Perangkat Daerah wajib melakukan self assessment kategori sistem elektronik berdasarkan
-                                        asas resiko pada link berikut ini :
-                                        <a href="https://s.id/Form-Risiko-PSE-Kaltara"
-                                            class="text-blue-600 underline hover:text-blue-800">s.id/PSE-Kaltara</a>
+                                        asas resiko pada platform ini.
                                     </p>
                                 @break
 
