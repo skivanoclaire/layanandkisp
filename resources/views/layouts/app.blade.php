@@ -41,7 +41,7 @@
                 class="bg-emerald-500 hover:bg-emerald-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
                 Kebijakan&nbsp;Layanan
             </a>
-            <a href="/manual-e-layanan.pdf"
+            <a href="{{ asset('Buku-Manual-E-Layanan-DKISP-Kaltara.pdf') }}" target="_blank" rel="noopener"
                 class="bg-emerald-500 hover:bg-emerald-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
                 Manual
             </a>

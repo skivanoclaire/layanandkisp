@@ -11,6 +11,26 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6">
+        @if (session('success'))
+            <div class="mb-4 p-4 rounded-lg bg-green-100 border border-green-300 text-green-800">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="mb-4 p-4 rounded-lg bg-red-100 border border-red-300 text-red-800">{{ session('error') }}</div>
+        @endif
+        @if (session('warning'))
+            <div class="mb-4 p-4 rounded-lg bg-amber-100 border border-amber-300 text-amber-800">{{ session('warning') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="mb-4 p-4 rounded-lg bg-red-100 border border-red-300 text-red-800">
+                <p class="font-semibold mb-1">Periksa kembali isian berikut:</p>
+                <ul class="list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('admin.web-monitor.update', $webMonitor) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
@@ -667,6 +687,11 @@
             <div class="mb-6 p-4 bg-cyan-50 border border-cyan-200 rounded-lg">
                 <div class="mb-4">
                     <h3 class="font-semibold text-cyan-800">Klasifikasi Data</h3>
+                    <p class="text-xs text-cyan-700 mt-1">
+                        <strong>Perhatian:</strong> jika mengisi Klasifikasi Data, semua field wajib diisi lengkap
+                        (Nama Data, Atribut Data, Kerahasiaan, Integritas, dan Ketersediaan) — atau dikosongkan semua.
+                        Jika tidak lengkap, perubahan tidak dapat disimpan.
+                    </p>
                 </div>
 
                 @if($webMonitor->dc_data_name)
@@ -702,7 +727,7 @@
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Nama Data</label>
+                        <label class="block text-sm font-medium mb-1">Nama Data <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(wajib bila mengisi Klasifikasi Data)</span></label>
                         <input type="text" name="dc_data_name" value="{{ old('dc_data_name', $webMonitor->dc_data_name) }}"
                             class="w-full border rounded p-2 @error('dc_data_name') border-red-500 @enderror"
                             placeholder="Contoh: Data Pribadi ASN, Data Keluarga ASN">
@@ -712,7 +737,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium mb-1">Atribut Data</label>
+                        <label class="block text-sm font-medium mb-1">Atribut Data <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(wajib bila mengisi Klasifikasi Data)</span></label>
                         <textarea name="dc_data_attributes" rows="2"
                             class="w-full border rounded p-2 @error('dc_data_attributes') border-red-500 @enderror"
                             placeholder="Contoh: Nama, NIK, Alamat, Tempat Tanggal Lahir, dll.">{{ old('dc_data_attributes', $webMonitor->dc_data_attributes) }}</textarea>
