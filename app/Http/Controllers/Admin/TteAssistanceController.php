@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\TteAssistanceRequest;
 use App\Services\FonnteWhatsappService;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -69,6 +70,17 @@ class TteAssistanceController extends Controller
             $wa->sendTteStatusNotification($tteAssistance, 'Pendampingan TTE', $request->status, $request->keterangan_admin);
         } catch (\Exception $e) {
             Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
+
+        try {
+            (new TelegramService())->sendTteStatusUpdate(
+                $tteAssistance,
+                'Pendampingan TTE',
+                $request->status,
+                $request->keterangan_admin
+            );
+        } catch (\Exception $e) {
+            Log::error('Telegram status notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('admin.tte.assistance.show', $tteAssistance)

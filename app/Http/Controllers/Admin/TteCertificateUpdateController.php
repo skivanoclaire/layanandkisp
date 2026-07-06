@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Traits\ExportsTteData;
 use App\Models\TteCertificateUpdateRequest;
 use App\Exports\TteCertificateUpdateExport;
 use App\Services\FonnteWhatsappService;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -97,6 +98,17 @@ class TteCertificateUpdateController extends Controller
             $wa->sendTteStatusNotification($tteCertificateUpdate, 'Pembaruan Sertifikat TTE', $request->status, $request->keterangan_admin);
         } catch (\Exception $e) {
             Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
+
+        try {
+            (new TelegramService())->sendTteStatusUpdate(
+                $tteCertificateUpdate,
+                'Pembaruan Sertifikat TTE',
+                $request->status,
+                $request->keterangan_admin
+            );
+        } catch (\Exception $e) {
+            Log::error('Telegram status notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('admin.tte.certificate-update.show', $tteCertificateUpdate)

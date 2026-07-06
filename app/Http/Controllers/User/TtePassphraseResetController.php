@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TtePassphraseResetRequest;
 use App\Models\EmailAccount;
 use App\Services\FonnteWhatsappService;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -87,6 +88,17 @@ class TtePassphraseResetController extends Controller
             );
         } catch (\Exception $e) {
             Log::error('WhatsApp submit notification failed: ' . $e->getMessage());
+        }
+
+        try {
+            (new TelegramService())->sendTteNewRequestAlert(
+                $tteRequest->ticket_no,
+                'Reset Passphrase TTE',
+                $tteRequest->nama,
+                $tteRequest->nip
+            );
+        } catch (\Exception $e) {
+            Log::error('Telegram new request notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('user.tte.passphrase-reset.index')

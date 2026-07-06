@@ -8,6 +8,7 @@ use App\Models\EmailRequest;
 use App\Models\EmailAccount;
 use App\Models\UnitKerja;
 use App\Services\FonnteWhatsappService;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -87,6 +88,17 @@ class TteRegistrationController extends Controller
             );
         } catch (\Exception $e) {
             Log::error('WhatsApp submit notification failed: ' . $e->getMessage());
+        }
+
+        try {
+            (new TelegramService())->sendTteNewRequestAlert(
+                $tteRequest->ticket_no,
+                'Pendaftaran Akun TTE',
+                $tteRequest->nama,
+                $tteRequest->nip
+            );
+        } catch (\Exception $e) {
+            Log::error('Telegram new request notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('user.tte.registration.index')

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Traits\ExportsTteData;
 use App\Models\TteRegistrationRequest;
 use App\Exports\TteRegistrationExport;
 use App\Services\FonnteWhatsappService;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -80,6 +81,17 @@ class TteRegistrationController extends Controller
             $wa->sendTteStatusNotification($tteRegistration, 'Pendaftaran Akun TTE', $request->status, $request->keterangan_admin);
         } catch (\Exception $e) {
             Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
+
+        try {
+            (new TelegramService())->sendTteStatusUpdate(
+                $tteRegistration,
+                'Pendaftaran Akun TTE',
+                $request->status,
+                $request->keterangan_admin
+            );
+        } catch (\Exception $e) {
+            Log::error('Telegram status notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('admin.tte.registration.show', $tteRegistration)

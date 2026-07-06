@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Traits\ExportsTteData;
 use App\Models\TtePassphraseResetRequest;
 use App\Exports\TtePassphraseResetExport;
 use App\Services\FonnteWhatsappService;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -97,6 +98,17 @@ class TtePassphraseResetController extends Controller
             $wa->sendTteStatusNotification($ttePassphraseReset, 'Reset Passphrase TTE', $request->status, $request->keterangan_admin);
         } catch (\Exception $e) {
             Log::error('WhatsApp notification failed: ' . $e->getMessage());
+        }
+
+        try {
+            (new TelegramService())->sendTteStatusUpdate(
+                $ttePassphraseReset,
+                'Reset Passphrase TTE',
+                $request->status,
+                $request->keterangan_admin
+            );
+        } catch (\Exception $e) {
+            Log::error('Telegram status notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('admin.tte.passphrase-reset.show', $ttePassphraseReset)

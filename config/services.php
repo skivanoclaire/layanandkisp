@@ -70,6 +70,13 @@ return [
         'url'   => env('FONNTE_API_URL', 'https://api.fonnte.com/send'),
     ],
 
+    'telegram' => [
+        'enabled'       => env('TELEGRAM_ENABLED', false),
+        'bot_token'     => env('TELEGRAM_BOT_TOKEN'),
+        'group_chat_id' => env('TELEGRAM_GROUP_CHAT_ID'),
+        'api_url'       => env('TELEGRAM_API_URL', 'https://api.telegram.org'),
+    ],
+
     'yourls' => [
         // Endpoint API YOURLS (link.kaltaraprov.go.id)
         'url'       => env('YOURLS_API_URL', 'https://link.kaltaraprov.go.id/yourls-api.php'),
