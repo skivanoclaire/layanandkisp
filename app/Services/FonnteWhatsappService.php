@@ -265,6 +265,43 @@ class FonnteWhatsappService
         return $this->sendMessage($phoneNumber, $message);
     }
 
+    /**
+     * Beri tahu pemohon rekomendasi aplikasi bahwa usulannya perlu direvisi
+     * dan meminta agar segera memperbarui usulan.
+     */
+    public function sendRevisiRekomendasiNotification(
+        string $phoneNumber,
+        string $ticketNumber,
+        string $namaAplikasi,
+        ?string $catatanRevisi = null,
+        ?string $link = null
+    ): bool {
+        if (empty($phoneNumber)) {
+            Log::warning("FonnteWhatsapp: phone empty for revisi rekomendasi {$ticketNumber}");
+            return false;
+        }
+
+        $catatan = $catatanRevisi ?: '-';
+
+        $message = "*{$this->header}*\n\n"
+            . "Yth. Bapak/Ibu,\n\n"
+            . "Usulan Rekomendasi Aplikasi Anda memerlukan *perbaikan (revisi)*. "
+            . "Mohon segera memperbarui usulan Anda agar dapat diproses lebih lanjut.\n\n"
+            . "No. Tiket: {$ticketNumber}\n"
+            . "Nama Aplikasi: {$namaAplikasi}\n"
+            . "Status: *Perlu Revisi*\n"
+            . "Catatan Revisi: {$catatan}\n";
+
+        if (!empty($link)) {
+            $message .= "\nSilakan perbarui usulan Anda melalui tautan berikut:\n{$link}\n";
+        }
+
+        $message .= "\nTerima kasih.\n"
+            . "Helpdesk DKISP Kaltara";
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
     protected function getStatusLabel(string $status): string
     {
         return match ($status) {

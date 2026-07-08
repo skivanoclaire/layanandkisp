@@ -225,6 +225,16 @@
                                                     Lanjutkan
                                                 </a>
                                             @endif
+                                            @if($proposal->status === 'perlu_revisi' && $proposal->user?->phone)
+                                                <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.notify-revisi', $proposal->id) }}"
+                                                      class="inline"
+                                                      onsubmit="return confirm('Kirim notifikasi WhatsApp pengingat revisi ke pemohon ({{ $proposal->user->phone }})?');">
+                                                    @csrf
+                                                    <button type="submit" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                                        Ingatkan Revisi (WA)
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

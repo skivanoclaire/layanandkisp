@@ -115,9 +115,8 @@ class VidconRequestController extends Controller
             abort(403, 'Penilaian hanya tersedia untuk permohonan yang sudah selesai.');
         }
 
-        // TODO: Ganti dengan URL/token survei khusus layanan Vidcon dari portal SPBE
-        // bila sudah tersedia. Sementara memakai token survei layanan Email.
-        $surveyUrl = 'https://surveidigital.spbe.go.id/embed/survey/eyJzdXJ2ZXlfaWQiOjIsInNlcnZpY2VfaWQiOjE2MCwiaG9zdCI6ImxheWFuYW4uZGlza29taW5mby5rYWx0YXJhcHJvdi5nby5pZCxsb2NhbGhvc3Q6ODA4MCxsb2NhbGhvc3QsaHR0cHM6Ly9sYXlhbmFuLmRpc2tvbWluZm8ua2FsdGFyYXByb3YuZ28uaWQiLCJrZXkiOiJBeEUyNGVkdSJ9/embed/view/';
+        // URL survei dari pengaturan terpusat (token dikelola via Manajemen Survei Digital)
+        $surveyUrl = \App\Services\SurveiDigitalService::urlFor('vidcon');
 
         return view('user.vidcon.survey', [
             'vidconRequest' => $vidconRequest,

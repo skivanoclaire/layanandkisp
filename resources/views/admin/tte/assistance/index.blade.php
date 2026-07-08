@@ -120,6 +120,7 @@
                             <a href="{{ route('admin.tte.assistance.show', $request) }}" class="text-blue-600 hover:text-blue-900 mr-3">
                                 Detail
                             </a>
+                            {{-- Tombol Hapus dinonaktifkan sementara (aksi hapus level admin ditiadakan dulu)
                             <form action="{{ route('admin.tte.assistance.destroy', $request) }}" method="POST" class="inline">
                                 @csrf
                                 @method('DELETE')
@@ -128,6 +129,7 @@
                                     Hapus
                                 </button>
                             </form>
+                            --}}
                         </td>
                     </tr>
                     @empty

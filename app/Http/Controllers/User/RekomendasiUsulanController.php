@@ -543,4 +543,43 @@ class RekomendasiUsulanController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Download berita acara dari verifikator (setelah usulan disetujui).
+     */
+    public function downloadBeritaAcara($id)
+    {
+        try {
+            // Verify ownership
+            $proposal = RekomendasiAplikasiForm::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+
+            $verifikasi = $proposal->verifikasi;
+
+            if (!$verifikasi || !$verifikasi->file_berita_acara) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Berita acara tidak ditemukan.');
+            }
+
+            $filePath = storage_path('app/public/' . $verifikasi->file_berita_acara);
+
+            if (!file_exists($filePath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'File tidak ditemukan di server.');
+            }
+
+            $extension = pathinfo($verifikasi->file_berita_acara, PATHINFO_EXTENSION);
+            $filename = 'Berita_Acara_' . $proposal->ticket_number . '.' . $extension;
+
+            return response()->download($filePath, $filename);
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

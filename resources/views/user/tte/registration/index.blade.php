@@ -67,6 +67,12 @@
                             class="text-purple-600 hover:text-purple-800 font-semibold">
                             Detail →
                         </a>
+                        @if($item->status === 'selesai')
+                        <a href="{{ route('user.tte.registration.survey', $item->id) }}"
+                           class="ml-3 inline-block px-3 py-1 rounded bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold">
+                            Beri Penilaian
+                        </a>
+                        @endif
                     </td>
                 </tr>
                 @empty

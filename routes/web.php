@@ -138,6 +138,9 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
             // Download file kajian revisi dari verifikator
             Route::get('/{id}/download-kajian', [RekomendasiUsulanController::class, 'downloadKajian'])->name('download-kajian');
 
+            // Download berita acara (setelah usulan disetujui)
+            Route::get('/{id}/download-berita-acara', [RekomendasiUsulanController::class, 'downloadBeritaAcara'])->name('download-berita-acara');
+
             // Export dokumen usulan ke PDF (sama seperti level admin)
             Route::get('/{id}/pdf', [RekomendasiUsulanController::class, 'exportPdf'])->name('pdf');
         });
@@ -277,8 +280,13 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
             Route::post('/{id}/approve', [RekomendasiVerifikasiController::class, 'approve'])->name('approve');
             Route::post('/{id}/reject', [RekomendasiVerifikasiController::class, 'reject'])->name('reject');
             Route::post('/{id}/revision', [RekomendasiVerifikasiController::class, 'requestRevision'])->name('revision');
+            Route::post('/{id}/notify-revisi', [RekomendasiVerifikasiController::class, 'notifyRevisi'])->name('notify-revisi');
             Route::get('/{id}/dokumen/{dokumenId}', [RekomendasiVerifikasiController::class, 'downloadDokumen'])->name('dokumen.download');
             Route::get('/{id}/kajian', [RekomendasiVerifikasiController::class, 'downloadKajian'])->name('kajian.download');
+
+            // Berita Acara (setelah disetujui)
+            Route::post('/{id}/berita-acara', [RekomendasiVerifikasiController::class, 'uploadBeritaAcara'])->name('berita-acara.upload');
+            Route::get('/{id}/berita-acara', [RekomendasiVerifikasiController::class, 'downloadBeritaAcara'])->name('berita-acara.download');
 
             // Update status Kementerian
             Route::post('/{id}/ministry-status', [RekomendasiVerifikasiController::class, 'updateMinistryStatus'])->name('ministry-status');
@@ -844,6 +852,7 @@ Route::middleware(['auth','verified.user','permission:Akses Pendaftaran VPN'])
         Route::get('/', [\App\Http\Controllers\User\VpnRegistrationController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\VpnRegistrationController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\VpnRegistrationController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'vpn-registration')->name('survey');
         Route::get('/{vpnRegistration}', [\App\Http\Controllers\User\VpnRegistrationController::class, 'show'])->name('show');
     });
 
@@ -855,6 +864,7 @@ Route::middleware(['auth','verified.user','permission:Akses Reset Akun VPN'])
         Route::get('/', [\App\Http\Controllers\User\VpnResetController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\VpnResetController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\VpnResetController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'vpn-reset')->name('survey');
         Route::get('/{vpnReset}', [\App\Http\Controllers\User\VpnResetController::class, 'show'])->name('show');
     });
 
@@ -866,6 +876,7 @@ Route::middleware(['auth','verified.user','permission:Akses JIP PDNS'])
         Route::get('/', [\App\Http\Controllers\User\JipPdnsController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\JipPdnsController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\JipPdnsController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'vpn-jip-pdns')->name('survey');
         Route::get('/{jipPdnsRequest}', [\App\Http\Controllers\User\JipPdnsController::class, 'show'])->name('show');
     });
 
@@ -917,6 +928,7 @@ Route::middleware(['auth','verified.user','permission:Akses Kunjungan/Colocation
         Route::get('/', [\App\Http\Controllers\User\VisitationController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\VisitationController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\VisitationController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'datacenter-visitation')->name('survey');
         Route::get('/{visitation}', [\App\Http\Controllers\User\VisitationController::class, 'show'])->name('show');
     });
 
@@ -928,6 +940,7 @@ Route::middleware(['auth','verified.user','permission:Akses VPS/VM'])
         Route::get('/', [\App\Http\Controllers\User\VpsRequestController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\VpsRequestController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\VpsRequestController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'datacenter-vps')->name('survey');
         Route::get('/{vpsRequest}', [\App\Http\Controllers\User\VpsRequestController::class, 'show'])->name('show');
     });
 
@@ -939,6 +952,7 @@ Route::middleware(['auth','verified.user','permission:Akses Backup'])
         Route::get('/', [\App\Http\Controllers\User\BackupRequestController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\BackupRequestController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\BackupRequestController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'datacenter-backup')->name('survey');
         Route::get('/{backupRequest}', [\App\Http\Controllers\User\BackupRequestController::class, 'show'])->name('show');
     });
 
@@ -950,6 +964,7 @@ Route::middleware(['auth','verified.user','permission:Akses Cloud Storage'])
         Route::get('/', [\App\Http\Controllers\User\CloudStorageRequestController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\CloudStorageRequestController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\CloudStorageRequestController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'datacenter-cloud-storage')->name('survey');
         Route::get('/{cloudStorageRequest}', [\App\Http\Controllers\User\CloudStorageRequestController::class, 'show'])->name('show');
     });
 
@@ -1014,6 +1029,8 @@ Route::middleware(['auth','verified.user','permission:Akses Konsultasi SPBE AI']
     ->name('user.konsultasi-spbe-ai.')
     ->group(function () {
         Route::get('/', [\App\Http\Controllers\User\KonsultasiSpbeAiController::class, 'index'])->name('index');
+        Route::get('/access', [\App\Http\Controllers\User\KonsultasiSpbeAiController::class, 'access'])->name('access');
+        Route::get('/survey', [\App\Http\Controllers\User\KonsultasiSpbeAiController::class, 'survey'])->name('survey');
     });
 
 // TTE - Pendampingan Aktivasi dan Penggunaan TTE (User)
@@ -1024,6 +1041,7 @@ Route::middleware(['auth','verified.user','permission:Akses Bantuan TTE'])
         Route::get('/', [\App\Http\Controllers\User\TteAssistanceController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\TteAssistanceController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\TteAssistanceController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'tte-assistance')->name('survey');
         Route::get('/{tteAssistance}', [\App\Http\Controllers\User\TteAssistanceController::class, 'show'])->name('show');
     });
 
@@ -1035,6 +1053,7 @@ Route::middleware(['auth','verified.user','permission:Akses Registrasi TTE'])
         Route::get('/', [\App\Http\Controllers\User\TteRegistrationController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\TteRegistrationController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\TteRegistrationController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'tte-registration')->name('survey');
         Route::get('/{tteRegistration}', [\App\Http\Controllers\User\TteRegistrationController::class, 'show'])->name('show');
     });
 
@@ -1046,6 +1065,7 @@ Route::middleware(['auth','verified.user','permission:Akses Reset Passphrase TTE
         Route::get('/', [\App\Http\Controllers\User\TtePassphraseResetController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\TtePassphraseResetController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\TtePassphraseResetController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'tte-passphrase-reset')->name('survey');
         Route::get('/{ttePassphraseReset}', [\App\Http\Controllers\User\TtePassphraseResetController::class, 'show'])->name('show');
     });
 
@@ -1057,6 +1077,7 @@ Route::middleware(['auth','verified.user','permission:Akses Pembaruan Sertifikat
         Route::get('/', [\App\Http\Controllers\User\TteCertificateUpdateController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\User\TteCertificateUpdateController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\User\TteCertificateUpdateController::class, 'store'])->name('store');
+        Route::get('/survey/{id}', [\App\Http\Controllers\User\SurveiDigitalController::class, 'show'])->defaults('service', 'tte-certificate-update')->name('survey');
         Route::get('/{tteCertificateUpdate}', [\App\Http\Controllers\User\TteCertificateUpdateController::class, 'show'])->name('show');
     });
 
@@ -1108,6 +1129,15 @@ Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Pembar
         Route::get('/{tteCertificateUpdate}', [\App\Http\Controllers\Admin\TteCertificateUpdateController::class, 'show'])->name('show');
         Route::patch('/{tteCertificateUpdate}/update-status', [\App\Http\Controllers\Admin\TteCertificateUpdateController::class, 'updateStatus'])->name('update-status');
         Route::delete('/{tteCertificateUpdate}', [\App\Http\Controllers\Admin\TteCertificateUpdateController::class, 'destroy'])->name('destroy');
+    });
+
+// Manajemen Survei Digital - Admin (kelola token embed survei SPBE)
+Route::middleware(['auth','role:Admin'])
+    ->prefix('admin/survei-digital')
+    ->name('admin.survei-digital.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SurveiDigitalController::class, 'index'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Admin\SurveiDigitalController::class, 'update'])->name('update');
     });
 
 // Aset TIK - admin + admin-vidcon

@@ -288,6 +288,33 @@
             </div>
         @endif
 
+        <!-- Berita Acara -->
+        @if($proposal->verifikasi?->file_berita_acara)
+            @php $beritaAcara = $proposal->verifikasi->file_berita_acara; @endphp
+            <div class="rounded-lg border border-indigo-200 bg-indigo-50 p-6 mb-6">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center bg-indigo-100">
+                            <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Berita Acara</h3>
+                            <p class="text-sm text-gray-600 mt-1">Dokumen {{ strtoupper(pathinfo($beritaAcara, PATHINFO_EXTENSION)) }} dari Diskominfo</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('user.rekomendasi.usulan.download-berita-acara', $proposal->id) }}"
+                       class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download Berita Acara
+                    </a>
+                </div>
+            </div>
+        @endif
+
         <!-- Main Content Tabs -->
         <div class="bg-white rounded-lg shadow">
             <div class="border-b border-gray-200">

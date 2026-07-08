@@ -44,6 +44,12 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 - Pengisian survei kepuasan terhadap layanan/website yang dikelola
 - Rekapitulasi hasil survei untuk admin
 
+### ⭐ Survei Digital SPBE
+- Embed survei kepuasan resmi [surveidigital.spbe.go.id](https://surveidigital.spbe.go.id) langsung di dalam portal (iframe)
+- Tombol **"Beri Penilaian"** muncul otomatis pada permohonan yang telah **selesai** (Email, TTE, Video Conference, Jaringan Intra/VPN, Pusat Data)
+- Layanan **Konsultasi SPBE Berbasis AI** — tombol penilaian tampil setelah pengguna mengakses layanan (klik "Akses Disini")
+- Token embed dipakai bersama seluruh layanan & dikelola terpusat oleh admin (lihat *Manajemen Survei Digital*)
+
 ### ✂️ Pemendek Tautan (URL Shortener)
 - Permohonan pemendek tautan resmi pada domain [link.kaltaraprov.go.id](https://link.kaltaraprov.go.id)
 - Pengusulan kode pendek kustom (opsional)
@@ -124,6 +130,11 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 - **IP Whitelist** untuk akses API publik
 - Daftar endpoint untuk integrasi Sistem Penghubung Layanan Pemerintah (SPLP)
 
+### Manajemen Survei Digital
+- Kelola **token/URL embed** survei SPBE dari satu tempat — rotasi token cukup sekali dan berlaku untuk seluruh layanan
+- Aktif/nonaktifkan survei secara global
+- Pratinjau URL final per layanan (base URL + `jenis_layanan`) untuk verifikasi sebelum disebarkan
+
 ### Manajemen Sistem
 - User Management & verifikasi via SIMPEG
 - Kelola Role & Kewenangan (permission)
@@ -141,6 +152,7 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 | **Google API** | Integrasi data aset TIK |
 | **YOURLS** | Pembuatan & pengelolaan short link otomatis di [link.kaltaraprov.go.id](https://link.kaltaraprov.go.id) (API signature passwordless) |
 | **Fonnte WhatsApp** | Notifikasi status permohonan via WhatsApp |
+| **Survei Digital SPBE** | Embed survei kepuasan resmi [surveidigital.spbe.go.id](https://surveidigital.spbe.go.id) per layanan |
 
 ## API Publik (SPLP)
 

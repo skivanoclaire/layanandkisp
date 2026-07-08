@@ -1363,6 +1363,15 @@
                 </a>
             @endif
 
+            {{-- Manajemen Survei Digital --}}
+            @if (auth()->user()?->hasRole('Admin'))
+                <a href="{{ route('admin.survei-digital.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.survei-digital.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Manajemen Survei Digital
+                </a>
+            @endif
+
             {{-- Profile Pengguna --}}
             @if (auth()->user()?->hasPermission('user.profile'))
                 <a href="{{ route('profile.edit') }}"

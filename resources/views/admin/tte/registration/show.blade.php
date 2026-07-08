@@ -68,6 +68,7 @@
                     </div>
                 </div>
 
+                {{-- Informasi User (username & email) dinonaktifkan sementara — tidak perlu ditampilkan
                 <!-- User Info -->
                 <div class="border-t mt-6 pt-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi User</h3>
@@ -82,6 +83,7 @@
                         </div>
                     </div>
                 </div>
+                --}}
 
                 <!-- Timeline -->
                 <div class="border-t mt-6 pt-6">

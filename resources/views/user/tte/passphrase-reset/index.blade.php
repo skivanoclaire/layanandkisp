@@ -60,6 +60,12 @@
                             <a href="{{ route('user.tte.passphrase-reset.show', $request) }}" class="text-blue-600 hover:text-blue-900">
                                 Detail
                             </a>
+                            @if($request->status === 'selesai')
+                            <a href="{{ route('user.tte.passphrase-reset.survey', $request->id) }}"
+                               class="ml-3 inline-block px-3 py-1 rounded bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold">
+                                Beri Penilaian
+                            </a>
+                            @endif
                         </td>
                     </tr>
                     @empty

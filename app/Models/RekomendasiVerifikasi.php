@@ -25,6 +25,7 @@ class RekomendasiVerifikasi extends Model
         'checklist_timeline',
         'catatan_verifikasi',
         'file_kajian',
+        'file_berita_acara',
         'catatan_internal',
         'tanggal_verifikasi',
     ];

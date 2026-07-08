@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\RekomendasiAplikasiForm;
 use App\Models\RekomendasiVerifikasi;
 use App\Models\RekomendasiStatusKementerian;
+use App\Services\FonnteWhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Dompdf\Dompdf;
@@ -426,6 +427,152 @@ class RekomendasiVerifikasiController extends Controller
             }
 
             return response()->download($filePath, basename($verifikasi->file_kajian));
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Kirim notifikasi WhatsApp (Fonnte APTIKA) ke pemohon untuk mengingatkan
+     * agar segera memperbarui usulan yang berstatus "Perlu Revisi".
+     */
+    public function notifyRevisi($id)
+    {
+        try {
+            $proposal = RekomendasiAplikasiForm::with(['user', 'verifikasi'])->findOrFail($id);
+
+            if ($proposal->status !== 'perlu_revisi') {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Notifikasi revisi hanya dapat dikirim untuk usulan berstatus "Perlu Revisi".');
+            }
+
+            $phone = $proposal->user?->phone;
+
+            if (empty($phone)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Nomor WhatsApp pemohon tidak tersedia. Notifikasi tidak dapat dikirim.');
+            }
+
+            $link = route('user.rekomendasi.usulan.show', $proposal->id);
+
+            $sent = (new FonnteWhatsappService('aptika'))->sendRevisiRekomendasiNotification(
+                $phone,
+                $proposal->ticket_number,
+                $proposal->nama_aplikasi,
+                $proposal->verifikasi?->catatan_verifikasi,
+                $link
+            );
+
+            if (!$sent) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Notifikasi WhatsApp gagal dikirim. Silakan coba lagi atau hubungi pemohon secara manual.');
+            }
+
+            // Log activity
+            $proposal->logActivity(
+                'Notifikasi Revisi Dikirim',
+                'Notifikasi WhatsApp pengingat revisi dikirim ke pemohon (' . $phone . ') oleh ' . auth()->user()->name
+            );
+
+            return redirect()
+                ->back()
+                ->with('success', 'Notifikasi WhatsApp pengingat revisi berhasil dikirim ke pemohon.');
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Upload berita acara (PDF/DOCX) untuk usulan yang telah disetujui.
+     */
+    public function uploadBeritaAcara(Request $request, $id)
+    {
+        $request->validate([
+            'file_berita_acara' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ]);
+
+        try {
+            $proposal = RekomendasiAplikasiForm::findOrFail($id);
+
+            if ($proposal->status !== 'disetujui') {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Berita acara hanya dapat diupload untuk usulan yang sudah disetujui.');
+            }
+
+            $verifikasi = $proposal->verifikasi;
+
+            if (!$verifikasi) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Data verifikasi tidak ditemukan.');
+            }
+
+            // Hapus file lama jika ada
+            if ($verifikasi->file_berita_acara) {
+                Storage::disk('public')->delete($verifikasi->file_berita_acara);
+            }
+
+            $file = $request->file('file_berita_acara');
+            $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $file->getClientOriginalName());
+            $filename = 'berita_acara_' . time() . '_' . $sanitizedName;
+            $path = $file->storeAs('rekomendasi/berita_acara', $filename, 'public');
+
+            $verifikasi->update(['file_berita_acara' => $path]);
+
+            // Log activity
+            $proposal->logActivity(
+                'Berita Acara Diupload',
+                'Berita acara diupload oleh ' . auth()->user()->name
+            );
+
+            return redirect()
+                ->back()
+                ->with('success', 'Berita acara berhasil diupload.');
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download berita acara (admin).
+     */
+    public function downloadBeritaAcara($id)
+    {
+        try {
+            $proposal = RekomendasiAplikasiForm::findOrFail($id);
+            $verifikasi = $proposal->verifikasi;
+
+            if (!$verifikasi || !$verifikasi->file_berita_acara) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Berita acara tidak ditemukan.');
+            }
+
+            $filePath = storage_path('app/public/' . $verifikasi->file_berita_acara);
+
+            if (!file_exists($filePath)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'File tidak ditemukan.');
+            }
+
+            $extension = pathinfo($verifikasi->file_berita_acara, PATHINFO_EXTENSION);
+            $filename = 'Berita_Acara_' . $proposal->ticket_number . '.' . $extension;
+
+            return response()->download($filePath, $filename);
 
         } catch (\Exception $e) {
             return redirect()
