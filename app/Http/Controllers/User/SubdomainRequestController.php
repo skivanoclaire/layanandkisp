@@ -157,6 +157,15 @@ class SubdomainRequestController extends Controller
             'consent_true.accepted'            => 'Anda harus menyetujui pernyataan dan persyaratan layanan.',
         ]);
 
+        // Opsi "Lainnya" mengirim string "other"; kolom *_id bertipe integer FK,
+        // jadi ubah ke null (nama teks sudah tersimpan di other_programming_language / other_framework)
+        if (($data['programming_language_id'] ?? null) === 'other') {
+            $data['programming_language_id'] = null;
+        }
+        if (($data['framework_id'] ?? null) === 'other') {
+            $data['framework_id'] = null;
+        }
+
         // Auto-assign IP if server location is DKISP
         if ($data['server_location'] === 'dkisp') {
             $autoIp = $this->getNextAvailableIP();
@@ -313,6 +322,15 @@ class SubdomainRequestController extends Controller
             'backup_retention.required'        => 'Retensi Backup wajib dipilih.',
             'consent_true.accepted'            => 'Anda harus menyetujui pernyataan dan persyaratan layanan.',
         ]);
+
+        // Opsi "Lainnya" mengirim string "other"; kolom *_id bertipe integer FK,
+        // jadi ubah ke null (nama teks sudah tersimpan di other_programming_language / other_framework)
+        if (($data['programming_language_id'] ?? null) === 'other') {
+            $data['programming_language_id'] = null;
+        }
+        if (($data['framework_id'] ?? null) === 'other') {
+            $data['framework_id'] = null;
+        }
 
         $item->fill($data);
         $item->save();
