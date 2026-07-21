@@ -170,6 +170,70 @@ JSON,
 }
 JSON,
             ],
+            [
+                'name' => 'Ringkasan Capaian SLA Semua Layanan',
+                'method' => 'GET',
+                'path' => '/api/v1/sla/summary',
+                'url' => $base . '/api/v1/sla/summary',
+                'description' => 'Capaian SLA agregat seluruh layanan digital pada periode tertentu (query opsional: bulan, tahun — default bulan berjalan). Tidak memuat data permohonan individual/PII.',
+                'sample' => <<<'JSON'
+{
+  "success": true,
+  "periode": { "dari": "2026-07-01", "sampai": "2026-07-31" },
+  "ringkasan": {
+    "total_permohonan": 128,
+    "jumlah_tercapai": 96,
+    "jumlah_terlambat": 12,
+    "capaian_sla_persen": 88.9
+  },
+  "data": [
+    {
+      "layanan_key": "subdomain",
+      "layanan": "Subdomain Baru",
+      "kategori": "Subdomain & Website",
+      "total_permohonan": 20,
+      "menunggu": 2,
+      "proses": 3,
+      "selesai": 14,
+      "ditolak": 1,
+      "target_sla": { "nilai": 3, "satuan": "hari_kerja" },
+      "rata_rata_durasi_jam_kerja": 14.5,
+      "jumlah_tercapai": 13,
+      "jumlah_terlambat": 2,
+      "capaian_sla_persen": 86.7
+    }
+  ]
+}
+JSON,
+            ],
+            [
+                'name' => 'Detail Capaian SLA per Layanan',
+                'method' => 'GET',
+                'path' => '/api/v1/sla/layanan/{serviceKey}',
+                'url' => $base . '/api/v1/sla/layanan/subdomain',
+                'description' => 'Capaian SLA agregat 1 layanan (query opsional: bulan, tahun). Ganti {serviceKey} dengan kunci layanan, mis. email, subdomain, vidcon, pse, splp_provider, dsb.',
+                'sample' => <<<'JSON'
+{
+  "success": true,
+  "periode": { "dari": "2026-07-01", "sampai": "2026-07-31" },
+  "data": {
+    "layanan_key": "subdomain",
+    "layanan": "Subdomain Baru",
+    "kategori": "Subdomain & Website",
+    "total_permohonan": 20,
+    "menunggu": 2,
+    "proses": 3,
+    "selesai": 14,
+    "ditolak": 1,
+    "target_sla": { "nilai": 3, "satuan": "hari_kerja" },
+    "rata_rata_durasi_jam_kerja": 14.5,
+    "jumlah_tercapai": 13,
+    "jumlah_terlambat": 2,
+    "capaian_sla_persen": 86.7
+  }
+}
+JSON,
+            ],
         ];
     }
 }

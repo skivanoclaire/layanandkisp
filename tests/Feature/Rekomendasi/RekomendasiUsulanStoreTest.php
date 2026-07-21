@@ -6,6 +6,7 @@ use App\Models\RekomendasiAplikasiForm;
 use App\Models\User;
 use App\Models\UnitKerja;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class RekomendasiUsulanStoreTest extends TestCase
@@ -20,16 +21,51 @@ class RekomendasiUsulanStoreTest extends TestCase
         parent::setUp();
 
         // Create test user and unit kerja
+        // is_verified wajib true: middleware EnsureUserIsVerified mengalihkan user
+        // yang belum diverifikasi admin ke dashboard, sebelum controller dijalankan.
         $this->user = User::factory()->create([
             'role' => 'User',
             'name' => 'Test User',
             'email' => 'testuser@example.com',
+            'is_verified' => true,
         ]);
+
+        $this->grantUsulanPermissions($this->user);
 
         $this->unitKerja = UnitKerja::factory()->create([
             'is_active' => true,
             'tipe' => UnitKerja::TIPE_INDUK,
         ]);
+    }
+
+    /**
+     * Route usulan dilindungi middleware `permission:user.rekomendasi.usulan.*`, dan
+     * hasPermission() membaca relasi roles — bukan kolom `users.role`. Migration hanya
+     * membuat baris permission-nya (pemberian ke role dilakukan lewat UI admin), jadi
+     * kaitannya harus disiapkan di sini. Tanpa ini middleware mengalihkan request
+     * sebelum controller dijalankan, sehingga tidak ada baris yang tersimpan.
+     */
+    private function grantUsulanPermissions(User $user): void
+    {
+        $roleId = DB::table('roles')->where('name', 'User')->value('id');
+
+        DB::table('role_user')->insertOrIgnore([
+            'role_id' => $roleId,
+            'user_id' => $user->id,
+        ]);
+
+        $permissionIds = DB::table('permissions')
+            ->where('name', 'like', 'user.rekomendasi.usulan.%')
+            ->pluck('id');
+
+        foreach ($permissionIds as $permissionId) {
+            DB::table('permission_role')->insertOrIgnore([
+                'role_id' => $roleId,
+                'permission_id' => $permissionId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     /**
@@ -207,13 +243,16 @@ class RekomendasiUsulanStoreTest extends TestCase
             'jenis_layanan',
             'target_pengguna',
             'estimasi_pengguna',
-            'lingkup_aplikasi',
             'platform',
             'estimasi_waktu_pengembangan',
             'estimasi_biaya',
             'sumber_pendanaan',
             'prioritas',
         ]);
+
+        // lingkup_aplikasi sengaja dibuat nullable di StoreUsulanV2Request
+        // ("dinonaktifkan sementara"), jadi tidak boleh dianggap wajib.
+        $response->assertSessionDoesntHaveErrors('lingkup_aplikasi');
     }
 
     /** @test */

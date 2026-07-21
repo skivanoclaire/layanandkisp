@@ -587,6 +587,20 @@ Route::middleware(['auth','role:Admin','permission:Kelola Permohonan PSE'])
         Route::post('/{id}/update-status', [\App\Http\Controllers\Admin\PseUpdateAdminController::class, 'updateStatus'])->name('update-status');
     });
 
+// Manajemen SLA - Dashboard capaian SLA & pengaturan target per layanan
+Route::middleware(['auth', 'role:Admin', 'permission:Manajemen SLA'])
+    ->prefix('admin/sla')
+    ->name('admin.sla.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SlaManagementController::class, 'index'])->name('index');
+        Route::get('/pengaturan', [\App\Http\Controllers\Admin\SlaManagementController::class, 'settings'])->name('pengaturan');
+        Route::put('/pengaturan/jam-kerja', [\App\Http\Controllers\Admin\SlaManagementController::class, 'updateWorkingHours'])->name('pengaturan.jam-kerja');
+        Route::post('/pengaturan/libur', [\App\Http\Controllers\Admin\SlaManagementController::class, 'storeHoliday'])->name('pengaturan.libur.store');
+        Route::delete('/pengaturan/libur/{slaHoliday}', [\App\Http\Controllers\Admin\SlaManagementController::class, 'destroyHoliday'])->name('pengaturan.libur.destroy');
+        Route::put('/pengaturan/{serviceKey}', [\App\Http\Controllers\Admin\SlaManagementController::class, 'updateSetting'])->name('pengaturan.update');
+        Route::get('/{serviceKey}', [\App\Http\Controllers\Admin\SlaManagementController::class, 'show'])->name('show');
+    });
+
 /*
 |--------------------------------------------------------------------------
 | Integrasi SPLP (Sistem Penghubung Layanan Pemerintah)

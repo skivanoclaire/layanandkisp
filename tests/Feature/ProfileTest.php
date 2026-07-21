@@ -6,6 +6,12 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Catatan: aplikasi ini menyimpang dari scaffolding Laravel Breeze —
+ * `profile.update` memakai PUT (bukan PATCH), dan fitur hapus akun sendiri
+ * tidak tersedia (tidak ada route `profile.destroy`). Test di sini mengikuti
+ * perilaku aplikasi, bukan perilaku bawaan Breeze.
+ */
 class ProfileTest extends TestCase
 {
     use RefreshDatabase;
@@ -14,85 +20,72 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
-
-        $response->assertOk();
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertOk();
     }
 
     public function test_profile_information_can_be_updated(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
+        $this->actingAs($user)
+            ->put('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
-            ]);
-
-        $response
+                'phone' => '081234567890',
+            ])
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect(route('profile.edit'));
 
         $user->refresh();
 
         $this->assertSame('Test User', $user->name);
         $this->assertSame('test@example.com', $user->email);
-        $this->assertNull($user->email_verified_at);
+        $this->assertSame('081234567890', $user->phone);
     }
 
-    public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
+    /**
+     * Berbeda dari Breeze: aplikasi ini tidak mereset status verifikasi email
+     * ketika alamat email diubah.
+     */
+    public function test_status_verifikasi_email_tidak_direset_saat_email_diubah(): void
     {
         $user = User::factory()->create();
+        $this->assertNotNull($user->email_verified_at);
 
-        $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
+        $this->actingAs($user)
+            ->put('/profile', [
                 'name' => 'Test User',
-                'email' => $user->email,
-            ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+                'email' => 'email-baru@example.com',
+                'phone' => '081234567890',
+            ])
+            ->assertSessionHasNoErrors();
 
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
-    public function test_user_can_delete_their_account(): void
+    public function test_nama_dan_email_wajib_diisi(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->delete('/profile', [
-                'password' => 'password',
-            ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
-
-        $this->assertGuest();
-        $this->assertNull($user->fresh());
+        $this->actingAs($user)
+            ->from('/profile')
+            ->put('/profile', ['name' => '', 'email' => 'bukan-email'])
+            ->assertSessionHasErrors(['name', 'email']);
     }
 
-    public function test_correct_password_must_be_provided_to_delete_account(): void
+    /**
+     * Fitur hapus akun sendiri tidak tersedia: `ProfileController::destroy()` ada,
+     * tetapi tidak ada route yang mengarah ke sana.
+     */
+    public function test_hapus_akun_sendiri_tidak_tersedia(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
-                'password' => 'wrong-password',
-            ]);
-
-        $response
-            ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
+        $this->actingAs($user)
+            ->delete('/profile', ['password' => 'password'])
+            ->assertMethodNotAllowed();
 
         $this->assertNotNull($user->fresh());
     }

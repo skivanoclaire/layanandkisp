@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\MasterInstansiController;
 use App\Http\Controllers\Api\MasterSubdomainController;
+use App\Http\Controllers\Api\SlaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,4 +21,11 @@ Route::prefix('v1')
 
         Route::get('/master/subdomain', [MasterSubdomainController::class, 'index'])
             ->name('api.master.subdomain');
+
+        // Capaian SLA layanan digital (agregat, tanpa data permohonan individual/PII)
+        Route::get('/sla/summary', [SlaController::class, 'summary'])
+            ->name('api.sla.summary');
+
+        Route::get('/sla/layanan/{serviceKey}', [SlaController::class, 'show'])
+            ->name('api.sla.show');
     });

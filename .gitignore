@@ -22,6 +22,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+deploy-sla.md
 
 # Google Sheets Service Account credentials
 /storage/app/google/

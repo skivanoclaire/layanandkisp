@@ -7,7 +7,13 @@
       "Bash(find /c/projects/laravel12-app -type f \\\\\\( -name \"*.md\" -o -name \"*.txt\" \\\\\\) -exec grep -l \"cPanel\\\\|WHM\\\\|email\\\\|disk\\\\|quota\" {} \\\\;)",
       "Bash(php -l app/Http/Controllers/Admin/SimpegCheckController.php)",
       "Bash(php -l routes/web.php)",
-      "Bash(php -l app/Models/User.php)"
+      "Bash(php -l app/Models/User.php)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Tambah .env.devcontainer ke .gitignore *)",
+      "Bash(git push *)",
+      "Bash(git rm *)",
+      "Bash(git commit -m 'Hapus .env.devcontainer dari tracking \\(file sensitif\\) *)",
+      "Bash(echo \"exit:$?\")"
     ]
   }
 }

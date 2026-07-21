@@ -1372,6 +1372,15 @@
                 </a>
             @endif
 
+            {{-- Manajemen SLA --}}
+            @if (auth()->user()?->hasPermission('Manajemen SLA'))
+                <a href="{{ route('admin.sla.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.sla.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Manajemen SLA
+                </a>
+            @endif
+
             {{-- Profile Pengguna --}}
             @if (auth()->user()?->hasPermission('user.profile'))
                 <a href="{{ route('profile.edit') }}"

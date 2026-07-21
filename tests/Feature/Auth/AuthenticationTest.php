@@ -27,7 +27,9 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // Tujuan redirect bergantung role: Admin ke /admin, Operator-Vidcon ke
+        // /op/tik/borrow, selain itu ke /dashboard (lihat AuthenticatedSessionController).
+        $response->assertRedirect('/dashboard');
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
