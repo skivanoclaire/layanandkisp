@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\SlaHoliday;
 use App\Models\SlaSetting;
 use App\Models\SlaWorkingHourSetting;
+use App\Services\Sla\NationalHolidayImporter;
 use App\Services\Sla\SlaCalculationService;
 use App\Services\Sla\SlaServiceRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
+use RuntimeException;
 
 class SlaManagementController extends Controller
 {
@@ -150,11 +152,43 @@ class SlaManagementController extends Controller
         SlaHoliday::create([
             'tanggal' => $request->tanggal,
             'keterangan' => $request->keterangan,
+            'sumber' => SlaHoliday::SUMBER_MANUAL,
             'created_by' => $request->user()->id,
         ]);
 
         return redirect()->route('admin.sla.pengaturan')
             ->with('success', 'Tanggal libur berhasil ditambahkan.');
+    }
+
+    /**
+     * Impor libur nasional & cuti bersama satu tahun dari API publik.
+     * Tanggal yang diinput manual oleh admin tidak ikut tersentuh.
+     */
+    public function importHolidays(Request $request, NationalHolidayImporter $importer)
+    {
+        $validator = Validator::make($request->all(), [
+            'tahun' => 'required|integer|min:2020|max:2100',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('admin.sla.pengaturan')->withErrors($validator);
+        }
+
+        try {
+            $hasil = $importer->import((int) $request->tahun, $request->user()->id);
+        } catch (RuntimeException $e) {
+            return redirect()->route('admin.sla.pengaturan')
+                ->with('error', 'Impor gagal: '.$e->getMessage());
+        }
+
+        return redirect()->route('admin.sla.pengaturan')->with('success', sprintf(
+            'Impor libur %d selesai: %d ditambah, %d diperbarui, %d dihapus, %d dilewati (input manual).',
+            $request->tahun,
+            $hasil['ditambah'],
+            $hasil['diperbarui'],
+            $hasil['dihapus'],
+            $hasil['dilewati'],
+        ));
     }
 
     public function destroyHoliday(SlaHoliday $slaHoliday)

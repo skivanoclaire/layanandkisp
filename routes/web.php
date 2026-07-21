@@ -596,6 +596,7 @@ Route::middleware(['auth', 'role:Admin', 'permission:Manajemen SLA'])
         Route::get('/pengaturan', [\App\Http\Controllers\Admin\SlaManagementController::class, 'settings'])->name('pengaturan');
         Route::put('/pengaturan/jam-kerja', [\App\Http\Controllers\Admin\SlaManagementController::class, 'updateWorkingHours'])->name('pengaturan.jam-kerja');
         Route::post('/pengaturan/libur', [\App\Http\Controllers\Admin\SlaManagementController::class, 'storeHoliday'])->name('pengaturan.libur.store');
+        Route::post('/pengaturan/libur/impor', [\App\Http\Controllers\Admin\SlaManagementController::class, 'importHolidays'])->name('pengaturan.libur.impor');
         Route::delete('/pengaturan/libur/{slaHoliday}', [\App\Http\Controllers\Admin\SlaManagementController::class, 'destroyHoliday'])->name('pengaturan.libur.destroy');
         Route::put('/pengaturan/{serviceKey}', [\App\Http\Controllers\Admin\SlaManagementController::class, 'updateSetting'])->name('pengaturan.update');
         Route::get('/{serviceKey}', [\App\Http\Controllers\Admin\SlaManagementController::class, 'show'])->name('show');

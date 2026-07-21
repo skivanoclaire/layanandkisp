@@ -21,6 +21,11 @@
                 {{ session('success') }}
             </div>
         @endif
+        @if (session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {{ session('error') }}
+            </div>
+        @endif
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
                 <ul class="list-disc list-inside space-y-1">
@@ -76,10 +81,31 @@
 
         {{-- Libur Nasional --}}
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-1">Libur Nasional & Cuti Bersama</h2>
-            <p class="text-sm text-gray-500 mb-4">
-                Tanggal di daftar ini dikecualikan dari perhitungan durasi kerja SLA.
-            </p>
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-1">Libur Nasional & Cuti Bersama</h2>
+                    <p class="text-sm text-gray-500">
+                        Tanggal di daftar ini dikecualikan dari perhitungan durasi kerja SLA.
+                    </p>
+                </div>
+
+                <form action="{{ route('admin.sla.pengaturan.libur.impor') }}" method="POST"
+                    class="flex items-end gap-2"
+                    onsubmit="return confirm('Impor daftar libur dari API? Tanggal yang Anda input manual tidak akan diubah.');">
+                    @csrf
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Impor tahun</label>
+                        <select name="tahun" class="border border-gray-300 rounded px-3 py-2 text-sm">
+                            @for ($t = now()->year - 1; $t <= now()->year + 1; $t++)
+                                <option value="{{ $t }}" @selected($t === now()->year)>{{ $t }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded">
+                        Impor
+                    </button>
+                </form>
+            </div>
 
             <form action="{{ route('admin.sla.pengaturan.libur.store') }}" method="POST" class="flex flex-wrap items-end gap-3 mb-5">
                 @csrf
@@ -104,14 +130,27 @@
                         <tr class="text-left text-gray-500 border-b">
                             <th class="py-2 pr-4 font-semibold">Tanggal</th>
                             <th class="py-2 pr-4 font-semibold">Keterangan</th>
+                            <th class="py-2 pr-4 font-semibold">Sumber</th>
                             <th class="py-2 font-semibold text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
                         @forelse ($holidays as $holiday)
                             <tr>
-                                <td class="py-2 pr-4">{{ $holiday->tanggal->format('d M Y') }}</td>
-                                <td class="py-2 pr-4 text-gray-600">{{ $holiday->keterangan ?? '—' }}</td>
+                                <td class="py-2 pr-4 whitespace-nowrap">{{ $holiday->tanggal->format('d M Y') }}</td>
+                                <td class="py-2 pr-4 text-gray-600">
+                                    {{ $holiday->keterangan ?? '—' }}
+                                    @if ($holiday->jenis === \App\Models\SlaHoliday::JENIS_CUTI_BERSAMA)
+                                        <span class="ml-1 text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">cuti bersama</span>
+                                    @endif
+                                </td>
+                                <td class="py-2 pr-4">
+                                    @if ($holiday->sumber === \App\Models\SlaHoliday::SUMBER_IMPORT)
+                                        <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Impor</span>
+                                    @else
+                                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Manual</span>
+                                    @endif
+                                </td>
                                 <td class="py-2 text-right">
                                     <form action="{{ route('admin.sla.pengaturan.libur.destroy', $holiday) }}" method="POST"
                                         onsubmit="return confirm('Hapus tanggal libur ini?');">
@@ -123,7 +162,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="py-4 text-center text-gray-400">Belum ada tanggal libur terdaftar.</td>
+                                <td colspan="4" class="py-4 text-center text-gray-400">Belum ada tanggal libur terdaftar.</td>
                             </tr>
                         @endforelse
                     </tbody>

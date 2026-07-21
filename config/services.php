@@ -86,6 +86,12 @@ return [
         'signature' => env('YOURLS_API_SIGNATURE'),
     ],
 
+    'libur_nasional' => [
+        // Sumber libur nasional & cuti bersama untuk perhitungan SLA.
+        // Gratis, tanpa API key. Balasan: [{date, name, is_national_holiday}]
+        'url' => env('LIBUR_NASIONAL_API_URL', 'https://libur.deno.dev/api'),
+    ],
+
     'keycloak' => [
         'client_id' => env('KEYCLOAK_CLIENT_ID'),
         'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),
