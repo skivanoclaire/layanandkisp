@@ -130,6 +130,14 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 - **IP Whitelist** untuk akses API publik
 - Daftar endpoint untuk integrasi Sistem Penghubung Layanan Pemerintah (SPLP)
 
+### Manajemen SLA (Service Level Agreement)
+- **Dashboard capaian SLA** seluruh layanan digital per bulan — jumlah permohonan, rata-rata durasi, dan persentase tepat waktu
+- **Detail per layanan** — daftar permohonan beserta durasi kerja dan status tepat waktu/terlambat
+- **Target SLA per layanan** — dapat diatur dalam satuan jam atau hari kerja, serta diaktif/nonaktifkan
+- **Jam & hari kerja** — durasi dihitung hanya pada jam kerja (default 08:00–16:00, Senin–Jumat), di luar itu tidak dihitung
+- **Libur nasional & cuti bersama** — dikecualikan dari perhitungan durasi. Dapat diimpor otomatis per tahun dari API publik, atau diinput manual untuk libur daerah
+- Akses dikontrol lewat permission **"Manajemen SLA"**
+
 ### Manajemen Survei Digital
 - Kelola **token/URL embed** survei SPBE dari satu tempat — rotasi token cukup sekali dan berlaku untuk seluruh layanan
 - Aktif/nonaktifkan survei secara global
@@ -153,6 +161,7 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 | **YOURLS** | Pembuatan & pengelolaan short link otomatis di [link.kaltaraprov.go.id](https://link.kaltaraprov.go.id) (API signature passwordless) |
 | **Fonnte WhatsApp** | Notifikasi status permohonan via WhatsApp |
 | **Survei Digital SPBE** | Embed survei kepuasan resmi [surveidigital.spbe.go.id](https://surveidigital.spbe.go.id) per layanan |
+| **API Libur Nasional** | Impor libur nasional & cuti bersama ([libur.deno.dev](https://libur.deno.dev/api?year=2026)) untuk perhitungan durasi SLA |
 
 ## API Publik (SPLP)
 
@@ -162,6 +171,10 @@ Aplikasi menyediakan API untuk integrasi dengan **SPLP (Sistem Penghubung Layana
 |--------|----------|--------|
 | `GET` | `/api/v1/master/instansi` | Data master instansi/unit kerja |
 | `GET` | `/api/v1/master/subdomain` | Data master subdomain (Web Monitor) |
+| `GET` | `/api/v1/sla/summary?bulan=&tahun=` | Ringkasan capaian SLA seluruh layanan |
+| `GET` | `/api/v1/sla/layanan/{serviceKey}?bulan=&tahun=` | Capaian SLA satu layanan |
+
+Endpoint SLA hanya mengembalikan data agregat — tanpa data permohonan individual maupun data pribadi.
 
 Autentikasi API key via header `X-API-Key: <api-key>` (alternatif: `Authorization: Bearer <api-key>`). Permintaan dari IP di luar daftar whitelist atau tanpa API key yang valid akan ditolak.
 
@@ -259,6 +272,30 @@ Autentikasi API key via header `X-API-Key: <api-key>` (alternatif: `Authorizatio
    php artisan serve
    ```
 
+9. **Impor daftar libur nasional** (untuk perhitungan SLA)
+   ```bash
+   php artisan sla:import-holidays 2026
+   ```
+   Bisa juga lewat tombol **Impor** pada menu *Manajemen SLA → Pengaturan*.
+
+## Pengujian
+
+```bash
+php artisan test
+```
+
+Test berjalan di **MySQL pada database terpisah `laravel_test`**, bukan SQLite — karena sebagian migration memakai operasi yang hanya didukung MySQL. Database test dibuat otomatis bila belum ada.
+
+Konfigurasi ini diatur di `tests/bootstrap.php`, bukan di `phpunit.xml`. Alasannya: `docker-compose.yml` menyetel `DB_*` sebagai environment variable container, yang lebih kuat daripada `<env>` di `phpunit.xml` — tanpa penimpaan lebih awal, `RefreshDatabase` bisa menghapus isi database pengembangan. **Jangan menghapus `tests/bootstrap.php` atau mengembalikan `bootstrap` di `phpunit.xml` ke `vendor/autoload.php`.**
+
+## Perintah Artisan
+
+| Perintah | Fungsi |
+|----------|--------|
+| `sla:import-holidays {tahun?}` | Impor libur nasional & cuti bersama ke daftar libur SLA (default tahun berjalan). Entri yang diinput manual admin tidak ditimpa |
+| `website:check-status` | Cek status seluruh website yang dipantau (dijadwalkan tiap jam) |
+| `cloudflare:sync` | Sinkronisasi data DNS dari Cloudflare (dijadwalkan tiap jam, menit ke-30) |
+
 ## Struktur Direktori
 
 ```
@@ -278,7 +315,8 @@ Autentikasi API key via header `X-API-Key: <api-key>` (alternatif: `Authorizatio
 │       ├── CloudflareService.php        # Service integrasi Cloudflare DNS
 │       ├── WhmApiService.php            # Service integrasi WHM/cPanel
 │       ├── AdminPendingCountsService.php# Hitung badge permohonan menunggu
-│       └── FonnteWhatsappService.php    # Service notifikasi WhatsApp
+│       ├── FonnteWhatsappService.php    # Service notifikasi WhatsApp
+│       └── Sla/                         # Perhitungan SLA, jam kerja, impor libur nasional
 ├── database/
 │   └── migrations/
 ├── resources/
