@@ -52,6 +52,26 @@
             </div>
         @endif
 
+        @if ($request->hasBeritaAcara())
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="text-sm text-blue-800">
+                        <p class="font-semibold">Berita Acara tersedia</p>
+                        @if ($request->berita_acara_uploaded_at)
+                            <p class="text-xs text-blue-600 mt-1">Diunggah: {{ $request->berita_acara_uploaded_at->format('d/m/Y H:i') }}</p>
+                        @endif
+                    </div>
+                    <a href="{{ route('user.subdomain.data-update.berita-acara.download', $request->id) }}"
+                       class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Unduh Berita Acara
+                    </a>
+                </div>
+            </div>
+        @endif
+
         <div>
             <h3 class="font-semibold text-gray-800 mb-3">Perbandingan Data</h3>
             @include('user.subdomain.data-update._diff', [

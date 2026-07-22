@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SubdomainDataUpdateAdminController extends Controller
 {
@@ -186,6 +187,81 @@ class SubdomainDataUpdateAdminController extends Controller
 
         return redirect()->route('admin.subdomain.data-update.index')
             ->with('success', 'Permohonan pembaruan data berhasil ditolak.');
+    }
+
+    /**
+     * Unggah berita acara (PDF/DOCX) untuk permohonan yang sudah selesai (disetujui).
+     */
+    public function uploadBeritaAcara(Request $request, $id)
+    {
+        $request->validate([
+            'file_berita_acara' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ], [
+            'file_berita_acara.required' => 'Berkas berita acara harus dipilih.',
+            'file_berita_acara.mimes' => 'Berkas harus berformat PDF, DOC, atau DOCX.',
+            'file_berita_acara.max' => 'Ukuran berkas maksimal 10 MB.',
+        ]);
+
+        $dataRequest = SubdomainDataUpdateRequest::findOrFail($id);
+
+        if (!$dataRequest->isCompleted()) {
+            return back()->with('error', 'Berita acara hanya dapat diunggah untuk permohonan yang sudah selesai (disetujui).');
+        }
+
+        try {
+            // Hapus berkas lama jika ada (ganti berkas).
+            if ($dataRequest->file_berita_acara) {
+                Storage::disk('public')->delete($dataRequest->file_berita_acara);
+            }
+
+            $file = $request->file('file_berita_acara');
+            $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $file->getClientOriginalName());
+            $filename = 'berita_acara_' . time() . '_' . $sanitizedName;
+            $path = $file->storeAs('subdomain/data-update/berita_acara', $filename, 'public');
+
+            $dataRequest->update([
+                'file_berita_acara' => $path,
+                'berita_acara_uploaded_at' => now(),
+            ]);
+
+            Log::info('Berita acara pembaruan data subdomain diunggah', [
+                'data_update_request_id' => $dataRequest->id,
+                'admin_id' => Auth::id(),
+            ]);
+
+            return back()->with('success', 'Berita acara berhasil diunggah.');
+        } catch (\Exception $e) {
+            Log::error('Gagal mengunggah berita acara pembaruan data subdomain', [
+                'data_update_request_id' => $dataRequest->id,
+                'error' => $e->getMessage(),
+                'admin_id' => Auth::id(),
+            ]);
+
+            return back()->with('error', 'Gagal mengunggah berita acara: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Unduh berita acara (admin).
+     */
+    public function downloadBeritaAcara($id)
+    {
+        $dataRequest = SubdomainDataUpdateRequest::findOrFail($id);
+
+        if (!$dataRequest->file_berita_acara) {
+            return back()->with('error', 'Berita acara belum tersedia.');
+        }
+
+        $filePath = storage_path('app/public/' . $dataRequest->file_berita_acara);
+
+        if (!file_exists($filePath)) {
+            return back()->with('error', 'Berkas berita acara tidak ditemukan.');
+        }
+
+        $extension = pathinfo($dataRequest->file_berita_acara, PATHINFO_EXTENSION);
+        $filename = 'Berita_Acara_' . $dataRequest->ticket_number . '.' . $extension;
+
+        return response()->download($filePath, $filename);
     }
 
     /**

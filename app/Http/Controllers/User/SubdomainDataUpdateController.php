@@ -179,6 +179,31 @@ class SubdomainDataUpdateController extends Controller
     }
 
     /**
+     * Unduh berita acara milik permohonan sendiri.
+     */
+    public function downloadBeritaAcara($id)
+    {
+        $dataRequest = SubdomainDataUpdateRequest::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        if (!$dataRequest->file_berita_acara) {
+            return back()->with('error', 'Berita acara belum tersedia.');
+        }
+
+        $filePath = storage_path('app/public/' . $dataRequest->file_berita_acara);
+
+        if (!file_exists($filePath)) {
+            return back()->with('error', 'Berkas berita acara tidak ditemukan.');
+        }
+
+        $extension = pathinfo($dataRequest->file_berita_acara, PATHINFO_EXTENSION);
+        $filename = 'Berita_Acara_' . $dataRequest->ticket_number . '.' . $extension;
+
+        return response()->download($filePath, $filename);
+    }
+
+    /**
      * Subdomain milik unit kerja pengguna (semua status — termasuk non-aktif,
      * agar datanya tetap bisa diperbarui sebagai bahan pertimbangan).
      */

@@ -58,6 +58,10 @@
                                             <a href="{{ route('user.subdomain.data-update.edit', $req->id) }}"
                                                 class="text-blue-600 hover:text-blue-800 font-medium">Edit</a>
                                         @endif
+                                        @if ($req->hasBeritaAcara())
+                                            <a href="{{ route('user.subdomain.data-update.berita-acara.download', $req->id) }}"
+                                                class="text-blue-600 hover:text-blue-800 font-medium">Berita Acara</a>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

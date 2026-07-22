@@ -75,9 +75,13 @@
                             <td class="px-4 py-2">{{ $req->user->name ?? '-' }}</td>
                             <td class="px-4 py-2">@include('user.subdomain.data-update._status', ['status' => $req->status])</td>
                             <td class="px-4 py-2 text-sm">{{ $req->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="px-4 py-2">
+                            <td class="px-4 py-2 space-x-3">
                                 <a href="{{ route('admin.subdomain.data-update.show', $req->id) }}"
                                     class="text-green-600 hover:text-green-800 font-medium">Detail</a>
+                                @if ($req->hasBeritaAcara())
+                                    <a href="{{ route('admin.subdomain.data-update.berita-acara.download', $req->id) }}"
+                                        class="text-blue-600 hover:text-blue-800 font-medium">Berita Acara</a>
+                                @endif
                             </td>
                         </tr>
                     @empty

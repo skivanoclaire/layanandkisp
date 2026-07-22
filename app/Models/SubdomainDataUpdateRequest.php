@@ -50,6 +50,8 @@ class SubdomainDataUpdateRequest extends Model
         'processed_by',
         'processed_at',
         'applied_at',
+        'file_berita_acara',
+        'berita_acara_uploaded_at',
     ];
 
     protected $casts = [
@@ -57,6 +59,7 @@ class SubdomainDataUpdateRequest extends Model
         'original_data' => 'array',
         'processed_at' => 'datetime',
         'applied_at' => 'datetime',
+        'berita_acara_uploaded_at' => 'datetime',
     ];
 
     // Relationships
@@ -126,6 +129,18 @@ class SubdomainDataUpdateRequest extends Model
     public function isEditable(): bool
     {
         return in_array($this->status, ['pending', 'revisi'], true);
+    }
+
+    /** Permohonan dianggap selesai bila sudah disetujui. */
+    public function isCompleted(): bool
+    {
+        return $this->status === 'disetujui';
+    }
+
+    /** Sudah ada berkas berita acara terunggah? */
+    public function hasBeritaAcara(): bool
+    {
+        return !empty($this->file_berita_acara);
     }
 
     /** Ada usulan perubahan status pensiun/non-aktif? */

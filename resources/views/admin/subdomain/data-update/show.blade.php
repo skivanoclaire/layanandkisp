@@ -65,6 +65,52 @@
             ])
         </div>
 
+        @if ($request->isCompleted())
+            <div class="border-t pt-6">
+                <h3 class="font-semibold text-gray-800 mb-3">Berita Acara</h3>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                    @if ($request->hasBeritaAcara())
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div class="text-sm text-blue-800">
+                                <p class="font-semibold">Berita acara sudah tersedia.</p>
+                                @if ($request->berita_acara_uploaded_at)
+                                    <p class="text-xs text-blue-600 mt-1">Diunggah: {{ $request->berita_acara_uploaded_at->format('d/m/Y H:i') }}</p>
+                                @endif
+                            </div>
+                            <a href="{{ route('admin.subdomain.data-update.berita-acara.download', $request->id) }}"
+                               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                                </svg>
+                                Unduh Berita Acara
+                            </a>
+                        </div>
+                    @else
+                        <p class="text-sm text-blue-800">Belum ada berita acara yang diunggah untuk permohonan ini.</p>
+                    @endif
+
+                    <form method="POST" action="{{ route('admin.subdomain.data-update.berita-acara.upload', $request->id) }}"
+                          enctype="multipart/form-data" class="flex flex-wrap items-end gap-3 pt-2 border-t border-blue-100">
+                        @csrf
+                        <div>
+                            <label class="block text-xs font-semibold text-blue-800 mb-1">
+                                {{ $request->hasBeritaAcara() ? 'Ganti berkas (PDF/DOCX)' : 'Unggah berkas (PDF/DOCX)' }}
+                            </label>
+                            <input type="file" name="file_berita_acara" accept=".pdf,.doc,.docx" required
+                                   class="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                            <p class="text-xs text-gray-500 mt-1">Maksimal 10 MB.</p>
+                            @error('file_berita_acara')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-lg">
+                            {{ $request->hasBeritaAcara() ? 'Ganti' : 'Unggah' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @endif
+
         @if ($request->status === 'pending')
             <div class="border-t pt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 {{-- Setujui --}}

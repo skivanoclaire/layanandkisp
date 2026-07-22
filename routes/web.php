@@ -518,6 +518,7 @@ Route::middleware(['auth','verified.user','permission:user.subdomain.index,user.
             Route::get('/{id}', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'edit'])->name('edit');
             Route::put('/{id}', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'update'])->name('update');
+            Route::get('/{id}/berita-acara', [\App\Http\Controllers\User\SubdomainDataUpdateController::class, 'downloadBeritaAcara'])->name('berita-acara.download');
         });
     });
 
@@ -569,6 +570,8 @@ Route::middleware(['auth','role:Admin'])->prefix('admin/digital/subdomain')->nam
         Route::post('/{id}/approve', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'approve'])->name('approve');
         Route::post('/{id}/revisi', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'revisi'])->name('revisi');
         Route::post('/{id}/reject', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'reject'])->name('reject');
+        Route::post('/{id}/berita-acara', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'uploadBeritaAcara'])->name('berita-acara.upload');
+        Route::get('/{id}/berita-acara', [\App\Http\Controllers\Admin\SubdomainDataUpdateAdminController::class, 'downloadBeritaAcara'])->name('berita-acara.download');
     });
 
     // Route dengan parameter dinamis harus di akhir
