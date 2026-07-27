@@ -71,7 +71,13 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div>{{ $req->nama }}</div>
-                                <div class="text-xs text-gray-500">{{ $req->nip }}</div>
+                                <div class="text-xs text-gray-500">
+                                    @if($req->is_kabupaten_kota)
+                                        {{ $req->unit_kerja_manual ?? '-' }}
+                                    @else
+                                        {{ $req->unitKerja->nama ?? '-' }}
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-4 py-3">{{ $req->tipe }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm">{{ $req->created_at->format('d/m/Y') }}</td>
