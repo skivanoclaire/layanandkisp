@@ -1041,14 +1041,41 @@ Route::middleware(['auth','role:Admin'])
         Route::post('/{cloudStorageRequest}/update-notes', [\App\Http\Controllers\Admin\CloudStorageRequestController::class, 'updateNotes'])->name('update-notes');
     });
 
-// Konsultasi SPBE Berbasis AI - User only (no admin needed)
+// Konsultasi SPBE Berbasis AI (User)
 Route::middleware(['auth','verified.user','permission:Akses Konsultasi SPBE AI'])
     ->prefix('digital/konsultasi-spbe-ai')
     ->name('user.konsultasi-spbe-ai.')
     ->group(function () {
         Route::get('/', [\App\Http\Controllers\User\KonsultasiSpbeAiController::class, 'index'])->name('index');
+        // "Tanya Langsung" — percakapan di dalam portal
+        Route::get('/chat', [\App\Http\Controllers\User\KonsultasiSpbeAiController::class, 'chat'])->name('chat');
+        Route::post('/chat', [\App\Http\Controllers\User\KonsultasiSpbeAiController::class, 'ask'])->name('ask');
+        Route::delete('/chat', [\App\Http\Controllers\User\KonsultasiSpbeAiController::class, 'clear'])->name('clear');
+        // "Tanya via ChatGPT" — arahkan ke asisten GPT eksternal
         Route::get('/access', [\App\Http\Controllers\User\KonsultasiSpbeAiController::class, 'access'])->name('access');
         Route::get('/survey', [\App\Http\Controllers\User\KonsultasiSpbeAiController::class, 'survey'])->name('survey');
+    });
+
+// Konsultasi SPBE Berbasis AI - Knowledge Base (Admin)
+Route::middleware(['auth','permission:Kelola Knowledge Base AI'])
+    ->prefix('admin/digital/konsultasi-ai')
+    ->name('admin.konsultasi-ai.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'index'])->name('index');
+
+        Route::post('/dokumen', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'storeDocument'])->name('dokumen.store');
+        Route::get('/dokumen/{dokumen}/edit', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'editDocument'])->name('dokumen.edit');
+        Route::put('/dokumen/{dokumen}', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'updateDocument'])->name('dokumen.update');
+        Route::post('/dokumen/{dokumen}/toggle', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'toggleDocument'])->name('dokumen.toggle');
+        Route::delete('/dokumen/{dokumen}', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'destroyDocument'])->name('dokumen.destroy');
+
+        Route::post('/faq', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'storeFaq'])->name('faq.store');
+        Route::get('/faq/{faq}/edit', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'editFaq'])->name('faq.edit');
+        Route::put('/faq/{faq}', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'updateFaq'])->name('faq.update');
+        Route::delete('/faq/{faq}', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'destroyFaq'])->name('faq.destroy');
+
+        Route::put('/pengaturan', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'updateSettings'])->name('settings.update');
+        Route::post('/pengaturan/test', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'testConnection'])->name('settings.test');
     });
 
 // TTE - Pendampingan Aktivasi dan Penggunaan TTE (User)

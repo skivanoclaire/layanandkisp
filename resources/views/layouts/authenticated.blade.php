@@ -1372,6 +1372,15 @@
                 </a>
             @endif
 
+            {{-- Knowledge Base Konsultasi SPBE AI --}}
+            @if (auth()->user()?->hasPermission('Kelola Knowledge Base AI'))
+                <a href="{{ route('admin.konsultasi-ai.index') }}"
+                    class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+               {{ request()->routeIs('admin.konsultasi-ai.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                    Knowledge Base AI
+                </a>
+            @endif
+
             {{-- Manajemen SLA --}}
             @if (auth()->user()?->hasPermission('Manajemen SLA'))
                 <a href="{{ route('admin.sla.index') }}"

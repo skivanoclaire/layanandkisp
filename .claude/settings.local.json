@@ -13,7 +13,10 @@
       "Bash(git push *)",
       "Bash(git rm *)",
       "Bash(git commit -m 'Hapus .env.devcontainer dari tracking \\(file sensitif\\) *)",
-      "Bash(echo \"exit:$?\")"
+      "Bash(echo \"exit:$?\")",
+      "Bash(python -c \"import docx; print\\('docx ok'\\)\")",
+      "Bash(python -c \"import zipfile; print\\('zip ok'\\)\")",
+      "Skill(claude-api)"
     ]
   }
 }

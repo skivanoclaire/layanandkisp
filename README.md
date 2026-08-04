@@ -65,6 +65,8 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 ### 🤖 Konsultasi SPBE Berbasis AI
 - Konsultasi terkait Sistem Pemerintahan Berbasis Elektronik
 - Panduan implementasi SPBE
+- **Tanya Langsung** — percakapan di dalam portal. Jawaban disusun dari knowledge base yang dikelola admin (dokumen dasar + pertanyaan contoh), lengkap dengan riwayat percakapan pengguna
+- **Tanya via ChatGPT** — membuka asisten GPT "Asisten SPBE Kalimantan Utara" pada tab baru untuk pertanyaan yang lebih luas
 
 ### ✍️ Tanda Tangan Elektronik (TTE)
 - Pendampingan aktivasi dan penggunaan TTE
@@ -138,6 +140,16 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 - **Libur nasional & cuti bersama** — dikecualikan dari perhitungan durasi. Dapat diimpor otomatis per tahun dari API publik, atau diinput manual untuk libur daerah
 - Akses dikontrol lewat permission **"Manajemen SLA"**
 
+### Knowledge Base Konsultasi SPBE AI
+- **Dokumen dasar** — unggah PDF/DOC/DOCX/TXT/MD/CSV (maks. 10 MB) sebagai sumber jawaban. Teks TXT/MD/CSV/DOCX diekstrak otomatis; untuk PDF isi teks ditempelkan manual pada kolom **Isi Teks**
+- **Pertanyaan contoh** — daftar tanya-jawab beserta kata kunci pemicu, dipakai menjawab otomatis dan sebagai konteks tambahan bagi AI
+- **Pengaturan asisten** — aktivasi AI, pilihan model, instruksi sistem (*system prompt*), dan pesan bila jawaban tidak ditemukan
+- **Evaluasi** — daftar pertanyaan pengguna yang belum terjawab, sebagai bahan melengkapi knowledge base
+- Dokumen/pertanyaan dapat diaktif-nonaktifkan tanpa dihapus; hanya yang aktif menjadi dasar jawaban
+- Akses dikontrol lewat permission **"Kelola Knowledge Base AI"**
+
+> **Status: prototipe.** Selama `ANTHROPIC_API_KEY` belum diisi, layanan Tanya Langsung berjalan pada *mode prototipe* — jawaban diambil dari knowledge base lokal (pertanyaan contoh, lalu kutipan dokumen) dan pertanyaan di luar itu mendapat pesan fallback. Setelah API key dianggarkan: isi `ANTHROPIC_API_KEY` di `.env`, jalankan `php artisan config:clear`, lalu centang **Aktifkan jawaban oleh AI** pada tab Pengaturan. Tidak ada perubahan kode yang diperlukan — seluruh knowledge base yang sudah disiapkan otomatis menjadi konteks jawaban Claude.
+
 ### Manajemen Survei Digital
 - Kelola **token/URL embed** survei SPBE dari satu tempat — rotasi token cukup sekali dan berlaku untuk seluruh layanan
 - Aktif/nonaktifkan survei secara global
@@ -162,6 +174,7 @@ Portal Layanan TIK (E-Layanan) adalah sistem pelayanan berbasis web yang menyedi
 | **Fonnte WhatsApp** | Notifikasi status permohonan via WhatsApp |
 | **Survei Digital SPBE** | Embed survei kepuasan resmi [surveidigital.spbe.go.id](https://surveidigital.spbe.go.id) per layanan |
 | **API Libur Nasional** | Impor libur nasional & cuti bersama ([libur.deno.dev](https://libur.deno.dev/api?year=2026)) untuk perhitungan durasi SLA |
+| **Anthropic (Claude)** | Mesin jawaban Konsultasi SPBE Berbasis AI. *Belum aktif* — menunggu penganggaran API key; sementara layanan berjalan pada mode prototipe berbasis knowledge base lokal |
 
 ## API Publik (SPLP)
 

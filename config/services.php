@@ -92,6 +92,13 @@ return [
         'url' => env('LIBUR_NASIONAL_API_URL', 'https://libur.deno.dev/api'),
     ],
 
+    'anthropic' => [
+        // Konsultasi SPBE Berbasis AI. Selama API key belum dianggarkan, biarkan
+        // kosong — layanan otomatis berjalan pada mode prototipe (knowledge base lokal).
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'model'   => env('ANTHROPIC_MODEL', 'claude-sonnet-5'),
+    ],
+
     'keycloak' => [
         'client_id' => env('KEYCLOAK_CLIENT_ID'),
         'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),

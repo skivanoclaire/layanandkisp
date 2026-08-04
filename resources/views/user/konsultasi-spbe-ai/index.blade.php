@@ -98,13 +98,22 @@
                 </ul>
 
                 <div class="flex flex-wrap items-center gap-3">
-                    <a href="{{ route('user.konsultasi-spbe-ai.access') }}"
-                       target="_blank"
+                    <a href="{{ route('user.konsultasi-spbe-ai.chat') }}"
                        class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-lg shadow-lg transform transition duration-200 hover:scale-105">
                         <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
                         </svg>
-                        Akses Disini
+                        Tanya Langsung
+                    </a>
+
+                    <a href="{{ route('user.konsultasi-spbe-ai.access') }}"
+                       target="_blank"
+                       class="inline-flex items-center px-6 py-4 bg-white border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50 font-bold rounded-lg shadow-md transform transition duration-200 hover:scale-105">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+                            <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+                        </svg>
+                        Tanya via ChatGPT
                     </a>
 
                     @if (!empty($hasAccessed))
@@ -118,12 +127,32 @@
                     @endif
                 </div>
 
-                <p class="text-sm text-gray-500 mt-4">
-                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                    </svg>
-                    Layanan ini akan membuka halaman ChatGPT khusus Asisten SPBE Kalimantan Utara
-                </p>
+                <div class="mt-4 space-y-2 text-sm text-gray-600">
+                    <p class="flex items-start">
+                        <svg class="w-4 h-4 mt-0.5 mr-2 flex-shrink-0 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <span><strong>Tanya Langsung</strong> — berkonsultasi di dalam portal ini. Jawaban disusun berdasarkan dokumen dan regulasi yang dikelola Diskominfo Kalimantan Utara.</span>
+                    </p>
+                    <p class="flex items-start">
+                        <svg class="w-4 h-4 mt-0.5 mr-2 flex-shrink-0 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <span><strong>Tanya via ChatGPT</strong> — membuka Asisten SPBE Kalimantan Utara di ChatGPT pada tab baru, untuk pertanyaan yang lebih luas. Memerlukan akun ChatGPT.</span>
+                    </p>
+                </div>
+
+                @if (empty($aiAktif))
+                    <div class="mt-4 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+                        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>
+                            Layanan <strong>Tanya Langsung</strong> masih dalam tahap prototipe. Untuk sementara,
+                            jawaban diambil dari daftar pertanyaan dan dokumen yang telah disiapkan admin.
+                        </span>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
