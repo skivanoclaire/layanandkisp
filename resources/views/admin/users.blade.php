@@ -142,7 +142,10 @@
                         {{-- NIP / NIK --}}
                         <td class="px-3 py-2 align-top">
                             <p class="text-gray-700 font-mono text-xs">{{ $user->nip ?? '-' }}</p>
-                            <p class="text-gray-400 font-mono text-xs mt-0.5">{{ $user->nik ?? '-' }}</p>
+                            <p class="mt-0.5">
+                                <x-masked-value :value="$user->nik" label="NIK"
+                                    text-class="text-gray-400 font-mono text-xs" />
+                            </p>
                         </td>
 
                         {{-- Jabatan --}}
@@ -157,7 +160,8 @@
 
                         {{-- No. HP --}}
                         <td class="px-3 py-2 align-top hidden sm:table-cell">
-                            <span class="text-gray-700 text-xs">{{ $user->phone ?? '-' }}</span>
+                            <x-masked-value :value="$user->phone" label="Nomor HP"
+                                text-class="text-gray-700 font-mono text-xs" />
                         </td>
 
                         {{-- Role --}}
