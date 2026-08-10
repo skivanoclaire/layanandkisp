@@ -1185,9 +1185,9 @@ Route::middleware(['auth','role:Admin'])
         Route::put('/', [\App\Http\Controllers\Admin\SurveiDigitalController::class, 'update'])->name('update');
     });
 
-// Aset TIK - admin + admin-vidcon
+// Aset Vidcon - admin + admin-vidcon
 Route::middleware(['auth','role:Admin,Operator-Vidcon'])
-    ->prefix('admin/aset-tik')->name('admin.tik.')
+    ->prefix('admin/aset-vidcon')->name('admin.tik.')
     ->group(function () {
         // Assets
         Route::get('/',              \App\Http\Controllers\Admin\TikAssetController::class.'@index')->name('assets.index');
@@ -1239,7 +1239,7 @@ Route::middleware(['auth', 'role:Admin'])
 
 // ===== Admin + Admin Vidcon: Pelacakan & Detail Borrowing =====
 Route::middleware(['auth','role:Admin,Operator-Vidcon'])
-    ->prefix('admin/aset-tik/borrowings')->name('admin.tik.borrow.')
+    ->prefix('admin/aset-vidcon/borrowings')->name('admin.tik.borrow.')
     ->group(function () {
         Route::get('/',            \App\Http\Controllers\Admin\TikBorrowingAdminController::class.'@index')->name('index');
         Route::get('/{borrowing}', \App\Http\Controllers\Admin\TikBorrowingAdminController::class.'@show')->name('show');
