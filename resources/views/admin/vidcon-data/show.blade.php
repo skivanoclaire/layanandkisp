@@ -256,7 +256,7 @@
                          alt="{{ $doc->caption ?? 'Dokumentasi' }}"
                          class="w-full h-48 object-cover rounded-lg shadow-md">
 
-                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-70 transition-all duration-300 rounded-lg flex items-center justify-center" style="background-color: rgba(0, 0, 0, 0);">
+                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/70 transition-all duration-300 rounded-lg flex items-center justify-center">
                         <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center">
                             <a href="{{ $doc->image_url }}" target="_blank"
                                class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">

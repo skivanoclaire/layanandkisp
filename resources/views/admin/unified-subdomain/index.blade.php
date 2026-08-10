@@ -334,7 +334,7 @@
 
 <!-- Quick Approve Modal (using Alpine.js) -->
 <div x-data="{ showApproveModal: false, approveId: null }" x-cloak>
-    <div x-show="showApproveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    <div x-show="showApproveModal" class="fixed inset-0 bg-gray-600/50 overflow-y-auto h-full w-full z-50"
          @click.self="showApproveModal = false">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3">

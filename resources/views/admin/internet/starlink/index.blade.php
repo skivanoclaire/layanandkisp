@@ -132,7 +132,7 @@
 </div>
 
 <!-- Toggle Service Modal -->
-<div id="toggleServiceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<div id="toggleServiceModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <h3 class="text-xl font-bold text-gray-800 mb-4">
             {{ $serviceSetting && $serviceSetting->is_active ? 'Nonaktifkan' : 'Aktifkan' }} Layanan Starlink

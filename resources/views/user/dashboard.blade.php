@@ -20,7 +20,7 @@
                         <p class="text-sm mb-2">
                             Untuk mengakses layanan digital, hubungi Administrator DKISP.
                         </p>
-                        <div class="bg-white bg-opacity-50 rounded p-2 text-xs">
+                        <div class="bg-white/50 rounded p-2 text-xs">
                             <p class="font-semibold mb-1">Kontak:</p>
                             <p>📧 bidang.aptika@kaltaraprov.go.id • 📱 +6282253731353</p>
                         </div>

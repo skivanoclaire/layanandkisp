@@ -276,7 +276,7 @@
 </div>
 
 <!-- Upload Dokumen Modal -->
-<div id="uploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+<div id="uploadModal" class="fixed inset-0 bg-gray-600/50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-gray-800">Upload Dokumen</h3>
@@ -341,7 +341,7 @@
 </div>
 
 <!-- Add Milestone Modal -->
-<div id="milestoneModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+<div id="milestoneModal" class="fixed inset-0 bg-gray-600/50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-gray-800">Tambah Milestone</h3>
@@ -388,7 +388,7 @@
 </div>
 
 <!-- Update Milestone Modal -->
-<div id="updateMilestoneModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+<div id="updateMilestoneModal" class="fixed inset-0 bg-gray-600/50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-gray-800">Update Milestone</h3>

@@ -242,7 +242,7 @@
 </div>
 
 <!-- Sign Modal -->
-<div id="signModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+<div id="signModal" class="fixed inset-0 bg-gray-600/50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Tandatangani Surat</h3>
@@ -310,7 +310,7 @@
 </div>
 
 <!-- Delivery Modal -->
-<div id="deliveryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+<div id="deliveryModal" class="fixed inset-0 bg-gray-600/50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Catat Pengiriman Surat</h3>
@@ -390,7 +390,7 @@
 </div>
 
 <!-- Ministry Status Modal -->
-<div id="ministryStatusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+<div id="ministryStatusModal" class="fixed inset-0 bg-gray-600/50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Update Status Kementerian</h3>
@@ -479,7 +479,7 @@ function closeMinistryStatusModal() {
 
 // Close modals when clicking outside
 window.onclick = function(event) {
-    if (event.target.classList.contains('bg-opacity-50')) {
+    if (event.target.classList.contains('bg-gray-600/50')) {
         closeSignModal();
         closeDeliveryModal();
         closeMinistryStatusModal();

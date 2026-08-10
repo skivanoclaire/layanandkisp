@@ -248,7 +248,7 @@
 </div>
 
 <!-- Approve Modal -->
-<div id="approveModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+<div id="approveModal" class="fixed inset-0 bg-gray-600/50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <div class="flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mx-auto">
@@ -280,7 +280,7 @@
 </div>
 
 <!-- Revision Modal -->
-<div id="revisionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+<div id="revisionModal" class="fixed inset-0 bg-gray-600/50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <div class="flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mx-auto">
@@ -326,7 +326,7 @@
 </div>
 
 <!-- Reject Modal -->
-<div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+<div id="rejectModal" class="fixed inset-0 bg-gray-600/50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <div class="flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mx-auto">
@@ -385,7 +385,7 @@ function closeRejectModal() {
 
 // Close modals when clicking outside
 window.onclick = function(event) {
-    if (event.target.classList.contains('bg-opacity-50')) {
+    if (event.target.classList.contains('bg-gray-600/50')) {
         closeApproveModal();
         closeRevisionModal();
         closeRejectModal();

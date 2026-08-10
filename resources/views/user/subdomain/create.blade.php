@@ -1381,7 +1381,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Show Data Classification Info Modal
 function showDcInfo() {
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
     modal.innerHTML = `
         <div class="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             <div class="bg-cyan-600 text-white px-6 py-4 flex justify-between items-center sticky top-0">

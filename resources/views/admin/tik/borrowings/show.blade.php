@@ -112,7 +112,7 @@
 
     {{-- Modal Force Close --}}
     @if($borrowing->status === 'ongoing')
-    <div id="forceCloseModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div id="forceCloseModal" class="hidden fixed inset-0 bg-gray-600/50 overflow-y-auto h-full w-full z-50">
         <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
             <div class="mt-3">
                 <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full">

@@ -37,10 +37,11 @@
     @stack('styles')
 </head>
 
-<body class="bg-gray-50 text-gray-800 min-h-screen flex overflow-x-hidden max-w-full" x-data="{ sidebarOpen: true }">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex overflow-x-hidden max-w-full" x-data="{ sidebarOpen: window.innerWidth >= 768, isMobile() { return window.innerWidth < 768 } }">
 
     <!-- Overlay untuk mobile -->
-    <div x-show="sidebarOpen" class="fixed inset-0 bg-white bg-opacity-0 z-40 md:hidden" @click="sidebarOpen = false">
+    <div x-show="sidebarOpen" x-transition.opacity class="fixed inset-0 bg-black/40 z-40 md:hidden"
+        @click="sidebarOpen = false">
     </div>
 
     <!-- Sidebar Universal -->
@@ -51,7 +52,8 @@
             <a href="/" class="text-2xl font-bold text-green-300" x-show="!sidebarOpen">EL</a>
         </div>
 
-        <nav class="mt-6 space-y-2 flex-1 overflow-y-auto px-4 pb-6">
+        <nav class="mt-6 space-y-2 flex-1 overflow-y-auto px-4 pb-6"
+            @click="if (isMobile() && $event.target.closest('a')) sidebarOpen = false">
             {{-- Dashboard Admin --}}
             @if (auth()->user()?->hasPermission('admin.dashboard'))
                 <a href="{{ route('admin.dashboard') }}"

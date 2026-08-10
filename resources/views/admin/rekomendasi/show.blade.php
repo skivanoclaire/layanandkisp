@@ -171,7 +171,7 @@
     </div>
 
     {{-- Approve Modal --}}
-    <div id="approveModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="approveModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg w-full max-w-md">
             <h3 class="text-lg font-bold mb-4">Setujui Usulan</h3>
             <form action="{{ route('admin.rekomendasi.approve', $form->id) }}" method="POST">
@@ -190,7 +190,7 @@
     </div>
 
     {{-- Revision Modal --}}
-    <div id="revisionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="revisionModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg w-full max-w-md">
             <h3 class="text-lg font-bold mb-4">Minta Revisi</h3>
             <form action="{{ route('admin.rekomendasi.request-revision', $form->id) }}" method="POST">
@@ -209,7 +209,7 @@
     </div>
 
     {{-- Reject Modal --}}
-    <div id="rejectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="rejectModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg w-full max-w-md">
             <h3 class="text-lg font-bold mb-4">Tolak Usulan</h3>
             <form action="{{ route('admin.rekomendasi.reject', $form->id) }}" method="POST">
