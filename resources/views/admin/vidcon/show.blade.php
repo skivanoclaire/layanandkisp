@@ -247,6 +247,12 @@
                             <p class="text-gray-800">{{ $item->meeting_password }}</p>
                         </div>
                     @endif
+                    @if($item->akun_zoom)
+                        <div>
+                            <label class="block text-sm font-semibold text-green-700 mb-1">Akun Zoom:</label>
+                            <p class="text-gray-800">Akun {{ $item->akun_zoom }}</p>
+                        </div>
+                    @endif
                     @if($item->informasi_tambahan)
                         <div>
                             <label class="block text-sm font-semibold text-green-700 mb-1">Informasi Tambahan:</label>
@@ -311,6 +317,12 @@
                                    placeholder="abc123">
                         </div>
                     </div>
+                    @include('admin.vidcon.partials.akun-zoom-field', [
+                        'item' => $item,
+                        'labelClass' => 'text-amber-800',
+                        'borderClass' => 'border-amber-300 focus:ring-amber-500',
+                        'note' => 'Perubahan akun Zoom juga akan memperbarui Data Fasilitasi Vidcon.',
+                    ])
                     <div class="mb-3">
                         <label class="block text-sm font-semibold text-amber-800 mb-1">Informasi Tambahan:</label>
                         <textarea name="informasi_tambahan" rows="3"
@@ -408,6 +420,12 @@
                                placeholder="abc123">
                     </div>
                 </div>
+                @include('admin.vidcon.partials.akun-zoom-field', [
+                    'item' => $item,
+                    'labelClass' => 'text-green-700',
+                    'borderClass' => 'border-green-300 focus:ring-green-500',
+                    'note' => 'Akun yang dipilih otomatis tersimpan ke Data Fasilitasi Vidcon saat permohonan disetujui.',
+                ])
                 <div class="mb-3">
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-sm font-semibold text-green-700">Operator Ditugaskan:</label>
@@ -546,6 +564,12 @@
                         @enderror
                     </div>
                 </div>
+                @include('admin.vidcon.partials.akun-zoom-field', [
+                    'item' => $item,
+                    'labelClass' => 'text-blue-700',
+                    'borderClass' => 'border-blue-300 focus:ring-blue-500',
+                    'note' => 'Akun yang dipilih otomatis tersimpan ke Data Fasilitasi Vidcon saat permohonan disetujui.',
+                ])
                 <div class="mb-3">
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-sm font-semibold text-blue-700">Operator Ditugaskan:</label>
@@ -769,6 +793,59 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Cek bentrok jadwal untuk akun Zoom yang dipilih (memakai endpoint Data Vidcon).
+    // Tanggal/jam diambil dari permohonan ini karena tidak dapat diubah oleh admin di sini.
+    const zoomSchedule = {
+        tanggal_mulai: '{{ $item->tanggal_mulai->format('Y-m-d') }}',
+        tanggal_selesai: '{{ $item->tanggal_selesai->format('Y-m-d') }}',
+        jam_mulai: '{{ $item->jam_mulai }}',
+        jam_selesai: '{{ $item->jam_selesai }}',
+        exclude_id: {{ $vidconData->id ?? 'null' }},
+    };
+
+    document.querySelectorAll('.akun-zoom-select').forEach(function(select) {
+        const wrapper = select.closest('div');
+        const warningDiv = wrapper.querySelector('.zoom-conflict-warning');
+        const detailsDiv = wrapper.querySelector('.zoom-conflict-details');
+
+        select.addEventListener('change', function() {
+            if (!select.value) {
+                warningDiv.classList.add('hidden');
+                return;
+            }
+
+            fetch('{{ route('admin.vidcon-data.check-zoom-conflict') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(Object.assign({ akun_zoom: select.value }, zoomSchedule)),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.has_conflict) {
+                    warningDiv.classList.add('hidden');
+                    return;
+                }
+
+                let message = '';
+                data.conflicts.forEach(conflict => {
+                    message += `<strong>Akun ${conflict.akun_zoom}</strong> telah digunakan pada:<br>`;
+                    message += `• ${conflict.judul_kegiatan}<br>`;
+                    message += `&nbsp;&nbsp;${conflict.tanggal_mulai} - ${conflict.tanggal_selesai}, `;
+                    message += `${conflict.jam_mulai} - ${conflict.jam_selesai}<br>`;
+                });
+                message += '<p class="mt-2 text-sm italic text-yellow-800">Silakan pilih akun Zoom yang berbeda.</p>';
+
+                detailsDiv.innerHTML = message;
+                warningDiv.classList.remove('hidden');
+            })
+            .catch(error => console.error('Error checking zoom conflict:', error));
+        });
+    });
 
     // Toggle revisi form (untuk permohonan selesai)
     const toggleRevisiBtn = document.getElementById('toggleRevisiBtn');

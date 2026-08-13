@@ -111,6 +111,7 @@
                         <th class="px-3 py-2 text-left">Judul Kegiatan</th>
                         <th class="px-3 py-2 text-left">Tanggal</th>
                         <th class="px-3 py-2 text-left">Platform</th>
+                        <th class="px-3 py-2 text-left">Akun Zoom</th>
                         <th class="px-3 py-2 text-left">Status</th>
                         <th class="px-3 py-2 text-left">Operator</th>
                         <th class="px-3 py-2 text-left">Diajukan</th>
@@ -134,6 +135,13 @@
                             <br><span class="text-xs text-gray-600">{{ $it->jam_mulai }} - {{ $it->jam_selesai }}</span>
                         </td>
                         <td class="px-3 py-2">{{ $it->platform_display }}</td>
+                        <td class="px-3 py-2">
+                            @if($it->akun_zoom)
+                                <span class="inline-block text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-semibold">Akun {{ $it->akun_zoom }}</span>
+                            @else
+                                <span class="text-xs text-gray-400">—</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2">
                             {!! $it->status_badge !!}
                             @if($it->status === 'proses' && $it->isStale())

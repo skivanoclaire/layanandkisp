@@ -15,7 +15,7 @@ class VidconRequest extends Model
         'pemohon_link_meeting', 'pemohon_meeting_id', 'pemohon_meeting_password',
         'status', 'submitted_at', 'processing_at', 'completed_at', 'rejected_at',
         'processed_by', 'admin_notes',
-        'link_meeting', 'meeting_id', 'meeting_password', 'informasi_tambahan', 'operator_assigned',
+        'link_meeting', 'meeting_id', 'meeting_password', 'akun_zoom', 'informasi_tambahan', 'operator_assigned',
         'last_info_updated_at', 'info_update_count', 'last_updated_by'
     ];
 

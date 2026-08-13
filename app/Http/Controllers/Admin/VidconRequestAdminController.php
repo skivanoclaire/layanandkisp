@@ -64,7 +64,12 @@ class VidconRequestAdminController extends Controller
         // Get AI recommendation
         $recommendedOperatorIds = VidconRequest::recommendOperators($operators, 2);
 
-        return view('admin.vidcon.show', compact('item', 'operators', 'recommendedOperatorIds'));
+        // Data fasilitasi yang sudah terbentuk dari permohonan ini (jika sudah disetujui).
+        // Dipakai sebagai exclude_id saat mengecek bentrok akun Zoom agar jadwal
+        // milik permohonan ini sendiri tidak dihitung sebagai konflik.
+        $vidconData = \App\Models\VidconData::where('vidcon_request_id', $item->id)->first();
+
+        return view('admin.vidcon.show', compact('item', 'operators', 'recommendedOperatorIds', 'vidconData'));
     }
 
     // POST /admin/digital/vidcon/{id}/approve
@@ -80,6 +85,7 @@ class VidconRequestAdminController extends Controller
             'link_meeting'         => [$meetingRule, 'string', 'max:500'],
             'meeting_id'           => [$meetingRule, 'string', 'max:200'],
             'meeting_password'     => [$meetingRule, 'string', 'max:200'],
+            'akun_zoom'            => 'nullable|string|in:001,002,003,004',
             'informasi_tambahan'   => 'nullable|string|max:1000',
             'operators'            => 'nullable|array',
             'operators.*'          => 'exists:users,id',
@@ -88,6 +94,7 @@ class VidconRequestAdminController extends Controller
             'link_meeting.required' => 'Link Meeting wajib diisi.',
             'meeting_id.required' => 'Meeting ID wajib diisi.',
             'meeting_password.required' => 'Password Meeting wajib diisi.',
+            'akun_zoom.in' => 'Akun Zoom tidak valid.',
         ]);
 
         // Update request status to completed
@@ -97,6 +104,9 @@ class VidconRequestAdminController extends Controller
         $item->link_meeting     = $r->link_meeting;
         $item->meeting_id       = $r->meeting_id;
         $item->meeting_password = $r->meeting_password;
+        // Akun Zoom boleh sudah terisi saat tahap "proses"; jangan hapus bila
+        // form persetujuan dikirim tanpa memilih ulang.
+        $item->akun_zoom        = $r->filled('akun_zoom') ? $r->akun_zoom : $item->akun_zoom;
         $item->informasi_tambahan = $r->informasi_tambahan;
         $item->admin_notes      = $r->admin_notes;
         $item->save();
@@ -150,7 +160,9 @@ class VidconRequestAdminController extends Controller
 
             // Backward compatibility fields
             'dokumentasi' => $item->link_meeting ?? '-',
-            'akun_zoom' => $item->meeting_id ?? '-',
+            // Akun Zoom (001-004) yang dipilih admin pada halaman permohonan,
+            // supaya tidak perlu diisi ulang lewat edit Data Fasilitasi Vidcon.
+            'akun_zoom' => $item->akun_zoom,
             'informasi_pimpinan' => $item->nama . ' - ' . $item->nip,
             'keterangan' => 'Auto-generated dari permohonan ' . $item->ticket_no,
 
@@ -290,6 +302,7 @@ class VidconRequestAdminController extends Controller
             'link_meeting'         => 'nullable|string|max:500',
             'meeting_id'           => 'nullable|string|max:200',
             'meeting_password'     => 'nullable|string|max:200',
+            'akun_zoom'            => 'nullable|string|in:001,002,003,004',
             'informasi_tambahan'   => 'nullable|string|max:1000',
             'operators'            => 'nullable|array',
             'operators.*'          => 'exists:users,id',
@@ -318,6 +331,7 @@ class VidconRequestAdminController extends Controller
             'link_meeting' => $item->link_meeting,
             'meeting_id' => $item->meeting_id,
             'meeting_password' => $item->meeting_password,
+            'akun_zoom' => $item->akun_zoom,
             'informasi_tambahan' => $item->informasi_tambahan,
             'admin_notes' => $item->admin_notes,
         ];
@@ -326,6 +340,7 @@ class VidconRequestAdminController extends Controller
         $item->link_meeting       = $r->link_meeting ?? $item->link_meeting;
         $item->meeting_id         = $r->meeting_id ?? $item->meeting_id;
         $item->meeting_password   = $r->meeting_password ?? $item->meeting_password;
+        $item->akun_zoom          = $r->filled('akun_zoom') ? $r->akun_zoom : $item->akun_zoom;
         $item->informasi_tambahan = $r->informasi_tambahan ?? $item->informasi_tambahan;
         $item->admin_notes        = $r->admin_notes ?? $item->admin_notes;
 
@@ -341,6 +356,7 @@ class VidconRequestAdminController extends Controller
             'link_meeting' => $item->link_meeting,
             'meeting_id' => $item->meeting_id,
             'meeting_password' => $item->meeting_password,
+            'akun_zoom' => $item->akun_zoom,
             'informasi_tambahan' => $item->informasi_tambahan,
             'admin_notes' => $item->admin_notes,
         ];
@@ -377,10 +393,12 @@ class VidconRequestAdminController extends Controller
             'link_meeting'         => 'required|string|max:500',
             'meeting_id'           => 'nullable|string|max:200',
             'meeting_password'     => 'nullable|string|max:200',
+            'akun_zoom'            => 'nullable|string|in:001,002,003,004',
             'informasi_tambahan'   => 'nullable|string|max:1000',
             'admin_notes'          => 'nullable|string|max:1000',
         ], [
             'link_meeting.required' => 'Link Meeting wajib diisi.',
+            'akun_zoom.in' => 'Akun Zoom tidak valid.',
         ]);
 
         $item = VidconRequest::findOrFail($id);
@@ -395,6 +413,7 @@ class VidconRequestAdminController extends Controller
             'link_meeting' => $item->link_meeting,
             'meeting_id' => $item->meeting_id,
             'meeting_password' => $item->meeting_password,
+            'akun_zoom' => $item->akun_zoom,
             'informasi_tambahan' => $item->informasi_tambahan,
             'admin_notes' => $item->admin_notes,
         ];
@@ -403,6 +422,7 @@ class VidconRequestAdminController extends Controller
         $item->link_meeting       = $r->link_meeting;
         $item->meeting_id         = $r->meeting_id;
         $item->meeting_password   = $r->meeting_password;
+        $item->akun_zoom          = $r->akun_zoom;
         $item->informasi_tambahan = $r->informasi_tambahan;
         if ($r->filled('admin_notes')) {
             $item->admin_notes = $r->admin_notes;
@@ -420,9 +440,9 @@ class VidconRequestAdminController extends Controller
             $vidconData->meeting_id         = $item->meeting_id;
             $vidconData->meeting_password   = $item->meeting_password;
             $vidconData->informasi_tambahan = $item->informasi_tambahan;
+            $vidconData->akun_zoom          = $item->akun_zoom;
             // Field backward-compatibility
             $vidconData->dokumentasi        = $item->link_meeting ?? '-';
-            $vidconData->akun_zoom          = $item->meeting_id ?? '-';
             $vidconData->save();
         }
 
@@ -436,6 +456,7 @@ class VidconRequestAdminController extends Controller
                 'link_meeting' => $item->link_meeting,
                 'meeting_id' => $item->meeting_id,
                 'meeting_password' => $item->meeting_password,
+                'akun_zoom' => $item->akun_zoom,
                 'informasi_tambahan' => $item->informasi_tambahan,
                 'admin_notes' => $item->admin_notes,
             ],
