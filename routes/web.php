@@ -779,6 +779,7 @@ Route::middleware(['auth', 'role:Admin'])
         Route::get('/export-excel', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'exportExcel'])->name('export-excel');
         Route::get('/export-pdf', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'exportPdf'])->name('export-pdf');
         Route::get('/{id}', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'show'])->name('show');
+        Route::get('/{id}/pdf', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'exportDetailPdf'])->name('detail-pdf');
         Route::post('/{id}/approve', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'approve'])->name('approve');
         Route::post('/{id}/reject', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'reject'])->name('reject');
         Route::post('/{id}/process', [\App\Http\Controllers\Admin\VidconRequestAdminController::class, 'setProcess'])->name('process');

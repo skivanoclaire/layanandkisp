@@ -498,6 +498,47 @@ class VidconRequestAdminController extends Controller
             ->with('success', $message);
     }
 
+    // GET /admin/digital/vidcon/{id}/pdf
+    // Ekspor seluruh informasi satu permohonan (detail lengkap + riwayat aktivitas).
+    public function exportDetailPdf($id)
+    {
+        $item = VidconRequest::with([
+            'user', 'unitKerja', 'processedBy', 'operatorAssigned', 'operators', 'lastUpdatedBy',
+            'activities.user',
+        ])->findOrFail($id);
+
+        // Data fasilitasi hasil approve (jika ada) ikut dicetak agar dokumen
+        // memuat seluruh informasi yang tampil di halaman detail.
+        $vidconData = \App\Models\VidconData::where('vidcon_request_id', $item->id)->first();
+
+        $logoPath = public_path('logokaltarafix.png');
+        $logoBase64 = file_exists($logoPath)
+            ? base64_encode(file_get_contents($logoPath))
+            : '';
+
+        $html = view('admin.vidcon.detail-pdf', [
+            'item' => $item,
+            'vidconData' => $vidconData,
+            'activities' => $item->activities->sortByDesc('created_at'),
+            'logoBase64' => $logoBase64,
+            'printedBy' => auth()->user()->name ?? '-',
+        ])->render();
+
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'permohonan-vidcon-' . $item->ticket_no . '.pdf';
+
+        return $dompdf->stream($filename, ['Attachment' => true]);
+    }
+
     // GET /admin/digital/vidcon/export-excel
     public function exportExcel(Request $r)
     {
