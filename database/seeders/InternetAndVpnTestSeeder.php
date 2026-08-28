@@ -12,6 +12,7 @@ use App\Models\VpnRegistration;
 use App\Models\VpnReset;
 use App\Models\JipPdnsRequest;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class InternetAndVpnTestSeeder extends Seeder
 {
@@ -185,7 +186,7 @@ class InternetAndVpnTestSeeder extends Seeder
             'bandwidth' => '100 Mbps',
             'status' => 'selesai',
             'username_vpn' => 'vpn.user.malinau',
-            'password_vpn' => 'SecureP@ss2025!',
+            'password_vpn' => Str::password(16),
             'ip_vpn' => '10.10.50.15',
             'keterangan_admin' => 'VPN sudah aktif dan bisa digunakan. Untuk konfigurasi client, silakan download manual di portal IT atau hubungi helpdesk.',
             'processed_by' => 1,
@@ -232,7 +233,7 @@ class InternetAndVpnTestSeeder extends Seeder
             'alasan' => 'Password sudah kadaluarsa sesuai kebijakan keamanan (harus diganti setiap 90 hari). Mohon dibuatkan kredensial baru.',
             'status' => 'selesai',
             'username_vpn_baru' => 'vpn.dummy10.new',
-            'password_vpn_baru' => 'NewSecure@2025#',
+            'password_vpn_baru' => Str::password(16),
             'keterangan_admin' => 'Password VPN baru sudah dibuat. Silakan login dengan kredensial baru. Jangan lupa ganti password secara berkala setiap 90 hari.',
             'processed_by' => 1,
             'processing_at' => Carbon::now()->subDays(2),
