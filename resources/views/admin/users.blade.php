@@ -339,7 +339,32 @@
             .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
     }
 
-    function renderResult(simpeg, current) {
+    function renderRoles(roles, currentRoleIds) {
+        const currentIds = (currentRoleIds || []).map(String);
+        const currentLabels = roles.filter(r => currentIds.includes(String(r.id)))
+                                   .map(r => r.display_name);
+        const options = roles.map(r => {
+            const checked = currentIds.includes(String(r.id)) ? 'checked' : '';
+            return `<label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <input type="checkbox" name="role_ids[]" value="${esc(r.id)}" class="js-role-option" ${checked}>
+                <span>${esc(r.display_name)}</span>
+            </label>`;
+        }).join('');
+
+        return `<div class="p-3 border rounded mt-2">
+            <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" name="fields[]" value="roles" id="cek-data-roles-toggle" class="mt-1">
+                <div class="flex-1 text-sm">
+                    <div class="font-semibold text-gray-800">Role</div>
+                    <div class="text-gray-500 text-xs mt-0.5">Saat ini: ${currentLabels.length ? esc(currentLabels.join(', ')) : '—'}</div>
+                    <div class="text-gray-500 text-xs mt-0.5 italic">SIMPEG tidak menyimpan role aplikasi — pilih manual di bawah.</div>
+                </div>
+            </label>
+            <div class="mt-2 pl-7 grid grid-cols-1 sm:grid-cols-2 gap-1.5">${options}</div>
+        </div>`;
+    }
+
+    function renderResult(simpeg, current, roles) {
         const rows = [
             { key:'name',       label:'Nama',       simpegVal:simpeg.nama,     currentVal:current.name },
             { key:'nip',        label:'NIP',        simpegVal:simpeg.nip,      currentVal:current.nip },
@@ -378,7 +403,14 @@
         }).join('');
 
         resultBox.innerHTML = `<p class="text-sm text-gray-600 mb-3">Centang field yang ingin diupdate berdasarkan data SIMPEG:</p>
-            <div class="space-y-2">${rowsHtml}</div>`;
+            <div class="space-y-2">${rowsHtml}</div>
+            ${renderRoles(roles || [], current.role_ids)}`;
+
+        // Begitu admin mengubah pilihan role, otomatis centang field "Role".
+        const rolesToggle = resultBox.querySelector('#cek-data-roles-toggle');
+        resultBox.querySelectorAll('.js-role-option').forEach(cb => {
+            cb.addEventListener('change', () => { if (rolesToggle) rolesToggle.checked = true; });
+        });
     }
 
     document.addEventListener('click', async (e) => {
@@ -395,7 +427,7 @@
             loading.classList.add('hidden');
             if (!body.success) { errorBox.textContent = body.message||'Terjadi kesalahan.'; errorBox.classList.remove('hidden'); return; }
             lastSimpeg = body.simpeg;
-            renderResult(body.simpeg, body.current);
+            renderResult(body.simpeg, body.current, body.roles);
             resultBox.classList.remove('hidden');
             btnApply.classList.remove('hidden');
         } catch (err) {
@@ -417,7 +449,14 @@
         const orig = btnApply.textContent;
         btnApply.textContent = 'Menyimpan...';
         try {
-            const payload = { fields:checked, name:lastSimpeg.nama, nip:lastSimpeg.nip, phone:lastSimpeg.telepon, jabatan:lastSimpeg.jabatan, instansi:lastSimpeg.instansi, unit_kerja_id:lastSimpeg.matched_unit_kerja_id };
+            const roleIds = Array.from(resultBox.querySelectorAll('input[name="role_ids[]"]:checked')).map(el => el.value);
+            if (checked.includes('roles') && roleIds.length === 0) {
+                alert('Pilih minimal satu role, atau hilangkan centang pada bagian Role.');
+                btnApply.disabled = false;
+                btnApply.textContent = orig;
+                return;
+            }
+            const payload = { fields:checked, role_ids:roleIds, name:lastSimpeg.nama, nip:lastSimpeg.nip, phone:lastSimpeg.telepon, jabatan:lastSimpeg.jabatan, instansi:lastSimpeg.instansi, unit_kerja_id:lastSimpeg.matched_unit_kerja_id };
             if (checked.includes('email')) payload.email = lastSimpeg.email;
             const res  = await fetch(`${applyUrl}/${currentUserId}/apply`, {
                 method:'POST',

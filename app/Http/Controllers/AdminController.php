@@ -344,33 +344,7 @@ class AdminController extends Controller
      */
     private function determineLegacyRole(array $roleNames): string
     {
-        // Define role mapping from Role model name to legacy string
-        // Priority is based on array order (higher index = higher priority)
-        $roleMapping = [
-            'User-Individual' => 'user',
-            'User-OPD' => 'user',
-            'Operator-Vidcon' => 'operator-vidcon',
-            'Admin-Vidcon' => 'admin-vidcon',
-            'Admin' => 'admin',
-        ];
-
-        // Find highest priority role
-        $legacyRole = 'user'; // default
-        $highestPriority = -1;
-
-        foreach ($roleNames as $roleName) {
-            if (isset($roleMapping[$roleName])) {
-                $legacyValue = $roleMapping[$roleName];
-                $priority = array_search($legacyValue, ['user', 'operator-vidcon', 'admin-vidcon', 'admin']);
-
-                if ($priority !== false && $priority > $highestPriority) {
-                    $highestPriority = $priority;
-                    $legacyRole = $legacyValue;
-                }
-            }
-        }
-
-        return $legacyRole;
+        return \App\Models\Role::determineLegacyRole($roleNames);
     }
 
     /**

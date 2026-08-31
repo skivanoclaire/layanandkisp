@@ -477,8 +477,15 @@ class SimpegCheckController extends Controller
             }
         }
 
+        $allRoles = \App\Models\Role::orderBy('display_name')->get(['id', 'name', 'display_name']);
+
         return response()->json([
             'success' => true,
+            'roles' => $allRoles->map(fn ($r) => [
+                'id'           => $r->id,
+                'name'         => $r->name,
+                'display_name' => $r->display_name ?: $r->name,
+            ])->values(),
             'simpeg' => [
                 'nip'      => $data['nip'] ?? null,
                 'nama'     => $data['nama'] ?? null,
@@ -497,6 +504,7 @@ class SimpegCheckController extends Controller
                 'jabatan'         => $user->jabatan->nama_jabatan ?? null,
                 'unit_kerja_nama' => $user->unitKerja->nama ?? null,
                 'nik'             => $user->nik,
+                'role_ids'        => $user->roles()->pluck('roles.id')->values(),
             ],
         ]);
     }
@@ -509,7 +517,7 @@ class SimpegCheckController extends Controller
     {
         $validated = $request->validate([
             'fields'   => ['required', 'array', 'min:1'],
-            'fields.*' => ['in:nip,name,phone,email,jabatan,unit_kerja'],
+            'fields.*' => ['in:nip,name,phone,email,jabatan,unit_kerja,roles'],
             'nip'      => ['nullable', 'string', 'max:20'],
             'name'     => ['nullable', 'string', 'max:255'],
             'phone'    => ['nullable', 'string', 'max:20'],
@@ -517,7 +525,18 @@ class SimpegCheckController extends Controller
             'jabatan'  => ['nullable', 'string', 'max:255'],
             'instansi' => ['nullable', 'string', 'max:255'],
             'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
+            'role_ids'   => ['array'],
+            'role_ids.*' => ['exists:roles,id'],
         ]);
+
+        // Role dipilih manual oleh admin (SIMPEG tidak menyimpan role aplikasi),
+        // jadi wajib ada minimal satu role kalau field 'roles' dicentang.
+        if (in_array('roles', $validated['fields'], true) && empty($validated['role_ids'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pilih minimal satu role, atau hilangkan centang pada bagian Role.',
+            ], 422);
+        }
 
         $updated = [];
 
@@ -586,6 +605,13 @@ class SimpegCheckController extends Controller
                         $user->unit_kerja_id = $validated['unit_kerja_id'];
                         $updated[] = 'Unit Kerja';
                     }
+                    break;
+                case 'roles':
+                    $roles = \App\Models\Role::whereIn('id', $validated['role_ids'])->get();
+                    $user->roles()->sync($roles->pluck('id')->all());
+                    // Kolom legacy users.role dipakai navigasi dashboard — ikut disinkronkan.
+                    $user->role = \App\Models\Role::determineLegacyRole($roles->pluck('name')->all());
+                    $updated[] = 'Role (' . $roles->map(fn ($r) => $r->display_name ?: $r->name)->join(', ') . ')';
                     break;
             }
         }
