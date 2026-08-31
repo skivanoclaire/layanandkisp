@@ -346,6 +346,18 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/simpeg-check/api/{user}/check', [SimpegCheckController::class, 'apiCheckUser'])->name('simpeg.api.check');
     Route::post('/simpeg-check/api/{user}/apply', [SimpegCheckController::class, 'apiApplyUser'])->name('simpeg.api.apply');
 
+    // Running Text (teks berjalan di bawah navbar)
+    Route::middleware('permission:admin.running-text')
+        ->prefix('running-text')->name('running-text.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\RunningTextController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\RunningTextController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\RunningTextController::class, 'store'])->name('store');
+            Route::get('/{runningText}/edit', [\App\Http\Controllers\Admin\RunningTextController::class, 'edit'])->name('edit');
+            Route::put('/{runningText}', [\App\Http\Controllers\Admin\RunningTextController::class, 'update'])->name('update');
+            Route::patch('/{runningText}/toggle', [\App\Http\Controllers\Admin\RunningTextController::class, 'toggle'])->name('toggle');
+            Route::delete('/{runningText}', [\App\Http\Controllers\Admin\RunningTextController::class, 'destroy'])->name('destroy');
+        });
+
     // Rekomendasi Aplikasi (Admin melihat semua data)
     Route::prefix('/rekomendasi')->name('rekomendasi.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'index'])->name('index');

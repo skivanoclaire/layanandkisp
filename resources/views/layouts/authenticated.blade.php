@@ -1284,16 +1284,19 @@
                 $atKelolaKewenangan = request()->routeIs('admin.role-permissions*');
                 $atLogAudit = request()->routeIs('admin.audit-logs.*');
                 $atCekSimpeg = request()->routeIs('admin.simpeg.*');
+                $atRunningText = request()->routeIs('admin.running-text.*');
                 $openPenggunaAkses = $atKelolaPengguna
                     || $atKelolaPeran
                     || $atKelolaKewenangan
                     || $atLogAudit
-                    || $atCekSimpeg;
+                    || $atCekSimpeg
+                    || $atRunningText;
 
                 $canSeePenggunaAkses = auth()->user()?->hasPermission('admin.users')
                     || auth()->user()?->hasPermission('admin.roles.index')
                     || auth()->user()?->hasRole('Admin')
-                    || auth()->user()?->hasPermission('admin.simpeg');
+                    || auth()->user()?->hasPermission('admin.simpeg')
+                    || auth()->user()?->hasPermission('admin.running-text');
             @endphp
             @if ($canSeePenggunaAkses)
                 <div x-data="{ openPenggunaAkses: {{ $openPenggunaAkses ? 'true' : 'false' }} }">
@@ -1350,6 +1353,15 @@
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atCekSimpeg ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Cek via SIMPEG
+                            </a>
+                        @endif
+
+                        {{-- Kelola Running Text --}}
+                        @if (auth()->user()?->hasPermission('admin.running-text'))
+                            <a href="{{ route('admin.running-text.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atRunningText ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Kelola Running Text
                             </a>
                         @endif
                     </div>
@@ -1429,6 +1441,9 @@
                 </form>
             </div>
         </header>
+
+        <!-- Running Text (dikelola admin di /admin/running-text) -->
+        @include('partials.running-text')
 
         <!-- Page Content -->
         <main class="flex-1 p-3 bg-white shadow-sm rounded-md max-w-full overflow-x-hidden">
