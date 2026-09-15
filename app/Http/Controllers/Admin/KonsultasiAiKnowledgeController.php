@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\KonsultasiAiCategory;
 use App\Models\KonsultasiAiChat;
 use App\Models\KonsultasiAiDocument;
 use App\Models\KonsultasiAiFaq;
 use App\Models\KonsultasiAiSetting;
 use App\Services\KonsultasiAiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 /**
  * Pengelolaan Knowledge Base Konsultasi SPBE Berbasis AI:
@@ -30,6 +33,14 @@ class KonsultasiAiKnowledgeController extends Controller
         return view('admin.konsultasi-ai.index', [
             'dokumen'   => KonsultasiAiDocument::with('uploader')->latest('id')->get(),
             'faqs'      => KonsultasiAiFaq::orderBy('urutan')->orderBy('id')->get(),
+            'tipeKategori'    => KonsultasiAiCategory::tipeLabels(),
+            'semuaKategori'   => KonsultasiAiCategory::urut()->get()->groupBy('tipe'),
+            'kategoriDokumen' => KonsultasiAiCategory::tipe(KonsultasiAiCategory::TIPE_DOKUMEN)->active()->urut()->get(),
+            'kategoriFaq'     => KonsultasiAiCategory::tipe(KonsultasiAiCategory::TIPE_FAQ)->active()->urut()->get(),
+            'pemakaianKategori' => [
+                KonsultasiAiCategory::TIPE_DOKUMEN => $this->hitungPemakaian(KonsultasiAiDocument::class),
+                KonsultasiAiCategory::TIPE_FAQ     => $this->hitungPemakaian(KonsultasiAiFaq::class),
+            ],
             'aiAktif'   => $this->ai->isAiActive(),
             'hasApiKey' => $this->ai->hasApiKey(),
             'settings'  => [
@@ -52,13 +63,30 @@ class KonsultasiAiKnowledgeController extends Controller
         ]);
     }
 
+    /**
+     * Jumlah data per nama kategori, untuk ditampilkan pada daftar kategori.
+     *
+     * @param  class-string<KonsultasiAiDocument|KonsultasiAiFaq>  $model
+     * @return array<string, int>
+     */
+    private function hitungPemakaian(string $model): array
+    {
+        return $model::query()
+            ->whereNotNull('kategori')
+            ->where('kategori', '<>', '')
+            ->groupBy('kategori')
+            ->selectRaw('kategori, COUNT(*) as jumlah')
+            ->pluck('jumlah', 'kategori')
+            ->all();
+    }
+
     // ------------------------------------------------------------------ Dokumen
 
     public function storeDocument(Request $request)
     {
         $data = $request->validate([
             'judul'     => ['required', 'string', 'max:200'],
-            'kategori'  => ['nullable', 'string', 'max:100'],
+            'kategori'  => $this->aturanKategori(KonsultasiAiCategory::TIPE_DOKUMEN),
             'deskripsi' => ['nullable', 'string', 'max:1000'],
             'file'      => ['nullable', 'file', 'max:10240', 'mimes:pdf,doc,docx,txt,md,csv'],
             'konten'    => ['nullable', 'string'],
@@ -113,14 +141,17 @@ class KonsultasiAiKnowledgeController extends Controller
 
     public function editDocument(KonsultasiAiDocument $dokumen)
     {
-        return view('admin.konsultasi-ai.edit-dokumen', compact('dokumen'));
+        return view('admin.konsultasi-ai.edit-dokumen', [
+            'dokumen'      => $dokumen,
+            'pilihanKategori' => $this->pilihanKategori(KonsultasiAiCategory::TIPE_DOKUMEN, $dokumen->kategori),
+        ]);
     }
 
     public function updateDocument(Request $request, KonsultasiAiDocument $dokumen)
     {
         $data = $request->validate([
             'judul'     => ['required', 'string', 'max:200'],
-            'kategori'  => ['nullable', 'string', 'max:100'],
+            'kategori'  => $this->aturanKategori(KonsultasiAiCategory::TIPE_DOKUMEN, $dokumen->kategori),
             'deskripsi' => ['nullable', 'string', 'max:1000'],
             'konten'    => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
@@ -172,12 +203,15 @@ class KonsultasiAiKnowledgeController extends Controller
 
     public function editFaq(KonsultasiAiFaq $faq)
     {
-        return view('admin.konsultasi-ai.edit-faq', compact('faq'));
+        return view('admin.konsultasi-ai.edit-faq', [
+            'faq'             => $faq,
+            'pilihanKategori' => $this->pilihanKategori(KonsultasiAiCategory::TIPE_FAQ, $faq->kategori),
+        ]);
     }
 
     public function updateFaq(Request $request, KonsultasiAiFaq $faq)
     {
-        $data = $this->validateFaq($request);
+        $data = $this->validateFaq($request, $faq->kategori);
         $data['is_active'] = $request->boolean('is_active');
 
         $faq->update($data);
@@ -192,18 +226,159 @@ class KonsultasiAiKnowledgeController extends Controller
         return back()->with('status', 'Pertanyaan contoh dihapus.');
     }
 
-    private function validateFaq(Request $request): array
+    private function validateFaq(Request $request, ?string $kategoriSaatIni = null): array
     {
         return $request->validate([
             'pertanyaan' => ['required', 'string', 'max:255'],
             'jawaban'    => ['required', 'string'],
-            'kategori'   => ['nullable', 'string', 'max:100'],
+            'kategori'   => $this->aturanKategori(KonsultasiAiCategory::TIPE_FAQ, $kategoriSaatIni),
             'kata_kunci' => ['nullable', 'string', 'max:255'],
             'urutan'     => ['nullable', 'integer', 'min:0', 'max:9999'],
         ], [
             'pertanyaan.required' => 'Pertanyaan wajib diisi.',
             'jawaban.required'    => 'Jawaban wajib diisi.',
+            'kategori.in'         => 'Kategori tidak dikenal. Pilih dari daftar kategori yang tersedia.',
         ]);
+    }
+
+    // ---------------------------------------------------------------- Kategori
+
+    public function storeCategory(Request $request)
+    {
+        $data = $this->validateCategory($request);
+        $data['urutan'] = $data['urutan'] ?? ((int) KonsultasiAiCategory::tipe($data['tipe'])->max('urutan') + 1);
+        $data['is_active'] = $request->boolean('is_active', true);
+
+        KonsultasiAiCategory::create($data);
+
+        return back()->with('status', 'Kategori ditambahkan.');
+    }
+
+    public function editCategory(KonsultasiAiCategory $kategori)
+    {
+        return view('admin.konsultasi-ai.edit-kategori', [
+            'kategori'  => $kategori,
+            'pemakaian' => $kategori->jumlahPemakaian(),
+        ]);
+    }
+
+    public function updateCategory(Request $request, KonsultasiAiCategory $kategori)
+    {
+        $data = $this->validateCategory($request, $kategori);
+        $data['is_active'] = $request->boolean('is_active');
+
+        $namaLama = $kategori->nama;
+        $tipeLama = $kategori->tipe;
+
+        DB::transaction(function () use ($kategori, $data, $namaLama, $tipeLama) {
+            $kategori->update($data);
+
+            // Nama kategori tersimpan sebagai teks pada dokumen/pertanyaan,
+            // jadi perubahan nama harus ikut merapikan data yang memakainya.
+            if ($data['nama'] !== $namaLama) {
+                $this->modelKategori($tipeLama)::where('kategori', $namaLama)
+                    ->update(['kategori' => $data['nama']]);
+            }
+        });
+
+        return redirect()->route('admin.konsultasi-ai.index')->with('status', 'Kategori diperbarui.');
+    }
+
+    public function toggleCategory(KonsultasiAiCategory $kategori)
+    {
+        $kategori->update(['is_active' => ! $kategori->is_active]);
+
+        return back()->with('status', $kategori->is_active
+            ? 'Kategori diaktifkan dan kembali muncul sebagai pilihan.'
+            : 'Kategori dinonaktifkan — tidak lagi ditawarkan pada formulir baru.');
+    }
+
+    public function destroyCategory(KonsultasiAiCategory $kategori)
+    {
+        $pemakaian = $kategori->jumlahPemakaian();
+
+        if ($pemakaian > 0) {
+            return back()->withErrors([
+                'kategori' => "Kategori \"{$kategori->nama}\" masih dipakai {$pemakaian} data. "
+                    . 'Pindahkan data tersebut ke kategori lain, atau nonaktifkan kategori ini.',
+            ]);
+        }
+
+        $kategori->delete();
+
+        return back()->with('status', 'Kategori dihapus.');
+    }
+
+    /**
+     * Tipe kategori tidak bisa dipindah setelah dibuat agar nama kategori
+     * tetap sinkron dengan data dokumen/pertanyaan yang memakainya.
+     */
+    private function validateCategory(Request $request, ?KonsultasiAiCategory $kategori = null): array
+    {
+        $request->merge(['nama' => trim((string) $request->input('nama'))]);
+
+        $rules = [
+            'nama'      => [
+                'required', 'string', 'max:100',
+                Rule::unique('konsultasi_ai_categories', 'nama')
+                    ->where(fn ($q) => $q->where('tipe', $kategori?->tipe ?? $request->input('tipe')))
+                    ->ignore($kategori?->id),
+            ],
+            'deskripsi' => ['nullable', 'string', 'max:255'],
+            'urutan'    => ['nullable', 'integer', 'min:0', 'max:9999'],
+        ];
+
+        if (! $kategori) {
+            $rules['tipe'] = ['required', Rule::in(array_keys(KonsultasiAiCategory::tipeLabels()))];
+        }
+
+        $data = $request->validate($rules, [
+            'nama.required' => 'Nama kategori wajib diisi.',
+            'nama.unique'   => 'Nama kategori sudah dipakai pada tipe yang sama.',
+            'tipe.required' => 'Pilih tipe kategori.',
+            'tipe.in'       => 'Tipe kategori tidak dikenal.',
+        ]);
+
+        return $data;
+    }
+
+    /**
+     * Aturan validasi kolom kategori: hanya menerima nama dari daftar master,
+     * ditambah nilai yang sedang dipakai data agar penyuntingan lama tidak tertolak.
+     *
+     * @return array<int, mixed>
+     */
+    private function aturanKategori(string $tipe, ?string $kategoriSaatIni = null): array
+    {
+        $pilihan = $this->pilihanKategori($tipe, $kategoriSaatIni);
+
+        return ['nullable', 'string', 'max:100', Rule::in($pilihan)];
+    }
+
+    /**
+     * Nama kategori aktif untuk satu tipe, ditambah nilai lama yang sedang dipakai.
+     *
+     * @return array<int, string>
+     */
+    private function pilihanKategori(string $tipe, ?string $kategoriSaatIni = null): array
+    {
+        $pilihan = KonsultasiAiCategory::namaUntuk($tipe)->all();
+
+        if (filled($kategoriSaatIni) && ! in_array($kategoriSaatIni, $pilihan, true)) {
+            array_unshift($pilihan, $kategoriSaatIni);
+        }
+
+        return $pilihan;
+    }
+
+    /**
+     * @return class-string<KonsultasiAiDocument|KonsultasiAiFaq>
+     */
+    private function modelKategori(string $tipe): string
+    {
+        return $tipe === KonsultasiAiCategory::TIPE_DOKUMEN
+            ? KonsultasiAiDocument::class
+            : KonsultasiAiFaq::class;
     }
 
     // ------------------------------------------------------------- Pengaturan

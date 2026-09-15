@@ -46,8 +46,13 @@
             <div class="grid gap-4 md:grid-cols-2">
                 <div>
                     <label class="block text-sm text-gray-700 mb-1">Kategori</label>
-                    <input type="text" name="kategori" value="{{ old('kategori', $faq->kategori) }}" maxlength="100"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <select name="kategori" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                        <option value="">- Tanpa kategori -</option>
+                        @foreach ($pilihanKategori as $opsi)
+                            <option value="{{ $opsi }}" @selected(old('kategori', $faq->kategori) === $opsi)>{{ $opsi }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Daftar pilihan dikelola pada tab <strong>Kategori</strong>.</p>
                 </div>
                 <div>
                     <label class="block text-sm text-gray-700 mb-1">Urutan</label>

@@ -1268,6 +1268,12 @@ Route::middleware(['auth','permission:Kelola Knowledge Base AI'])
         Route::put('/faq/{faq}', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'updateFaq'])->name('faq.update');
         Route::delete('/faq/{faq}', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'destroyFaq'])->name('faq.destroy');
 
+        Route::post('/kategori', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'storeCategory'])->name('kategori.store');
+        Route::get('/kategori/{kategori}/edit', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'editCategory'])->name('kategori.edit');
+        Route::put('/kategori/{kategori}', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'updateCategory'])->name('kategori.update');
+        Route::post('/kategori/{kategori}/toggle', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'toggleCategory'])->name('kategori.toggle');
+        Route::delete('/kategori/{kategori}', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'destroyCategory'])->name('kategori.destroy');
+
         Route::put('/pengaturan', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'updateSettings'])->name('settings.update');
         Route::post('/pengaturan/test', [\App\Http\Controllers\Admin\KonsultasiAiKnowledgeController::class, 'testConnection'])->name('settings.test');
     });

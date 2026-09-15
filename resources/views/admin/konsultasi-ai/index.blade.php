@@ -4,7 +4,7 @@
 @section('header-title', 'Knowledge Base Konsultasi SPBE AI')
 
 @section('content')
-<div class="container mx-auto px-4 max-w-7xl" x-data="{ tab: '{{ $errors->any() ? (old('pertanyaan') ? 'faq' : (old('system_prompt') ? 'pengaturan' : 'dokumen')) : 'dokumen' }}' }">
+<div class="container mx-auto px-4 max-w-7xl" x-data="{ tab: '{{ $errors->any() ? (old('pertanyaan') ? 'faq' : (old('system_prompt') ? 'pengaturan' : (old('nama') || $errors->has('kategori') ? 'kategori' : 'dokumen'))) : 'dokumen' }}' }">
 
     <div class="mb-5">
         <h1 class="text-2xl font-bold text-green-700">Knowledge Base Konsultasi SPBE Berbasis AI</h1>
@@ -82,6 +82,7 @@
             @foreach ([
                 'dokumen' => 'Dokumen Dasar',
                 'faq' => 'Pertanyaan Contoh',
+                'kategori' => 'Kategori',
                 'pengaturan' => 'Pengaturan Asisten',
                 'evaluasi' => 'Evaluasi',
             ] as $key => $label)
@@ -114,9 +115,15 @@
                     </div>
                     <div>
                         <label class="block text-sm text-gray-700 mb-1">Kategori</label>
-                        <input type="text" name="kategori" value="{{ old('kategori') }}" maxlength="100"
-                               placeholder="Regulasi / SOP / Panduan Teknis"
-                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <select name="kategori" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                            <option value="">— Tanpa kategori —</option>
+                            @foreach ($kategoriDokumen as $opsi)
+                                <option value="{{ $opsi->nama }}" @selected(old('kategori') === $opsi->nama)>{{ $opsi->nama }}</option>
+                            @endforeach
+                        </select>
+                        @if ($kategoriDokumen->isEmpty())
+                            <p class="text-xs text-amber-600 mt-1">Belum ada kategori dokumen. Tambahkan pada tab <strong>Kategori</strong>.</p>
+                        @endif
                     </div>
                     <div>
                         <label class="block text-sm text-gray-700 mb-1">Deskripsi Singkat</label>
@@ -250,8 +257,12 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm text-gray-700 mb-1">Kategori</label>
-                            <input type="text" name="kategori" value="{{ old('kategori') }}" maxlength="100"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <select name="kategori" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                                <option value="">— Tanpa kategori —</option>
+                                @foreach ($kategoriFaq as $opsi)
+                                    <option value="{{ $opsi->nama }}" @selected(old('kategori') === $opsi->nama)>{{ $opsi->nama }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm text-gray-700 mb-1">Urutan</label>
@@ -321,6 +332,127 @@
                     @endforelse
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- =========================================================== KATEGORI --}}
+    <div x-show="tab === 'kategori'" x-cloak class="grid gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow p-5">
+                <h2 class="font-semibold text-gray-800 mb-1">Tambah Kategori</h2>
+                <p class="text-xs text-gray-500 mb-4">
+                    Kategori menjadi pilihan pada formulir dokumen dasar dan pertanyaan contoh.
+                    Taksonomi keduanya terpisah.
+                </p>
+
+                <form method="POST" action="{{ route('admin.konsultasi-ai.kategori.store') }}" class="space-y-3">
+                    @csrf
+                    <div>
+                        <label class="block text-sm text-gray-700 mb-1">Dipakai Untuk <span class="text-red-500">*</span></label>
+                        <select name="tipe" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                            @foreach ($tipeKategori as $nilai => $label)
+                                <option value="{{ $nilai }}" @selected(old('tipe') === $nilai)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-700 mb-1">Nama Kategori <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama" value="{{ old('nama') }}" required maxlength="100"
+                               placeholder="Regulasi / SOP / Subdomain"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-700 mb-1">Keterangan</label>
+                        <input type="text" name="deskripsi" value="{{ old('deskripsi') }}" maxlength="255"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-700 mb-1">Urutan</label>
+                        <input type="number" name="urutan" value="{{ old('urutan') }}" min="0" max="9999"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <p class="text-xs text-gray-500 mt-1">Kosongkan untuk otomatis di urutan terakhir.</p>
+                    </div>
+                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                        <input type="checkbox" name="is_active" value="1" checked class="rounded border-gray-300">
+                        Aktifkan
+                    </label>
+                    <button type="submit" class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg">
+                        Simpan Kategori
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            @foreach ($tipeKategori as $nilai => $label)
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-5 py-4 border-b border-gray-200">
+                        <h2 class="font-semibold text-gray-800">Kategori {{ $label }} ({{ ($semuaKategori[$nilai] ?? collect())->count() }})</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-50 text-gray-600">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold">Nama</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Dipakai</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Status</th>
+                                    <th class="px-4 py-3 text-right font-semibold">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @forelse ($semuaKategori[$nilai] ?? [] as $kat)
+                                    <tr>
+                                        <td class="px-4 py-3">
+                                            <p class="font-medium text-gray-800">
+                                                <span class="text-gray-400 text-xs mr-1">#{{ $kat->urutan }}</span>
+                                                {{ $kat->nama }}
+                                            </p>
+                                            @if ($kat->deskripsi)
+                                                <p class="text-xs text-gray-500 mt-0.5">{{ $kat->deskripsi }}</p>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-600">
+                                            {{ $pemakaianKategori[$nilai][$kat->nama] ?? 0 }} data
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <form method="POST" action="{{ route('admin.konsultasi-ai.kategori.toggle', $kat) }}">
+                                                @csrf
+                                                <button type="submit"
+                                                        class="text-xs px-2.5 py-1 rounded-full border {{ $kat->is_active ? 'bg-green-50 border-green-300 text-green-700' : 'bg-gray-100 border-gray-300 text-gray-500' }}">
+                                                    {{ $kat->is_active ? 'Aktif' : 'Nonaktif' }}
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex justify-end gap-2">
+                                                <a href="{{ route('admin.konsultasi-ai.kategori.edit', $kat) }}"
+                                                   class="text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50">Edit</a>
+                                                <form method="POST" action="{{ route('admin.konsultasi-ai.kategori.destroy', $kat) }}"
+                                                      onsubmit="return confirm('Hapus kategori ini?')">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded hover:bg-red-50">Hapus</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                                            Belum ada kategori untuk bagian ini.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endforeach
+
+            <p class="text-xs text-gray-500">
+                Mengganti nama kategori ikut memperbarui dokumen dan pertanyaan yang memakainya.
+                Kategori yang masih dipakai tidak bisa dihapus — nonaktifkan saja bila ingin
+                menyembunyikannya dari formulir.
+            </p>
         </div>
     </div>
 
