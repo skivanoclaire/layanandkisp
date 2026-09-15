@@ -73,7 +73,7 @@
             @endif
 
             {{-- Kelola Permohonan (Accordion untuk Admin) --}}
-            @if (auth()->user()?->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Permohonan PSE', 'Kelola SPLP']))
+            @if (auth()->user()?->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Permohonan PSE', 'Kelola SPLP', 'Kelola Akun DTSEN', 'Kelola Permohonan DTSEN', 'Verifikasi Substansi DTSEN', 'Kelola Laporan DTSEN']))
                 @php
                     $atPermohonan = request()->routeIs('admin.permohonan');
                     $atEmail = request()->routeIs('admin.email.*') || request()->routeIs('admin.email-password-reset.*');
@@ -87,7 +87,8 @@
                     $atAdminPse = request()->routeIs('admin.pse-update.*');
                     $atAdminSurveiKepuasan = request()->routeIs('admin.survei-kepuasan.*');
                     $atAdminSplpPermohonan = request()->routeIs('admin.splp.provider.*', 'admin.splp.consumer.*', 'admin.splp.sandbox.*', 'admin.splp.change.*', 'admin.splp.deactivation.*');
-                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan || $atAdminSplpPermohonan;
+                    $atAdminDtsen = request()->routeIs('admin.dtsen.akun.*', 'admin.dtsen.permohonan.*', 'admin.dtsen.substansi.*', 'admin.dtsen.perpanjangan.*', 'admin.dtsen.laporan.*', 'admin.dtsen.pengaduan.*');
+                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan || $atAdminSplpPermohonan || $atAdminDtsen;
                    
                 @endphp
                 @php
@@ -573,6 +574,82 @@
                                 </div>
                             </div>
                         @endif
+
+                        {{-- Berbagi Pakai Data DTSEN (Admin) --}}
+                        @if (auth()->user()?->hasAnyPermission(['Kelola Akun DTSEN', 'Kelola Permohonan DTSEN', 'Verifikasi Substansi DTSEN', 'Kelola Laporan DTSEN']))
+                            @php
+                                $atAdminDtsenAkun = request()->routeIs('admin.dtsen.akun.*');
+                                $atAdminDtsenPermohonan = request()->routeIs('admin.dtsen.permohonan.*');
+                                $atAdminDtsenSubstansi = request()->routeIs('admin.dtsen.substansi.*');
+                                $atAdminDtsenPerpanjangan = request()->routeIs('admin.dtsen.perpanjangan.*');
+                                $atAdminDtsenPemanfaatan = request()->routeIs('admin.dtsen.laporan.pemanfaatan*');
+                                $atAdminDtsenPemusnahan = request()->routeIs('admin.dtsen.laporan.pemusnahan*');
+                                $atAdminDtsenInsiden = request()->routeIs('admin.dtsen.laporan.insiden*');
+                                $atAdminDtsenPengaduan = request()->routeIs('admin.dtsen.pengaduan.*');
+                                $openAdminDtsen = $atAdminDtsenAkun || $atAdminDtsenPermohonan || $atAdminDtsenSubstansi
+                                    || $atAdminDtsenPerpanjangan || $atAdminDtsenPemanfaatan || $atAdminDtsenPemusnahan
+                                    || $atAdminDtsenInsiden || $atAdminDtsenPengaduan;
+                            @endphp
+                            <div x-data="{ openAdminDtsen: {{ $openAdminDtsen ? 'true' : 'false' }} }">
+                                <button @click="openAdminDtsen = !openAdminDtsen"
+                                    class="w-full text-left py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openAdminDtsen ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span class="flex items-center">
+                                        <span>Berbagi Pakai Data (DTSEN)</span>
+                                        {!! $badge($pc['dtsen'] ?? 0) !!}
+                                    </span>
+                                    <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': openAdminDtsen }"
+                                        fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openAdminDtsen" class="ml-4 space-y-1 mt-1">
+                                    @if (auth()->user()?->hasPermission('Kelola Akun DTSEN'))
+                                        <a href="{{ route('admin.dtsen.akun.index') }}"
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminDtsenAkun ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            <span>Akun Layanan</span>
+                                            {!! $badge($pc['dtsen_akun'] ?? 0) !!}
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()?->hasPermission('Kelola Permohonan DTSEN'))
+                                        <a href="{{ route('admin.dtsen.permohonan.index') }}"
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminDtsenPermohonan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            <span>Permintaan Data</span>
+                                            {!! $badge($pc['dtsen_permohonan'] ?? 0) !!}
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()?->hasPermission('Verifikasi Substansi DTSEN'))
+                                        <a href="{{ route('admin.dtsen.substansi.index') }}"
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminDtsenSubstansi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            <span>Verifikasi Substansi</span>
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()?->hasPermission('Kelola Permohonan DTSEN'))
+                                        <a href="{{ route('admin.dtsen.perpanjangan.index') }}"
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminDtsenPerpanjangan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            <span>Perpanjangan Akses</span>
+                                        </a>
+                                        <a href="{{ route('admin.dtsen.pengaduan.index') }}"
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminDtsenPengaduan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            <span>Pengaduan &amp; Masukan</span>
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()?->hasPermission('Kelola Laporan DTSEN'))
+                                        <a href="{{ route('admin.dtsen.laporan.pemanfaatan') }}"
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminDtsenPemanfaatan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            <span>Laporan Pemanfaatan</span>
+                                        </a>
+                                        <a href="{{ route('admin.dtsen.laporan.pemusnahan') }}"
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminDtsenPemusnahan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            <span>Pemusnahan Data</span>
+                                        </a>
+                                        <a href="{{ route('admin.dtsen.laporan.insiden') }}"
+                                            class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atAdminDtsenInsiden ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                            <span>Insiden Keamanan</span>
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -604,6 +681,7 @@
                         'Akses Update Data PSE',
                         'Akses Survei Kepuasan',
                         'Akses SPLP',
+                        'Akses DTSEN',
                     ]))
                 @php
                     $atEmailDigital = request()->routeIs('user.email.*');
@@ -621,8 +699,9 @@
                     $atPseUser = request()->routeIs('user.pse-update.*');
                     $atSurveiKepuasan = request()->routeIs('survei-kepuasan.*');
                     $atSplpUser = request()->routeIs('user.splp.*');
+                    $atDtsenUser = request()->routeIs('user.dtsen.*');
                     $openUserPermohonan =
-                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan || $atSplpUser;
+                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan || $atSplpUser || $atDtsenUser;
                     
     
                 @endphp
@@ -1004,6 +1083,60 @@
                                 </div>
                             </div>
                         @endif
+
+                        {{-- Berbagi Pakai Data DTSEN (User) --}}
+                        @if (auth()->user()?->hasPermission('Akses DTSEN'))
+                            @php
+                                $atDtsenAkun = request()->routeIs('user.dtsen.akun.*');
+                                $atDtsenPermohonan = request()->routeIs('user.dtsen.permohonan.*') || request()->routeIs('user.dtsen.akses.*');
+                                $atDtsenPerpanjangan = request()->routeIs('user.dtsen.perpanjangan.*');
+                                $atDtsenPemanfaatan = request()->routeIs('user.dtsen.pemanfaatan.*');
+                                $atDtsenPemusnahan = request()->routeIs('user.dtsen.pemusnahan.*');
+                                $atDtsenInsiden = request()->routeIs('user.dtsen.insiden.*');
+                                $atDtsenPengaduan = request()->routeIs('user.dtsen.pengaduan.*');
+                                $openDtsenUser = $atDtsenAkun || $atDtsenPermohonan || $atDtsenPerpanjangan
+                                    || $atDtsenPemanfaatan || $atDtsenPemusnahan || $atDtsenInsiden || $atDtsenPengaduan;
+                            @endphp
+                            <div x-data="{ openDtsen: {{ $openDtsenUser ? 'true' : 'false' }} }">
+                                <button @click="openDtsen = !openDtsen"
+                                    class="w-full text-left py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 flex items-center justify-between {{ $openDtsenUser ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                    <span>Berbagi Pakai Data (DTSEN)</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{'rotate-180': openDtsen}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openDtsen" class="ml-4 space-y-1 mt-1">
+                                    <a href="{{ route('user.dtsen.akun.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atDtsenAkun ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Akun Layanan DTSEN
+                                    </a>
+                                    <a href="{{ route('user.dtsen.permohonan.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atDtsenPermohonan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Permintaan Data
+                                    </a>
+                                    <a href="{{ route('user.dtsen.perpanjangan.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atDtsenPerpanjangan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Perpanjangan Akses
+                                    </a>
+                                    <a href="{{ route('user.dtsen.pemanfaatan.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atDtsenPemanfaatan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Laporan Pemanfaatan
+                                    </a>
+                                    <a href="{{ route('user.dtsen.pemusnahan.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atDtsenPemusnahan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Pemusnahan Data
+                                    </a>
+                                    <a href="{{ route('user.dtsen.insiden.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atDtsenInsiden ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Insiden Keamanan
+                                    </a>
+                                    <a href="{{ route('user.dtsen.pengaduan.index') }}"
+                                        class="block py-2 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 text-sm {{ $atDtsenPengaduan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Pengaduan &amp; Masukan
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -1052,13 +1185,18 @@
                 $atMasterSplp = request()->routeIs('admin.splp.services.*')
                     || request()->routeIs('admin.splp.consumers.*')
                     || request()->routeIs('admin.splp.audit.*');
+                $atMasterDtsen = request()->routeIs('admin.dtsen.dashboard')
+                    || request()->routeIs('admin.dtsen.variables.*')
+                    || request()->routeIs('admin.dtsen.releases.*')
+                    || request()->routeIs('admin.dtsen.wilayah.*');
                 $openMasterData = $atMasterInstansi
                     || $atMasterSubdomain
                     || $atMasterEmail
                     || $atMasterIp
                     || $atMasterVidcon
                     || $atMasterAsetTik
-                    || $atMasterSplp;
+                    || $atMasterSplp
+                    || $atMasterDtsen;
 
                 $canSeeMasterData = auth()->user()?->hasPermission('admin.unit-kerja')
                     || auth()->user()?->hasPermission('admin.web-monitor')
@@ -1066,7 +1204,8 @@
                     || auth()->user()?->hasPermission('admin.web-monitor.check-ip-publik')
                     || auth()->user()?->hasPermission('admin.vidcon.data')
                     || auth()->user()?->hasPermission('admin.google-aset-tik')
-                    || auth()->user()?->hasAnyPermission(['admin.splp.services', 'admin.splp.consumers', 'admin.splp.audit']);
+                    || auth()->user()?->hasAnyPermission(['admin.splp.services', 'admin.splp.consumers', 'admin.splp.audit'])
+                    || auth()->user()?->hasAnyPermission(['admin.dtsen.dashboard', 'admin.dtsen.variables', 'admin.dtsen.releases', 'admin.dtsen.wilayah']);
             @endphp
             @if ($canSeeMasterData)
                 <div x-data="{ openMasterData: {{ $openMasterData ? 'true' : 'false' }} }">
@@ -1160,6 +1299,43 @@
                                     <a href="{{ route('admin.splp.audit.index') }}"
                                         class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atMasterSplpAudit ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                         Audit Log SPLP
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
+
+                        {{-- Master Data & Monitoring DTSEN --}}
+                        @if (auth()->user()?->hasAnyPermission(['admin.dtsen.dashboard', 'admin.dtsen.variables', 'admin.dtsen.releases', 'admin.dtsen.wilayah']))
+                            @php
+                                $atMasterDtsenDashboard = request()->routeIs('admin.dtsen.dashboard');
+                                $atMasterDtsenVariables = request()->routeIs('admin.dtsen.variables.*');
+                                $atMasterDtsenReleases = request()->routeIs('admin.dtsen.releases.*');
+                                $atMasterDtsenWilayah = request()->routeIs('admin.dtsen.wilayah.*');
+                            @endphp
+                            <div class="pt-2 mt-1 border-t border-gray-200">
+                                <p class="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Berbagi Pakai Data (DTSEN)</p>
+                                @if (auth()->user()?->hasPermission('admin.dtsen.dashboard'))
+                                    <a href="{{ route('admin.dtsen.dashboard') }}"
+                                        class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atMasterDtsenDashboard ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Dashboard DTSEN
+                                    </a>
+                                @endif
+                                @if (auth()->user()?->hasPermission('admin.dtsen.variables'))
+                                    <a href="{{ route('admin.dtsen.variables.index') }}"
+                                        class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atMasterDtsenVariables ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Variabel DTSEN
+                                    </a>
+                                @endif
+                                @if (auth()->user()?->hasPermission('admin.dtsen.releases'))
+                                    <a href="{{ route('admin.dtsen.releases.index') }}"
+                                        class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atMasterDtsenReleases ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Rilis DTSEN
+                                    </a>
+                                @endif
+                                @if (auth()->user()?->hasPermission('admin.dtsen.wilayah'))
+                                    <a href="{{ route('admin.dtsen.wilayah.index') }}"
+                                        class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700 {{ $atMasterDtsenWilayah ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                        Wilayah DTSEN
                                     </a>
                                 @endif
                             </div>

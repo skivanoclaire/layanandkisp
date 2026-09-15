@@ -314,6 +314,35 @@ class SlaServiceRegistry
             'splp_sandbox' => self::splpEntry('Permohonan Uji Coba Sandbox (SPLP V3)', 'splp_sandbox_requests'),
             'splp_change' => self::splpEntry('Perubahan/Perpanjangan Endpoint (SPLP V4)', 'splp_change_requests'),
             'splp_deactivation' => self::splpEntry('Penonaktifan/Pencabutan Endpoint (SPLP V5)', 'splp_deactivation_requests'),
+
+            // ===================== Berbagi Pakai Data DTSEN =====================
+            'dtsen_akun' => [
+                'label' => 'Pembuatan Akun DTSEN',
+                'group' => 'Berbagi Pakai Data DTSEN',
+                'table' => 'dtsen_account_requests',
+                'status_selesai' => ['disetujui'],
+                'status_ditolak' => ['ditolak'],
+                'status_proses' => ['dikembalikan'],
+                'status_menunggu' => ['diajukan'],
+                'start_columns' => ['submitted_at', 'created_at'],
+                'end_success_columns' => ['verified_at'],
+                'end_rejected_columns' => ['verified_at'],
+            ],
+            'dtsen_permohonan' => [
+                'label' => 'Permintaan Data DTSEN',
+                'group' => 'Berbagi Pakai Data DTSEN',
+                'table' => 'dtsen_data_requests',
+                'status_selesai' => ['selesai', 'data_tersedia'],
+                'status_ditolak' => ['ditolak'],
+                'status_proses' => [
+                    'verifikasi_administrasi', 'perlu_perbaikan', 'verifikasi_substansi',
+                    'klarifikasi', 'diterima', 'pemrosesan_qa', 'menunggu_bast',
+                ],
+                'status_menunggu' => ['diajukan'],
+                'start_columns' => ['submitted_at', 'created_at'],
+                'end_success_columns' => ['selesai_at', 'akses_at'],
+                'end_rejected_columns' => ['ditolak_at'],
+            ],
         ];
     }
 

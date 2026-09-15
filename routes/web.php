@@ -735,6 +735,187 @@ Route::middleware(['auth', 'role:Admin'])
         Route::get('audit-log', [\App\Http\Controllers\Admin\Splp\SplpAuditLogController::class, 'index'])->name('audit.index');
     });
 
+/*
+|--------------------------------------------------------------------------
+| Berbagi Pakai Data DTSEN
+|--------------------------------------------------------------------------
+| Adopsi Permen PPN/Bappenas No. 7 Tahun 2025 ke dalam Juknis Provinsi Kaltara.
+| Lima tahapan: pembuatan akun, pengajuan, pengecekan, pemberian hak akses,
+| serta pemanfaatan & pelaporan. Aktor: OPD pemohon, DKISP (prosesor), dan
+| Bapperida (Koordinator Forum Satu Data Daerah).
+*/
+
+// DTSEN - Sisi OPD Pemohon
+Route::middleware(['auth', 'verified.user', 'permission:Akses DTSEN'])
+    ->prefix('digital/dtsen')
+    ->name('user.dtsen.')
+    ->group(function () {
+        // Tahap 1 - Akun layanan DTSEN
+        Route::prefix('akun')->name('akun.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Dtsen\AccountRequestController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Dtsen\AccountRequestController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Dtsen\AccountRequestController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Http\Controllers\User\Dtsen\AccountRequestController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\Dtsen\AccountRequestController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\Dtsen\AccountRequestController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\User\Dtsen\AccountRequestController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/reaktivasi', [\App\Http\Controllers\User\Dtsen\AccountRequestController::class, 'requestReactivation'])->name('reaktivasi');
+        });
+
+        // Tahap 2 & 4 - Permintaan data, BAST, permintaan ulang
+        Route::prefix('permohonan')->name('permohonan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Dtsen\DataRequestController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Dtsen\DataRequestController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Dtsen\DataRequestController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Http\Controllers\User\Dtsen\DataRequestController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\Dtsen\DataRequestController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\Dtsen\DataRequestController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\User\Dtsen\DataRequestController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/bast', [\App\Http\Controllers\User\Dtsen\DataRequestController::class, 'uploadBast'])->name('bast');
+            Route::delete('/{id}/dokumen/{documentId}', [\App\Http\Controllers\User\Dtsen\DataRequestController::class, 'destroyDocument'])->name('dokumen.destroy');
+            Route::post('/{id}/perpanjangan', [\App\Http\Controllers\User\Dtsen\ExtensionRequestController::class, 'store'])->name('perpanjangan.store');
+        });
+
+        // Tahap 4 - Akses data lewat token/tautan unduh
+        Route::prefix('akses')->name('akses.')->group(function () {
+            Route::get('/{token}', [\App\Http\Controllers\User\Dtsen\AccessController::class, 'show'])->name('show');
+            Route::get('/{token}/unduh', [\App\Http\Controllers\User\Dtsen\AccessController::class, 'download'])->name('download');
+        });
+
+        Route::get('perpanjangan', [\App\Http\Controllers\User\Dtsen\ExtensionRequestController::class, 'index'])->name('perpanjangan.index');
+
+        // Tahap 5 - Pemanfaatan & pelaporan
+        Route::prefix('pemanfaatan')->name('pemanfaatan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Dtsen\UtilizationReportController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Dtsen\UtilizationReportController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Dtsen\UtilizationReportController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\Dtsen\UtilizationReportController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\Dtsen\UtilizationReportController::class, 'update'])->name('update');
+        });
+
+        Route::prefix('pemusnahan')->name('pemusnahan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Dtsen\DestructionReportController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Dtsen\DestructionReportController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Dtsen\DestructionReportController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\User\Dtsen\DestructionReportController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\User\Dtsen\DestructionReportController::class, 'update'])->name('update');
+        });
+
+        Route::prefix('insiden')->name('insiden.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Dtsen\IncidentReportController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Dtsen\IncidentReportController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Dtsen\IncidentReportController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Http\Controllers\User\Dtsen\IncidentReportController::class, 'show'])->name('show');
+        });
+
+        // Modul pendukung - pengaduan, saran & masukan
+        Route::prefix('pengaduan')->name('pengaduan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\User\Dtsen\ComplaintController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\User\Dtsen\ComplaintController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\User\Dtsen\ComplaintController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Http\Controllers\User\Dtsen\ComplaintController::class, 'show'])->name('show');
+        });
+    });
+
+// DTSEN - Sisi DKISP (prosesor)
+Route::middleware(['auth', 'permission:Kelola Akun DTSEN'])
+    ->prefix('admin/dtsen/akun')
+    ->name('admin.dtsen.akun.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Dtsen\AccountRequestAdminController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\Dtsen\AccountRequestAdminController::class, 'show'])->name('show');
+        Route::post('/{id}/verifikasi', [\App\Http\Controllers\Admin\Dtsen\AccountRequestAdminController::class, 'verify'])->name('verifikasi');
+        Route::post('/{id}/toggle-aktif', [\App\Http\Controllers\Admin\Dtsen\AccountRequestAdminController::class, 'toggleActive'])->name('toggle-aktif');
+        Route::post('/reaktivasi/{reactivationId}', [\App\Http\Controllers\Admin\Dtsen\AccountRequestAdminController::class, 'decideReactivation'])->name('reaktivasi');
+    });
+
+Route::middleware(['auth', 'permission:Kelola Permohonan DTSEN'])
+    ->prefix('admin/dtsen')
+    ->name('admin.dtsen.')
+    ->group(function () {
+        Route::prefix('permohonan')->name('permohonan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'show'])->name('show');
+            Route::post('/{id}/verifikasi-administrasi', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'verifyAdministrasi'])->name('verifikasi-administrasi');
+            Route::post('/{id}/pemrosesan-qa', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'processQa'])->name('pemrosesan-qa');
+            Route::post('/{id}/verifikasi-bast', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'verifyBast'])->name('verifikasi-bast');
+            Route::post('/{id}/infrastruktur', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'updateInfrastruktur'])->name('infrastruktur');
+            Route::post('/{id}/token', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'issueToken'])->name('token');
+            Route::post('/{id}/token/{tokenId}/cabut', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'revokeToken'])->name('token.cabut');
+            Route::post('/{id}/selesai', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'complete'])->name('selesai');
+            Route::get('/{id}/dokumen/{documentId}', [\App\Http\Controllers\Admin\Dtsen\DataRequestAdminController::class, 'downloadDocument'])->name('dokumen');
+        });
+
+        Route::prefix('perpanjangan')->name('perpanjangan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\Dtsen\ExtensionRequestAdminController::class, 'index'])->name('index');
+            Route::post('/{id}', [\App\Http\Controllers\Admin\Dtsen\ExtensionRequestAdminController::class, 'decide'])->name('decide');
+        });
+
+        Route::prefix('pengaduan')->name('pengaduan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\Dtsen\ComplaintAdminController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\Dtsen\ComplaintAdminController::class, 'show'])->name('show');
+            Route::post('/{id}', [\App\Http\Controllers\Admin\Dtsen\ComplaintAdminController::class, 'update'])->name('update');
+        });
+    });
+
+// DTSEN - Verifikasi substansi (Bapperida / Koordinator Forum Satu Data Daerah)
+Route::middleware(['auth', 'permission:Verifikasi Substansi DTSEN'])
+    ->prefix('admin/dtsen/substansi')
+    ->name('admin.dtsen.substansi.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\Dtsen\SubstansiVerificationController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\Dtsen\SubstansiVerificationController::class, 'show'])->name('show');
+        Route::post('/{id}/keputusan', [\App\Http\Controllers\Admin\Dtsen\SubstansiVerificationController::class, 'decide'])->name('keputusan');
+        Route::post('/{id}/klarifikasi', [\App\Http\Controllers\Admin\Dtsen\SubstansiVerificationController::class, 'storeClarification'])->name('klarifikasi');
+    });
+
+// DTSEN - Rekapitulasi laporan (DKISP & Bapperida)
+Route::middleware(['auth', 'permission:Kelola Laporan DTSEN'])
+    ->prefix('admin/dtsen/laporan')
+    ->name('admin.dtsen.laporan.')
+    ->group(function () {
+        Route::get('pemanfaatan', [\App\Http\Controllers\Admin\Dtsen\ReportAdminController::class, 'pemanfaatan'])->name('pemanfaatan');
+        Route::post('pemanfaatan/{id}', [\App\Http\Controllers\Admin\Dtsen\ReportAdminController::class, 'reviewPemanfaatan'])->name('pemanfaatan.review');
+        Route::get('pemusnahan', [\App\Http\Controllers\Admin\Dtsen\ReportAdminController::class, 'pemusnahan'])->name('pemusnahan');
+        Route::post('pemusnahan/{id}', [\App\Http\Controllers\Admin\Dtsen\ReportAdminController::class, 'verifyPemusnahan'])->name('pemusnahan.verify');
+        Route::get('insiden', [\App\Http\Controllers\Admin\Dtsen\ReportAdminController::class, 'insiden'])->name('insiden');
+        Route::post('insiden/{id}', [\App\Http\Controllers\Admin\Dtsen\ReportAdminController::class, 'handleInsiden'])->name('insiden.handle');
+    });
+
+// DTSEN - Master data & dashboard monitoring
+Route::middleware(['auth'])->prefix('admin/dtsen')->name('admin.dtsen.')->group(function () {
+    Route::middleware('permission:admin.dtsen.dashboard')
+        ->get('dashboard', \App\Http\Controllers\Admin\Dtsen\DashboardController::class)
+        ->name('dashboard');
+
+    Route::middleware('permission:admin.dtsen.variables')->group(function () {
+        Route::get('variables', [\App\Http\Controllers\Admin\Dtsen\VariableController::class, 'index'])->name('variables.index');
+        Route::get('variables/create', [\App\Http\Controllers\Admin\Dtsen\VariableController::class, 'create'])->name('variables.create');
+        Route::post('variables', [\App\Http\Controllers\Admin\Dtsen\VariableController::class, 'store'])->name('variables.store');
+        Route::get('variables/{id}/edit', [\App\Http\Controllers\Admin\Dtsen\VariableController::class, 'edit'])->name('variables.edit');
+        Route::put('variables/{id}', [\App\Http\Controllers\Admin\Dtsen\VariableController::class, 'update'])->name('variables.update');
+        Route::delete('variables/{id}', [\App\Http\Controllers\Admin\Dtsen\VariableController::class, 'destroy'])->name('variables.destroy');
+        Route::post('variables/{id}/toggle', [\App\Http\Controllers\Admin\Dtsen\VariableController::class, 'toggle'])->name('variables.toggle');
+    });
+
+    Route::middleware('permission:admin.dtsen.releases')->group(function () {
+        Route::get('releases', [\App\Http\Controllers\Admin\Dtsen\ReleaseController::class, 'index'])->name('releases.index');
+        Route::get('releases/create', [\App\Http\Controllers\Admin\Dtsen\ReleaseController::class, 'create'])->name('releases.create');
+        Route::post('releases', [\App\Http\Controllers\Admin\Dtsen\ReleaseController::class, 'store'])->name('releases.store');
+        Route::get('releases/{id}/edit', [\App\Http\Controllers\Admin\Dtsen\ReleaseController::class, 'edit'])->name('releases.edit');
+        Route::put('releases/{id}', [\App\Http\Controllers\Admin\Dtsen\ReleaseController::class, 'update'])->name('releases.update');
+        Route::delete('releases/{id}', [\App\Http\Controllers\Admin\Dtsen\ReleaseController::class, 'destroy'])->name('releases.destroy');
+        Route::post('releases/{id}/notifikasi', [\App\Http\Controllers\Admin\Dtsen\ReleaseController::class, 'notify'])->name('releases.notify');
+    });
+
+    Route::middleware('permission:admin.dtsen.wilayah')->group(function () {
+        Route::get('wilayah', [\App\Http\Controllers\Admin\Dtsen\WilayahController::class, 'index'])->name('wilayah.index');
+        Route::post('wilayah', [\App\Http\Controllers\Admin\Dtsen\WilayahController::class, 'store'])->name('wilayah.store');
+        Route::put('wilayah/{id}', [\App\Http\Controllers\Admin\Dtsen\WilayahController::class, 'update'])->name('wilayah.update');
+        Route::delete('wilayah/{id}', [\App\Http\Controllers\Admin\Dtsen\WilayahController::class, 'destroy'])->name('wilayah.destroy');
+    });
+});
+
 // Unified Subdomain Management - Admin Routes
 Route::middleware(['auth','role:Admin'])->prefix('admin/unified-subdomain')->name('admin.unified-subdomain.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\UnifiedSubdomainController::class, 'index'])->name('index');

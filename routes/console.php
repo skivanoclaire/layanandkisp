@@ -15,3 +15,7 @@ Schedule::command('website:check-status')->hourly();
 // Skip status check karena `website:check-status` di atas sudah meng-handle.
 // Jalankan di menit ke-30 supaya tidak menabrak check-status yang jalan di menit 0.
 Schedule::command('cloudflare:sync --skip-status-check')->hourlyAt(30);
+
+// Siklus hidup DTSEN: penonaktifan akun menganggur, masa aktif token, dan
+// tenggat pelaporan (pemanfaatan, pemusnahan, insiden). Dijalankan sekali sehari.
+Schedule::command('dtsen:lifecycle-check')->dailyAt('06:00');

@@ -33,6 +33,8 @@ class AdminPendingCountsService
         'tte_passphrase_reset'      => 'tte_passphrase_reset_requests',
         'tte_certificate_update'    => 'tte_certificate_update_requests',
         'shortlink'                 => 'shortlink_requests',
+        'dtsen_akun'                => 'dtsen_account_requests',
+        'dtsen_permohonan'          => 'dtsen_data_requests',
     ];
 
     /**
@@ -63,6 +65,8 @@ class AdminPendingCountsService
         'tte_passphrase_reset'   => 'Kelola Reset Passphrase TTE',
         'tte_certificate_update' => 'Kelola Pembaruan Sertifikat TTE',
         'shortlink'              => 'admin.shortlink.index',
+        'dtsen_akun'             => 'Kelola Akun DTSEN',
+        'dtsen_permohonan'       => 'Kelola Permohonan DTSEN',
     ];
 
     /** Counter yang diakses berbasis role, bukan permission (sesuai sidebar L269). */
@@ -78,6 +82,7 @@ class AdminPendingCountsService
         'vpn'         => ['vpn_registration', 'vpn_reset', 'jip_pdns'],
         'datacenter'  => ['visitation', 'vps', 'backup', 'cloud_storage'],
         'tte'         => ['tte_assistance', 'tte_registration', 'tte_passphrase_reset', 'tte_certificate_update'],
+        'dtsen'       => ['dtsen_akun', 'dtsen_permohonan'],
     ];
 
     public function countsFor(?User $user): array

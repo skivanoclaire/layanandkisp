@@ -124,6 +124,32 @@ class WorkingTimeCalculator
         return round($this->elapsedWorkingMinutes($start, $end) / $dayLength, 2);
     }
 
+    /**
+     * Tenggat sekian hari kerja setelah $start, mempertahankan jamnya.
+     *
+     * Dipakai untuk SLA yang dinyatakan sebagai batas waktu, bukan durasi terpakai —
+     * mis. kewajiban melapor insiden keamanan DTSEN maks. 3x24 jam hari kerja.
+     */
+    public function addWorkingDays(CarbonInterface $start, int $days): Carbon
+    {
+        $cursor = Carbon::instance($start->toDateTime());
+
+        if ($days <= 0) {
+            return $cursor;
+        }
+
+        $remaining = $days;
+        $guard = 0;
+        while ($remaining > 0 && $guard++ < 3650) {
+            $cursor->addDay();
+            if ($this->isWorkingDay($cursor)) {
+                $remaining--;
+            }
+        }
+
+        return $cursor;
+    }
+
     private function isWorkingDay(Carbon $day): bool
     {
         if (! in_array($day->isoWeekday(), $this->workingDays, true)) {
