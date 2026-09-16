@@ -134,7 +134,7 @@
                         <label class="block text-sm text-gray-700 mb-1">Berkas</label>
                         <input type="file" name="file" accept=".pdf,.doc,.docx,.txt,.md,.csv"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                        <p class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, TXT, MD, CSV — maksimal 10 MB.</p>
+                        <p class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, TXT, MD, CSV — maksimal 50 MB.</p>
                     </div>
                     <div>
                         <label class="block text-sm text-gray-700 mb-1">Isi Teks (opsional)</label>

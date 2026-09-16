@@ -88,11 +88,11 @@ class KonsultasiAiKnowledgeController extends Controller
             'judul'     => ['required', 'string', 'max:200'],
             'kategori'  => $this->aturanKategori(KonsultasiAiCategory::TIPE_DOKUMEN),
             'deskripsi' => ['nullable', 'string', 'max:1000'],
-            'file'      => ['nullable', 'file', 'max:10240', 'mimes:pdf,doc,docx,txt,md,csv'],
+            'file'      => ['nullable', 'file', 'max:51200', 'mimes:pdf,doc,docx,txt,md,csv'],
             'konten'    => ['nullable', 'string'],
         ], [
             'file.mimes' => 'Format berkas harus PDF, DOC, DOCX, TXT, MD, atau CSV.',
-            'file.max'   => 'Ukuran berkas maksimal 10 MB.',
+            'file.max'   => 'Ukuran berkas maksimal 50 MB.',
         ]);
 
         if (blank($data['konten'] ?? null) && ! $request->hasFile('file')) {
