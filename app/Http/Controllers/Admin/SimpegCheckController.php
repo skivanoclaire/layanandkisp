@@ -3,6 +3,7 @@
 // app/Http/Controllers/Admin/SimpegCheckController.php
 namespace App\Http\Controllers\Admin;
 
+use App\Rules\NikIndonesia;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\SimpegCheck;
@@ -47,10 +48,9 @@ class SimpegCheckController extends Controller
     {
         // Validasi & normalisasi
         $validated = $request->validate([
-            'nik' => ['required','regex:/^\d{16}$/'],
+            'nik' => ['required', new NikIndonesia()],
         ], [
             'nik.required' => 'NIK wajib diisi',
-            'nik.regex'    => 'NIK harus 16 digit angka',
         ]);
 
         $nik = preg_replace('/\D+/', '', (string)$validated['nik']);
@@ -216,7 +216,7 @@ class SimpegCheckController extends Controller
     {
         $validated = $request->validate([
             'user_id' => ['required', 'exists:users,id'],
-            'nik' => ['required', 'string'],
+            'nik' => ['required', new NikIndonesia()],
             'fields' => ['required', 'array', 'min:1'],
             'fields.*' => ['in:nip,name,phone,email,jabatan,unit_kerja'],
             'nip' => ['nullable', 'string', 'max:20'],

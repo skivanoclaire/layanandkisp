@@ -44,7 +44,7 @@ class RegistrationTest extends TestCase
     {
         return array_merge([
             'name' => 'Test User',
-            'nik' => '1234567890123456',
+            'nik' => '6503015201900001',
             'phone' => '081234567890',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -73,6 +73,62 @@ class RegistrationTest extends TestCase
             ->assertSessionHasErrors('nik');
 
         $this->assertGuest();
+    }
+
+    /**
+     * NIP PNS 18 digit dulu diterima karena maxlength="16" memotongnya diam-diam
+     * dan validasi hanya menghitung digit. Keduanya harus ditolak sekarang.
+     *
+     * @dataProvider nipProvider
+     */
+    public function test_nik_tidak_boleh_diisi_nip(string $nip): void
+    {
+        $this->post('/register', $this->validPayload(['nik' => $nip]))
+            ->assertSessionHasErrors('nik');
+
+        $this->assertGuest();
+    }
+
+    /** @return array<string, array<string>> */
+    public static function nipProvider(): array
+    {
+        return [
+            'NIP 18 digit'                => ['198501012010011001'],
+            'NIP terpotong jadi 16 digit' => ['1985010120100110'],
+            'NIP generasi 2000-an'        => ['200001012024011001'],
+        ];
+    }
+
+    /**
+     * @dataProvider nikTidakValidProvider
+     */
+    public function test_nik_harus_sesuai_struktur(string $nik): void
+    {
+        $this->post('/register', $this->validPayload(['nik' => $nik]))
+            ->assertSessionHasErrors('nik');
+
+        $this->assertGuest();
+    }
+
+    /** @return array<string, array<string>> */
+    public static function nikTidakValidProvider(): array
+    {
+        return [
+            'kode provinsi tidak dikenal' => ['9903015201900001'],
+            'bulan lahir 90'              => ['1234567890123456'],
+            'tanggal lahir 99'            => ['6503019901900001'],
+            'nomor urut 0000'             => ['6503015201900000'],
+            'semua digit sama'            => ['1111111111111111'],
+            'mengandung huruf'            => ['650301520190000A'],
+        ];
+    }
+
+    public function test_nik_valid_diterima(): void
+    {
+        $this->post('/register', $this->validPayload(['nik' => '3201014503950002']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertAuthenticated();
     }
 
     public function test_nik_tidak_boleh_ganda(): void

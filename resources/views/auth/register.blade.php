@@ -18,9 +18,9 @@
             <x-input-label for="nik" :value="__('NIK (16 Digit)')" class="text-lg font-semibold text-gray-700" />
             <x-text-input id="nik"
                 class="mt-2 w-full text-base p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 font-mono"
-                type="text" name="nik" :value="old('nik')" required maxlength="16" pattern="\d{16}"
-                placeholder="Contoh: 1234567890123456" autocomplete="off" />
-            <p class="text-xs text-gray-500 mt-1">NIK harus tepat 16 digit angka</p>
+                type="text" name="nik" :value="old('nik')" required maxlength="18" pattern="\d{16}"
+                inputmode="numeric" placeholder="16 digit NIK sesuai KTP" autocomplete="off" />
+            <p class="text-xs text-gray-500 mt-1">NIK (KTP) tepat 16 digit &mdash; bukan NIP yang 18 digit</p>
             <div id="nik-status" class="mt-1 text-sm hidden"></div>
             <x-input-error :messages="$errors->get('nik')" class="mt-1 text-red-600 text-sm" />
         </div>
@@ -106,10 +106,19 @@
                 const status = document.getElementById('nik-status');
                 let timer    = null;
 
+                const NIP_HINT = 'Sepertinya ini NIP, bukan NIK. Isi dengan NIK 16 digit yang tertera di KTP.';
+
                 input.addEventListener('input', function() {
-                    this.value = this.value.replace(/\D/g, '');
+                    this.value = this.value.replace(/\D/g, '').slice(0, 18);
                     clearTimeout(timer);
                     const val = this.value;
+
+                    if (val.length === 0) { setStatus(status, '', ''); return; }
+
+                    if (val.length > 16) {
+                        setStatus(status, 'Anda memasukkan ' + val.length + ' digit. ' + NIP_HINT, 'error');
+                        return;
+                    }
 
                     if (val.length < 16) { setStatus(status, '', ''); return; }
 
@@ -120,7 +129,8 @@
                             .then(data => {
                                 if (data.status === 'available') setStatus(status, 'NIK tersedia.', 'ok');
                                 else if (data.status === 'taken') setStatus(status, 'NIK sudah terdaftar. Gunakan NIK lain atau login.', 'error');
-                                else setStatus(status, '', '');
+                                else if (data.is_nip) setStatus(status, NIP_HINT, 'error');
+                                else setStatus(status, 'NIK tidak valid. Periksa kembali 16 digit NIK pada KTP Anda.', 'error');
                             })
                             .catch(() => setStatus(status, '', ''));
                     }, 500);

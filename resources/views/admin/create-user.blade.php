@@ -87,9 +87,10 @@
                         name="nik"
                         value="{{ old('nik') }}"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nik') border-red-500 @enderror"
-                        maxlength="16"
+                        maxlength="18"
                         pattern="\d{16}"
-                        placeholder="16 digit NIK"
+                        inputmode="numeric"
+                        placeholder="16 digit NIK (bukan NIP)"
                         required
                     >
                     @error('nik')

@@ -76,8 +76,10 @@
                     </p>
                 @else
                     <input id="nik" type="text" name="nik" value="{{ old('nik', auth()->user()->nik) }}"
+                        inputmode="numeric" pattern="\d{16}" maxlength="18" autocomplete="off"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        placeholder="16 digit NIK">
+                        placeholder="16 digit NIK (bukan NIP)">
+                    <p class="mt-1 text-xs text-gray-500">NIK di KTP tepat 16 digit. NIP ASN (18 digit) diisi pada kolom NIP di atas.</p>
                 @endif
             </div>
 

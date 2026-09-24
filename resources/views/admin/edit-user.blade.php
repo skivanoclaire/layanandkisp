@@ -66,9 +66,9 @@
             <div class="mb-4">
                 <label for="nik" class="block text-sm font-medium text-gray-700">NIK (Nomor Induk Kependudukan)</label>
                 <input type="text" name="nik" id="nik" value="{{ old('nik', $user->nik) }}"
-                    inputmode="numeric" pattern="\d{16}" maxlength="16" autocomplete="off"
+                    inputmode="numeric" pattern="\d{16}" maxlength="18" autocomplete="off"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500"
-                    placeholder="16 digit NIK">
+                    placeholder="16 digit NIK (bukan NIP)">
             </div>
 
             <!-- Phone -->

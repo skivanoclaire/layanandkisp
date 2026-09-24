@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Rules\NikIndonesia;
 use App\Services\SimpegClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,7 +43,7 @@ class ProfileController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'nip' => ['nullable', 'string', 'max:20'],
-            'nik' => ['nullable', 'string', 'max:20'],
+            'nik' => ['nullable', new NikIndonesia()],
             'phone' => ['nullable', 'string', 'max:20'],
             'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
 
@@ -67,7 +68,7 @@ class ProfileController extends Controller
         if (!$isVerified || $isAdmin) {
             // Boleh update NIP, NIK, dan Instansi
             $user->nip = $validated['nip'] ?? null;
-            $user->nik = $validated['nik'] ?? null;
+            $user->nik = ($validated['nik'] ?? '') !== '' ? $validated['nik'] : null;
             $user->unit_kerja_id = $validated['unit_kerja_id'] ?? null;
         }
         // Else: NIP, NIK, dan Instansi tidak diupdate (tetap menggunakan nilai lama)

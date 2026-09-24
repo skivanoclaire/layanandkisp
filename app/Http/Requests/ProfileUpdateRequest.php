@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\NikIndonesia;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -17,7 +18,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'nik' => ['nullable', 'string', 'max:20'],
+            'nik' => ['nullable', new NikIndonesia()],
             'phone' => ['nullable', 'string', 'max:20'],
             'email' => ['required', 'email', 'max:255'],
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Rules\NikIndonesia;
 use App\Models\Request as UserRequest;
 use App\Models\User;
 use App\Services\FonnteWhatsappService;
@@ -218,7 +219,7 @@ class AdminController extends Controller
             'roles'    => ['required', 'array', 'min:1'],
             'roles.*'  => ['exists:roles,id'],
             'nip'      => ['nullable','string','max:20'],
-            'nik'      => ['nullable','string','size:16','regex:/^\d{16}$/'],
+            'nik'      => ['nullable', new NikIndonesia()],
             'phone'    => ['nullable','string','max:20'],
             'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
             'password' => ['nullable','string','min:8','confirmed'],
@@ -278,7 +279,7 @@ class AdminController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
             'nip'      => ['required', 'string', 'max:20'],
-            'nik'      => ['required', 'string', 'size:16', 'regex:/^\d{16}$/'],
+            'nik'      => ['required', new NikIndonesia()],
             'phone'    => ['required', 'string', 'max:20'],
             'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],

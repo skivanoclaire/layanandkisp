@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\NikIndonesia;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -36,10 +37,13 @@ class RegisteredUserController extends Controller
 
     public function checkNik(Request $request): JsonResponse
     {
-        $nik = preg_replace('/\D/', '', $request->query('nik', ''));
+        $nik = trim($request->query('nik', ''));
 
-        if (strlen($nik) !== 16) {
-            return response()->json(['status' => 'invalid']);
+        if (!NikIndonesia::isValid($nik)) {
+            return response()->json([
+                'status'  => 'invalid',
+                'is_nip'  => NikIndonesia::looksLikeNip(preg_replace('/\D/', '', $nik)),
+            ]);
         }
 
         $hash = User::hashNik($nik);
@@ -59,7 +63,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'nik' => [
                 'required',
-                'digits:16',
+                new NikIndonesia(),
                 // unique:users,nik tidak bekerja karena kolom NIK di-encrypt dengan random IV.
                 // Gunakan nik_hash (SHA-256 deterministik) untuk cek duplikat.
                 function (string $_attribute, mixed $value, \Closure $fail) {
@@ -75,7 +79,6 @@ class RegisteredUserController extends Controller
             'g-recaptcha-response' => ['required', 'recaptcha'],
         ], [
             'nik.required' => 'NIK wajib diisi.',
-            'nik.digits'   => 'NIK harus tepat 16 digit angka.',
             'phone.unique' => 'Nomor HP sudah terdaftar.',
             'email.unique' => 'Email sudah terdaftar.',
         ]);
