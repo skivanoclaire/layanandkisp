@@ -56,3 +56,6 @@ public/phpinfo.php
 _nul
 tmpclaude-*
 index.nginx-debian.html
+
+# Tesis
+/tesis/
