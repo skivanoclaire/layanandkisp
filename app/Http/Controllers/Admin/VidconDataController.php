@@ -12,7 +12,7 @@ class VidconDataController extends Controller
 {
     public function index(Request $request)
     {
-        $query = VidconData::with(['operators', 'unitKerja']);
+        $query = VidconData::with(['operators', 'unitKerja', 'vidconRequest']);
 
         // Filter berdasarkan unit kerja
         if ($request->filled('unit_kerja_id')) {
@@ -125,7 +125,7 @@ class VidconDataController extends Controller
     public function show(VidconData $vidconData)
     {
         // Eager load relationships
-        $vidconData->load(['unitKerja', 'operators', 'documentations.uploader']);
+        $vidconData->load(['unitKerja', 'operators', 'documentations.uploader', 'vidconRequest']);
 
         return view('admin.vidcon-data.show', compact('vidconData'));
     }

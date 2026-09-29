@@ -74,6 +74,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Judul Kegiatan</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Platform</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis Layanan</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Akun Zoom</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operator</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
@@ -89,6 +90,15 @@
                         {{ $data->tanggal_mulai ? $data->tanggal_mulai->format('d/m/Y') : '-' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $data->platform }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        @if($data->vidconRequest)
+                            <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-purple-100 text-purple-800">
+                                {{ $data->vidconRequest->jenis_layanan_display }}
+                            </span>
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                         @if($data->platform === 'Zoom' && $data->akun_zoom)
                             <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800">
@@ -121,7 +131,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">Tidak ada data</td>
+                    <td colspan="9" class="px-6 py-4 text-center text-gray-500">Tidak ada data</td>
                 </tr>
                 @endforelse
             </tbody>

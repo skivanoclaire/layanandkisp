@@ -121,6 +121,19 @@
                     </p>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Jenis Layanan</label>
+                    <p class="text-gray-900 font-medium">
+                        @if($vidconData->vidconRequest)
+                            <span class="inline-block px-3 py-1 text-sm font-semibold rounded bg-purple-100 text-purple-800">
+                                {{ $vidconData->vidconRequest->jenis_layanan_display }}
+                            </span>
+                        @else
+                            -
+                        @endif
+                    </p>
+                </div>
+
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-500 mb-1">Keperluan Khusus</label>
                     <p class="text-gray-900 whitespace-pre-line">{{ $vidconData->keperluan_khusus ?? '-' }}</p>

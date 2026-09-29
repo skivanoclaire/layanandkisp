@@ -69,6 +69,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Judul Kegiatan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Platform</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis Layanan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operator</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                     </tr>
@@ -115,6 +116,15 @@
                                 <span class="text-gray-400">-</span>
                             @endif
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            @if($schedule->vidconRequest)
+                                <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-purple-100 text-purple-800">
+                                    {{ $schedule->vidconRequest->jenis_layanan_display }}
+                                </span>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-600">
                             @if($schedule->operators->count() > 0)
                                 {{ $schedule->operators->pluck('name')->join(', ') }}
@@ -135,7 +145,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                             <div class="text-lg">Tidak ada jadwal untuk bulan ini</div>
                             <p class="text-sm mt-2">Silakan pilih bulan lain atau tambahkan data baru</p>
                         </td>

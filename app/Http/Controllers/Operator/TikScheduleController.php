@@ -15,7 +15,7 @@ class TikScheduleController extends Controller
         $month = $request->get('month', date('m'));
 
         // Get all vidcon data for the selected month
-        $schedules = VidconData::with('operators')
+        $schedules = VidconData::with(['operators', 'vidconRequest'])
             ->whereYear('tanggal_mulai', $year)
             ->whereMonth('tanggal_mulai', $month)
             ->orderBy('tanggal_mulai', 'asc')
@@ -36,7 +36,7 @@ class TikScheduleController extends Controller
     public function show(VidconData $vidconData)
     {
         // Eager load relationships
-        $vidconData->load(['unitKerja', 'operators']);
+        $vidconData->load(['unitKerja', 'operators', 'vidconRequest']);
 
         return view('operator.tik.show', compact('vidconData'));
     }
