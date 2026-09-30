@@ -137,17 +137,19 @@ class EmailAccountController extends Controller
     public function show(EmailAccount $emailAccount)
     {
         // Get the user who requested this email from email_requests
-        $requestingUser = $emailAccount->getRequestingUser();
+        $user = $emailAccount->getRequestingUser();
 
-        // Create a mock user object if we have requester info stored directly in email_accounts
-        if (!$requestingUser && ($emailAccount->requester_name || $emailAccount->requester_nip)) {
+        // Info pemohon yang tersimpan di email_accounts (dipakai modul TTE) jadi sumber utama,
+        // data akun User hanya pelengkap. Model User tidak punya kolom instansi.
+        $requestingUser = null;
+        if ($user || $emailAccount->requester_name || $emailAccount->requester_nip) {
             $requestingUser = (object) [
-                'name' => $emailAccount->requester_name,
-                'nip' => $emailAccount->requester_nip,
-                'instansi' => $emailAccount->requester_instansi,
-                'email' => $emailAccount->requester_email,
-                'phone' => $emailAccount->requester_phone,
-                'roles' => collect([]), // Empty collection for roles
+                'name' => $emailAccount->requester_name ?: $user?->name,
+                'nip' => $emailAccount->requester_nip ?: $user?->nip,
+                'instansi' => $emailAccount->requester_instansi ?: $user?->unitKerja?->nama,
+                'email' => $emailAccount->requester_email ?: $user?->email,
+                'phone' => $emailAccount->requester_phone ?: $user?->phone,
+                'roles' => $user?->roles ?? collect([]),
             ];
         }
 

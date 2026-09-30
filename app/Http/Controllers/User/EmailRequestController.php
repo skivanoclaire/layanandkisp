@@ -59,6 +59,9 @@ class EmailRequestController extends Controller
             ]);
         }
 
+        // Alamat email tidak membedakan huruf besar/kecil, simpan username dalam huruf kecil
+        $r->merge(['username' => strtolower(trim((string) $r->input('username')))]);
+
         $data = $r->validate([
             'nama'             => ['required','string','max:200'],
             'instansi'         => ['required','string','max:200'],
@@ -151,6 +154,9 @@ class EmailRequestController extends Controller
             throw ValidationException::withMessages(['status' => 'Permohonan tidak bisa diubah karena sudah diproses.']);
         }
 
+        // Alamat email tidak membedakan huruf besar/kecil, simpan username dalam huruf kecil
+        $r->merge(['username' => strtolower(trim((string) $r->input('username')))]);
+
         $data = $r->validate([
             'nama'             => ['required','string','max:200'],
             'instansi'         => ['required','string','max:200'],
@@ -200,7 +206,7 @@ class EmailRequestController extends Controller
      */
     public function checkEmailAvailability(Request $request)
     {
-        $username = $request->input('username');
+        $username = strtolower(trim((string) $request->input('username')));
 
         if (empty($username)) {
             return response()->json([

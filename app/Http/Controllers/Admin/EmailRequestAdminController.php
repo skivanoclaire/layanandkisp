@@ -70,7 +70,7 @@ class EmailRequestAdminController extends Controller
         $cpanelResult = null;
         if ($r->status === 'selesai') {
             try {
-                $fullEmail = $item->username . '@kaltaraprov.go.id';
+                $fullEmail = strtolower($item->username) . '@kaltaraprov.go.id';
                 $plainPassword = $item->getPlainPassword();
 
                 Log::info('Attempting to create email account in cPanel', [
@@ -103,7 +103,7 @@ class EmailRequestAdminController extends Controller
                             ['email' => $fullEmail], // Check if email already exists
                             [
                                 'domain' => 'kaltaraprov.go.id',
-                                'user' => $item->username,
+                                'user' => strtolower($item->username),
                                 'nip' => $item->nip,
                                 'disk_used' => 0,
                                 'disk_quota' => 104857600, // 100 MB quota (in bytes)

@@ -223,7 +223,7 @@
                 <div>
                     <label class="block text-sm mb-1">Username Email yang Diajukan</label>
                     <div class="flex items-stretch">
-                        <input type="text" name="username" id="username" value="{{ old('username') }}" required
+                        <input type="text" name="username" id="username" value="{{ old('username') }}" required autocapitalize="off" autocomplete="off" spellcheck="false" oninput="this.value = this.value.toLowerCase()"
                             class="flex-1 border rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                             placeholder="misal: budi.susanto">
                         <span
