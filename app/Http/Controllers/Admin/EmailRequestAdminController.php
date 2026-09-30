@@ -111,6 +111,12 @@ class EmailRequestAdminController extends Controller
                                 'diskquota_readable' => '100 MB',
                                 'suspended' => 0,
                                 'last_synced_at' => now(),
+                                // Informasi pemohon (nama, NIP, unit kerja, kontak)
+                                'requester_name' => $item->nama,
+                                'requester_nip' => $item->nip,
+                                'requester_instansi' => $item->instansi,
+                                'requester_email' => $item->user?->email ?? $item->email_alternatif,
+                                'requester_phone' => $item->no_hp,
                             ]
                         );
 
