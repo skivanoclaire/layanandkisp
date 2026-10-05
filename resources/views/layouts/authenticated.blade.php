@@ -73,7 +73,21 @@
             @endif
 
             {{-- Kelola Permohonan (Accordion untuk Admin) --}}
-            @if (auth()->user()?->hasAnyPermission(['admin.permohonan', 'admin.email', 'admin.subdomain', 'admin.rekomendasi', 'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Permohonan PSE', 'Kelola SPLP', 'Kelola Akun DTSEN', 'Kelola Permohonan DTSEN', 'Verifikasi Substansi DTSEN', 'Kelola Laporan DTSEN']))
+            @if (auth()->user()?->hasAnyPermission([
+                    'admin.permohonan',
+                    'admin.email', 'admin.email.index', 'admin.email-password-reset.index',
+                    'admin.shortlink.index',
+                    'admin.subdomain.index',
+                    'admin.rekomendasi.verifikasi.index', 'admin.rekomendasi.monitoring.index', 'admin.fase-pengembangan.view',
+                    'admin.vidcon.index',
+                    'Kelola Survei Kepuasan', 'Kelola Kuesioner Portal',
+                    'Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah',
+                    'Kelola Pendaftaran VPN', 'Kelola Reset Akun VPN', 'Kelola Akses JIP PDNS',
+                    'Kelola Kunjungan/Colocation', 'Kelola VPS/VM', 'Kelola Backup', 'Kelola Cloud Storage',
+                    'Kelola Bantuan TTE', 'Kelola Registrasi TTE', 'Kelola Reset Passphrase TTE', 'Kelola Pembaruan Sertifikat TTE',
+                    'Kelola Permohonan PSE', 'Kelola SPLP',
+                    'Kelola Akun DTSEN', 'Kelola Permohonan DTSEN', 'Verifikasi Substansi DTSEN', 'Kelola Laporan DTSEN',
+                ]))
                 @php
                     $atPermohonan = request()->routeIs('admin.permohonan');
                     $atEmail = request()->routeIs('admin.email.*') || request()->routeIs('admin.email-password-reset.*');
@@ -123,7 +137,7 @@
                             </a>
                         @endif
 
-                        @if (auth()->user()?->hasPermission('admin.email'))
+                        @if (auth()->user()?->hasAnyPermission(['admin.email', 'admin.email.index', 'admin.email-password-reset.index']))
                             @php
                                 $atEmailRequest = request()->routeIs('admin.email.*');
                                 $atEmailPasswordReset = request()->routeIs('admin.email-password-reset.*');
@@ -279,7 +293,7 @@
                         @endif
 
                         {{-- Video Conference Admin --}}
-                        @if (auth()->user()?->hasRole('Admin'))
+                        @if (auth()->user()?->hasPermission('admin.vidcon.index'))
                             <a href="{{ route('admin.vidcon.index') }}"
                                 class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                           {{ request()->routeIs('admin.vidcon.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -667,29 +681,21 @@
 
             {{-- Layanan Digital (Accordion) - Hanya untuk user verified --}}
             @if (auth()->user()?->is_verified && auth()->user()?->hasAnyPermission([
-                        'Akses Permohonan Email',
-                        'Akses Reset Password Email',
-                        'Akses Permohonan Subdomain',
-                        'Akses Rekomendasi Aplikasi',
-                        'user.rekomendasi.usulan.create',
-                        'user.fase-pengembangan',
-                        'Akses Video Conference',
-                        'Akses Lapor Gangguan Internet',
-                        'Akses Starlink Jelajah',
-                        'Akses VPN Registration',
-                        'Akses VPN Reset',
-                        'Akses JIP PDNS',
-                        'Akses VPS Request',
-                        'Akses Backup Request',
-                        'Akses Cloud Storage',
-                        'Akses Kunjungan Data Center',
-                        'Akses Bantuan TTE',
-                        'Akses Registrasi TTE',
-                        'Akses Reset Passphrase TTE',
-                        'Akses Pembaruan Sertifikat TTE',
-                        'Akses Konsultasi SPBE AI',
+                        'user.email.index', 'user.email.create', 'user.email.show',
+                        'user.email-password-reset.index', 'user.email-password-reset.create',
+                        'user.rekomendasi.usulan.create', 'user.fase-pengembangan',
+                        'user.subdomain.index', 'user.subdomain.create', 'user.subdomain.show',
+                        'user.subdomain.name-change.index', 'user.subdomain.name-change.create', 'user.subdomain.name-change.show',
+                        'user.shortlink.index', 'user.shortlink.create', 'user.shortlink.show',
                         'Akses Update Data PSE',
+                        'Akses Konsultasi SPBE AI',
                         'Akses Survei Kepuasan',
+                        'Akses Kuesioner Portal',
+                        'Akses Bantuan TTE', 'Akses Registrasi TTE', 'Akses Reset Passphrase TTE', 'Akses Pembaruan Sertifikat TTE',
+                        'Akses Video Conference',
+                        'Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah',
+                        'Akses Pendaftaran VPN', 'Akses Reset Akun VPN', 'Akses JIP PDNS',
+                        'Akses Kunjungan/Colocation Data Center', 'Akses VPS/VM', 'Akses Backup', 'Akses Cloud Storage',
                         'Akses SPLP',
                         'Akses DTSEN',
                     ]))
@@ -1173,7 +1179,7 @@
             @endif
 
             {{-- Unified Subdomain Management --}}
-            @if (auth()->user()?->hasPermission('admin.subdomain'))
+            @if (auth()->user()?->hasPermission('Manajemen Subdomain Terpadu'))
                 @php
                     $pendingCount = \App\Models\SubdomainRequest::where('status', 'menunggu')->count();
                 @endphp
@@ -1220,7 +1226,7 @@
 
                 $canSeeMasterData = auth()->user()?->hasPermission('admin.unit-kerja')
                     || auth()->user()?->hasPermission('admin.web-monitor')
-                    || auth()->user()?->hasRole('Admin')
+                    || auth()->user()?->hasPermission('Kelola Master Data Email')
                     || auth()->user()?->hasPermission('admin.web-monitor.check-ip-publik')
                     || auth()->user()?->hasPermission('admin.vidcon.data')
                     || auth()->user()?->hasPermission('admin.google-aset-tik')
@@ -1259,7 +1265,7 @@
                         @endif
 
                         {{-- Master Data Email --}}
-                        @if (auth()->user()?->hasRole('Admin'))
+                        @if (auth()->user()?->hasPermission('Kelola Master Data Email'))
                             <a href="{{ route('admin.email-accounts.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atMasterEmail ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1374,7 +1380,8 @@
                         'op.tik.schedule',
                         'admin.statistic',
                         'admin.vidcon.data',
-                    ]) || auth()->user()?->hasRole('Operator-Vidcon'))
+                        'operator.vidcon',
+                    ]))
                 @php
                     $atPeminjamanSaya =
                         request()->routeIs('op.tik.borrow.index') || request()->routeIs('op.tik.borrow.show');
@@ -1461,7 +1468,7 @@
                         @endif
 
                         {{-- Pelaporan & Dokumentasi Operator --}}
-                        @if (auth()->user()?->hasRole('Operator-Vidcon'))
+                        @if (auth()->user()?->hasPermission('operator.vidcon'))
                             <a href="{{ route('operator.vidcon.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atPelaporanOperator ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1488,9 +1495,7 @@
                     || $atCekSimpeg
                     || $atRunningText;
 
-                $canSeePenggunaAkses = auth()->user()?->hasPermission('admin.users')
-                    || auth()->user()?->hasPermission('admin.roles.index')
-                    || auth()->user()?->hasRole('Admin')
+                $canSeePenggunaAkses = auth()->user()?->hasRole('Admin')
                     || auth()->user()?->hasPermission('admin.simpeg')
                     || auth()->user()?->hasPermission('admin.running-text');
             @endphp
@@ -1508,7 +1513,7 @@
                     </button>
                     <div x-show="openPenggunaAkses" class="ml-4 space-y-1">
                         {{-- Kelola Pengguna --}}
-                        @if (auth()->user()?->hasPermission('admin.users'))
+                        @if (auth()->user()?->hasRole('Admin'))
                             <a href="{{ route('admin.users') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atKelolaPengguna ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1517,7 +1522,7 @@
                         @endif
 
                         {{-- Kelola Peran (Role) --}}
-                        @if (auth()->user()?->hasPermission('admin.roles.index'))
+                        @if (auth()->user()?->hasRole('Admin'))
                             <a href="{{ route('admin.roles.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atKelolaPeran ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
@@ -1574,7 +1579,7 @@
             @endif
 
             {{-- Manajemen Survei Digital --}}
-            @if (auth()->user()?->hasRole('Admin'))
+            @if (auth()->user()?->hasPermission('admin.survei-digital'))
                 <a href="{{ route('admin.survei-digital.index') }}"
                     class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                {{ request()->routeIs('admin.survei-digital.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">

@@ -350,55 +350,109 @@ class AdminController extends Controller
 
     /**
      * Role Permissions Management - Table View
-     * Shows all permissions as rows, all roles as columns
+     * Baris permission disusun per bagian mengikuti urutan sidebar (config/permission_layout.php),
+     * kolom berisi semua role.
      */
     public function rolePermissions()
     {
-        // Get all roles with their current permissions
-        $roles = \App\Models\Role::with('permissions')->orderBy('name')->get();
+        $roles = \App\Models\Role::with('permissions')->withCount('users')->orderBy('name')->get();
 
-        // Get all permissions grouped by category, ordered by group and display name
-        $allPermissions = \App\Models\Permission::orderBy('group')
+        $layout = config('permission_layout.sections', []);
+        $adminOnly = config('permission_layout.admin_only', []);
+
+        $permissionsByName = \App\Models\Permission::whereNotIn('name', $adminOnly)
             ->orderBy('order')
             ->orderBy('display_name')
             ->get()
-            ->groupBy('group');
+            ->keyBy('name');
 
-        // Get role descriptions from config (for display only, not enforcement)
-        $roleConfigs = config('role_permissions.role_permission_matrix', []);
+        // Bangun bagian sesuai urutan sidebar; tiap baris membawa label sub-menu.
+        $sections = [];
+        $placed = [];
+        foreach ($layout as $sectionLabel => $subMenus) {
+            $rows = [];
+            foreach ($subMenus as $subLabel => $names) {
+                foreach ($names as $name) {
+                    $permission = $permissionsByName->get($name);
+                    if ($permission && ! isset($placed[$name])) {
+                        $rows[] = ['sub' => $subLabel, 'permission' => $permission];
+                        $placed[$name] = true;
+                    }
+                }
+            }
+            if ($rows) {
+                $sections[] = ['label' => $sectionLabel, 'rows' => $rows];
+            }
+        }
 
-        return view('admin.role-permissions', compact('roles', 'allPermissions', 'roleConfigs'));
+        // Permission baru yang belum dimasukkan ke config tetap tampil supaya tidak hilang.
+        $unmapped = $permissionsByName->reject(fn ($p) => isset($placed[$p->name]));
+        if ($unmapped->isNotEmpty()) {
+            $sections[] = [
+                'label' => 'Belum Dipetakan',
+                'rows' => $unmapped->map(fn ($p) => ['sub' => $p->group, 'permission' => $p])->values()->all(),
+            ];
+        }
+
+        $totalPermissions = count($placed) + $unmapped->count();
+        $adminOnlyPages = config('permission_layout.admin_only_pages', []);
+
+        return view('admin.role-permissions', compact('roles', 'sections', 'totalPermissions', 'adminOnlyPages'));
     }
 
     /**
      * Update role permissions - Bulk update for all roles
+     *
+     * Form mengirim satu string id dipisah koma per role (permissions[role_id] = "1,2,3")
+     * supaya tidak terpotong oleh batas max_input_vars PHP, dan supaya role yang semua
+     * centangnya dihapus tetap ikut tersimpan.
      */
     public function updateRolePermissions(HttpRequest $request)
     {
-        // Validate: permissions array where key is role_id, value is array of permission_ids
         $validated = $request->validate([
             'permissions' => ['required', 'array'],
-            'permissions.*' => ['array'],
-            'permissions.*.*' => ['exists:permissions,id'],
+            'permissions.*' => ['nullable', 'string'],
         ]);
+
+        $validIds = \App\Models\Permission::pluck('id')->all();
+        $adminOnlyIds = \App\Models\Permission::whereIn('name', config('permission_layout.admin_only', []))
+            ->pluck('id')
+            ->all();
+
+        $roles = \App\Models\Role::with('permissions')
+            ->whereIn('id', array_keys($validated['permissions']))
+            ->get()
+            ->keyBy('id');
 
         $updatedRoles = [];
 
-        // Update permissions for each role
-        foreach ($validated['permissions'] as $roleId => $permissionIds) {
-            $role = \App\Models\Role::find($roleId);
+        foreach ($validated['permissions'] as $roleId => $idList) {
+            $role = $roles->get($roleId);
+            if (! $role) {
+                continue;
+            }
 
-            if ($role) {
-                // Sync permissions (this will add new ones and remove old ones)
-                $role->permissions()->sync($permissionIds);
+            $submitted = array_map('intval', array_filter(explode(',', (string) $idList), 'is_numeric'));
+            $submitted = array_values(array_intersect($submitted, $validIds));
+
+            // Permission halaman inti tidak tampil di form; pertahankan yang sudah ada.
+            $current = $role->permissions->pluck('id')->all();
+            $kept = array_intersect($current, $adminOnlyIds);
+            $newIds = array_values(array_unique(array_merge(array_diff($submitted, $adminOnlyIds), $kept)));
+
+            sort($current);
+            sort($newIds);
+            if ($current !== $newIds) {
+                $role->permissions()->sync($newIds);
                 $updatedRoles[] = $role->display_name;
             }
         }
 
-        $rolesList = implode(', ', $updatedRoles);
+        $message = $updatedRoles
+            ? 'Kewenangan berhasil diperbarui untuk role: ' . implode(', ', $updatedRoles)
+            : 'Tidak ada perubahan kewenangan.';
 
-        return redirect()->route('admin.role-permissions')
-            ->with('success', "Kewenangan berhasil diperbarui untuk role: {$rolesList}");
+        return redirect()->route('admin.role-permissions')->with('success', $message);
     }
 
 public function deleteRequest(UserRequest $userRequest)

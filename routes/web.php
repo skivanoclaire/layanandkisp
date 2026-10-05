@@ -195,11 +195,14 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
 });
 
 // Untuk admin
-Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+// Akses tiap halaman ditentukan oleh permission (dicentang di Kelola Kewenangan),
+// kecuali halaman inti (pengguna, role, kewenangan, audit, API) yang khusus role Admin.
+// Role Admin selalu lolos pengecekan permission (lihat PermissionMiddleware).
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminController::class, 'dashboard'])->middleware('permission:admin.dashboard')->name('dashboard');
 
     // Manajemen API (Whitelist, API Key, Daftar Endpoint untuk SPLP)
-    Route::prefix('api-management')->name('api-management.')->group(function () {
+    Route::middleware('role:Admin')->prefix('api-management')->name('api-management.')->group(function () {
         Route::get('/', [ApiManagementController::class, 'index'])->name('index');
         Route::post('/keys', [ApiManagementController::class, 'storeKey'])->name('keys.store');
         Route::patch('/keys/{apiKey}/toggle', [ApiManagementController::class, 'toggleKey'])->name('keys.toggle');
@@ -208,18 +211,23 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
         Route::patch('/whitelist/{apiWhitelist}/toggle', [ApiManagementController::class, 'toggleWhitelist'])->name('whitelist.toggle');
         Route::delete('/whitelist/{apiWhitelist}', [ApiManagementController::class, 'destroyWhitelist'])->name('whitelist.destroy');
     });
-    Route::get('/dashboard/chart-data', [AdminController::class, 'getChartData'])->name('dashboard.chart-data');
-    Route::get('/permohonan', [AdminController::class, 'permohonan'])->name('permohonan');
-    Route::get('/users', [AdminController::class, 'users'])->name('users');
-    Route::get('/users/create', [AdminController::class, 'createUser'])->name('users.create');
-    Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
-    Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
-    Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
-    Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
-    Route::post('/update-status/{userRequest}', [AdminController::class, 'updateStatus'])->name('update-status');
-    Route::delete('/requests/{userRequest}', [AdminController::class, 'deleteRequest'])->name('delete-request');
+    Route::get('/dashboard/chart-data', [AdminController::class, 'getChartData'])->middleware('permission:admin.dashboard')->name('dashboard.chart-data');
+    Route::get('/permohonan', [AdminController::class, 'permohonan'])->middleware('permission:admin.permohonan')->name('permohonan');
+    Route::middleware('role:Admin')->group(function () {
+        Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/users/create', [AdminController::class, 'createUser'])->name('users.create');
+        Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
+        Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
+        Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
+        Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+    });
+    Route::middleware('permission:admin.permohonan')->group(function () {
+        Route::post('/update-status/{userRequest}', [AdminController::class, 'updateStatus'])->name('update-status');
+        Route::delete('/requests/{userRequest}', [AdminController::class, 'deleteRequest'])->name('delete-request');
+    });
     // Web Monitor with Cloudflare Integration
     Route::prefix('web-monitor')->name('web-monitor.')->group(function () {
+      Route::middleware('permission:admin.web-monitor')->group(function () {
         // STATIC ROUTES FIRST (no parameters)
         Route::get('/', [WebMonitorController::class, 'index'])->name('index');
         Route::get('/create', [WebMonitorController::class, 'create'])->name('create');
@@ -228,11 +236,15 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
         // Additional Cloudflare actions
         Route::post('/sync-cloudflare', [WebMonitorController::class, 'syncWithCloudflare'])->name('sync-cloudflare');
         Route::post('/check-all-status', [WebMonitorController::class, 'checkAllStatus'])->name('check-all-status');
+      });
 
-        // Check IP Publik routes (MOVED UP before parameterized routes)
+        // Check IP Publik routes (MOVED UP before parameterized routes) — juga bisa dibuka lewat permission Master Data IP
+      Route::middleware('permission:admin.web-monitor,admin.web-monitor.check-ip-publik')->group(function () {
         Route::get('/check-ip-publik', [WebMonitorController::class, 'checkIpPublik'])->name('check-ip-publik');
         Route::get('/check-ip-availability', [WebMonitorController::class, 'checkIpAvailability'])->name('check-ip-availability');
+      });
 
+      Route::middleware('permission:admin.web-monitor')->group(function () {
         // Traffic Report routes
         Route::get('/traffic-report', [WebMonitorController::class, 'trafficReport'])->name('traffic-report');
         Route::post('/traffic-report/sync', [WebMonitorController::class, 'syncTrafficData'])->name('traffic-report.sync');
@@ -262,13 +274,16 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
             Route::get('/{webMonitor}/edit', [WebMonitorController::class, 'edit'])->name('edit');
             Route::delete('/{webMonitor}', [WebMonitorController::class, 'destroy'])->name('destroy');
         });
+      });
     });
 
-    Route::post('/users/{user}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
-    Route::post('/users/{user}/unverify', [AdminController::class, 'unverifyUser'])->name('users.unverify');
+    Route::middleware('role:Admin')->group(function () {
+        Route::post('/users/{user}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
+        Route::post('/users/{user}/unverify', [AdminController::class, 'unverifyUser'])->name('users.unverify');
+    });
 
     // Rekomendasi V2 - Verification
-    Route::middleware(['permission:admin.rekomendasi.verifikasi.view'])
+    Route::middleware(['permission:admin.rekomendasi.verifikasi.index,admin.rekomendasi.verifikasi.view'])
         ->prefix('rekomendasi/verifikasi')
         ->name('rekomendasi.verifikasi.')
         ->group(function () {
@@ -308,7 +323,7 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
         });
 
     // Rekomendasi V2 - Monitoring & Dashboard
-    Route::middleware(['permission:admin.rekomendasi.monitoring.view'])
+    Route::middleware(['permission:admin.rekomendasi.monitoring.index,admin.rekomendasi.monitoring.view'])
         ->prefix('rekomendasi/monitoring')
         ->name('rekomendasi.monitoring.')
         ->group(function () {
@@ -338,13 +353,17 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     //         Route::get('/{id}/download', [RekomendasiSuratController::class, 'downloadSigned'])->name('download');
     //     });
 
-    Route::get('/simpeg-check', [SimpegCheckController::class, 'index'])->name('simpeg.index');
-    Route::post('/simpeg-check', [SimpegCheckController::class, 'check'])->name('simpeg.check');
-    Route::post('/simpeg-check/save-to-user', [SimpegCheckController::class, 'saveToUser'])->name('simpeg.saveToUser');
+    Route::middleware('permission:admin.simpeg')->group(function () {
+        Route::get('/simpeg-check', [SimpegCheckController::class, 'index'])->name('simpeg.index');
+        Route::post('/simpeg-check', [SimpegCheckController::class, 'check'])->name('simpeg.check');
+        Route::post('/simpeg-check/save-to-user', [SimpegCheckController::class, 'saveToUser'])->name('simpeg.saveToUser');
+    });
 
     // AJAX endpoints untuk modal "Cek Data" di /admin/users
-    Route::post('/simpeg-check/api/{user}/check', [SimpegCheckController::class, 'apiCheckUser'])->name('simpeg.api.check');
-    Route::post('/simpeg-check/api/{user}/apply', [SimpegCheckController::class, 'apiApplyUser'])->name('simpeg.api.apply');
+    Route::middleware('role:Admin')->group(function () {
+        Route::post('/simpeg-check/api/{user}/check', [SimpegCheckController::class, 'apiCheckUser'])->name('simpeg.api.check');
+        Route::post('/simpeg-check/api/{user}/apply', [SimpegCheckController::class, 'apiApplyUser'])->name('simpeg.api.apply');
+    });
 
     // Running Text (teks berjalan di bawah navbar)
     Route::middleware('permission:admin.running-text')
@@ -359,7 +378,7 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
         });
 
     // Rekomendasi Aplikasi (Admin melihat semua data)
-    Route::prefix('/rekomendasi')->name('rekomendasi.')->group(function () {
+    Route::middleware('permission:admin.rekomendasi.index')->prefix('/rekomendasi')->name('rekomendasi.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'index'])->name('index');
         Route::get('/{id}', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'show'])->name('show');
         Route::post('/{id}/approve', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'approve'])->name('approve');
@@ -370,9 +389,13 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     });
 
     // Master Data Unit Kerja
-    Route::get('unit-kerja/export-pdf', [UnitKerjaController::class, 'exportPdf'])->name('unit-kerja.export-pdf');
-    Route::resource('unit-kerja', UnitKerjaController::class);
+    Route::middleware('permission:admin.unit-kerja')->group(function () {
+        Route::get('unit-kerja/export-pdf', [UnitKerjaController::class, 'exportPdf'])->name('unit-kerja.export-pdf');
+        Route::resource('unit-kerja', UnitKerjaController::class);
+    });
 
+    // Halaman inti: khusus role Admin (tidak bisa diberikan lewat Kelola Kewenangan)
+    Route::middleware('role:Admin')->group(function () {
     // Role Management (CRUD)
     Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index');
     Route::get('/roles/create', [\App\Http\Controllers\Admin\RoleController::class, 'create'])->name('roles.create');
@@ -388,8 +411,10 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     // Audit Logs
     Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('/audit-logs/{auditLog}', [\App\Http\Controllers\Admin\AuditLogController::class, 'show'])->name('audit-logs.show');
+    });
 
     // Master Data Email Accounts
+    Route::middleware('permission:Kelola Master Data Email')->group(function () {
     Route::get('/email-accounts', [\App\Http\Controllers\Admin\EmailAccountController::class, 'index'])->name('email-accounts.index');
     Route::post('/email-accounts/sync', [\App\Http\Controllers\Admin\EmailAccountController::class, 'sync'])->name('email-accounts.sync');
     Route::post('/email-accounts/test-connection', [\App\Http\Controllers\Admin\EmailAccountController::class, 'testConnection'])->name('email-accounts.test-connection');
@@ -402,11 +427,12 @@ Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/email-accounts/{emailAccount}/unsuspend', [\App\Http\Controllers\Admin\EmailAccountController::class, 'unsuspend'])->name('email-accounts.unsuspend');
     Route::delete('/email-accounts/{emailAccount}', [\App\Http\Controllers\Admin\EmailAccountController::class, 'destroy'])->name('email-accounts.destroy');
     Route::delete('/email-accounts-destroy-all', [\App\Http\Controllers\Admin\EmailAccountController::class, 'destroyAll'])->name('email-accounts.destroy-all');
+    });
 
 });
 
-// Kelola Data Vidcon - Accessible by Admin and Operator-Vidcon
-Route::middleware(['auth', 'role:Admin,Operator-Vidcon'])
+// Kelola Data Vidcon (Master Data Vidcon + Kelola Data Operator)
+Route::middleware(['auth', 'permission:admin.vidcon.data'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -445,7 +471,7 @@ Route::middleware(['auth','verified.user','permission:user.email.index,user.emai
     });
 
 // Form Permohonan Email Digital level Admin
-Route::middleware(['auth','role:Admin'])->prefix('admin/digital/email')->name('admin.email.')->group(function () {
+Route::middleware(['auth','permission:admin.email,admin.email.index'])->prefix('admin/digital/email')->name('admin.email.')->group(function () {
     Route::get('/',           [EmailRequestAdminController::class, 'index'])->name('index');
     Route::get('/export-excel', [EmailRequestAdminController::class, 'exportExcel'])->name('export-excel');
     Route::get('/export-pdf', [EmailRequestAdminController::class, 'exportPdf'])->name('export-pdf');
@@ -471,7 +497,7 @@ Route::middleware(['auth','verified.user','permission:user.shortlink.index,user.
     });
 
 // Level admin
-Route::middleware(['auth','role:Admin'])
+Route::middleware(['auth', 'permission:admin.shortlink.index'])
     ->prefix('admin/digital/shortlink')
     ->name('admin.shortlink.')
     ->group(function () {
@@ -551,7 +577,7 @@ Route::middleware(['auth','verified.user','permission:Akses Update Data PSE'])
     });
 
 // Form Permohonan Subdomain level Admin
-Route::middleware(['auth','role:Admin'])->prefix('admin/digital/subdomain')->name('admin.subdomain.')->group(function () {
+Route::middleware(['auth','permission:admin.subdomain.index'])->prefix('admin/digital/subdomain')->name('admin.subdomain.')->group(function () {
     Route::get('/',           [\App\Http\Controllers\Admin\SubdomainRequestAdminController::class, 'index'])->name('index');
     Route::get('/export-excel', [\App\Http\Controllers\Admin\SubdomainRequestAdminController::class, 'exportExcel'])->name('export-excel');
     Route::get('/export-pdf', [\App\Http\Controllers\Admin\SubdomainRequestAdminController::class, 'exportPdf'])->name('export-pdf');
@@ -593,7 +619,7 @@ Route::middleware(['auth','role:Admin'])->prefix('admin/digital/subdomain')->nam
 });
 
 // PSE Update Data - Admin Routes
-Route::middleware(['auth','role:Admin','permission:Kelola Permohonan PSE'])
+Route::middleware(['auth','permission:Kelola Permohonan PSE'])
     ->prefix('admin/digital/pse-update')
     ->name('admin.pse-update.')
     ->group(function () {
@@ -603,7 +629,7 @@ Route::middleware(['auth','role:Admin','permission:Kelola Permohonan PSE'])
     });
 
 // Manajemen SLA - Dashboard capaian SLA & pengaturan target per layanan
-Route::middleware(['auth', 'role:Admin', 'permission:Manajemen SLA'])
+Route::middleware(['auth', 'permission:Manajemen SLA'])
     ->prefix('admin/sla')
     ->name('admin.sla.')
     ->group(function () {
@@ -686,10 +712,11 @@ Route::middleware(['auth', 'verified.user', 'permission:Akses SPLP'])
     });
 
 // SPLP - Admin Routes (Kelola Permohonan + Master Data)
-Route::middleware(['auth', 'role:Admin'])
+Route::middleware(['auth'])
     ->prefix('admin/splp')
     ->name('admin.splp.')
     ->group(function () {
+      Route::middleware('permission:Kelola SPLP')->group(function () {
         // Kelola Permohonan V1
         Route::prefix('provider')->name('provider.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\Splp\SplpProviderRequestAdminController::class, 'index'])->name('index');
@@ -725,14 +752,20 @@ Route::middleware(['auth', 'role:Admin'])
             Route::post('/{id}/status', [\App\Http\Controllers\Admin\Splp\SplpDeactivationRequestAdminController::class, 'updateStatus'])->name('status');
         });
 
+      });
+
         // Master Data Integrasi SPLP
-        Route::post('services/import', [\App\Http\Controllers\Admin\Splp\SplpServiceController::class, 'import'])->name('services.import');
-        Route::resource('services', \App\Http\Controllers\Admin\Splp\SplpServiceController::class)
-            ->parameters(['services' => 'service']);
+        Route::middleware('permission:admin.splp.services')->group(function () {
+            Route::post('services/import', [\App\Http\Controllers\Admin\Splp\SplpServiceController::class, 'import'])->name('services.import');
+            Route::resource('services', \App\Http\Controllers\Admin\Splp\SplpServiceController::class)
+                ->parameters(['services' => 'service']);
+        });
         Route::resource('consumers', \App\Http\Controllers\Admin\Splp\SplpConsumerController::class)
             ->parameters(['consumers' => 'consumer'])
-            ->except(['show']);
-        Route::get('audit-log', [\App\Http\Controllers\Admin\Splp\SplpAuditLogController::class, 'index'])->name('audit.index');
+            ->except(['show'])
+            ->middleware('permission:admin.splp.consumers');
+        Route::get('audit-log', [\App\Http\Controllers\Admin\Splp\SplpAuditLogController::class, 'index'])
+            ->middleware('permission:admin.splp.audit')->name('audit.index');
     });
 
 /*
@@ -917,7 +950,7 @@ Route::middleware(['auth'])->prefix('admin/dtsen')->name('admin.dtsen.')->group(
 });
 
 // Unified Subdomain Management - Admin Routes
-Route::middleware(['auth','role:Admin'])->prefix('admin/unified-subdomain')->name('admin.unified-subdomain.')->group(function () {
+Route::middleware(['auth','permission:Manajemen Subdomain Terpadu'])->prefix('admin/unified-subdomain')->name('admin.unified-subdomain.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\UnifiedSubdomainController::class, 'index'])->name('index');
     Route::get('/{id}', [\App\Http\Controllers\Admin\UnifiedSubdomainController::class, 'show'])->name('show');
     Route::post('/{id}/approve', [\App\Http\Controllers\Admin\UnifiedSubdomainController::class, 'approve'])->name('approve');
@@ -938,7 +971,7 @@ Route::middleware(['auth', 'verified.user'])
     });
 
 // Email Password Reset - Admin Routes
-Route::middleware(['auth', 'role:Admin'])
+Route::middleware(['auth', 'permission:admin.email,admin.email-password-reset.index'])
     ->prefix('admin/email-password-reset')
     ->name('admin.email-password-reset.')
     ->group(function () {
@@ -964,7 +997,7 @@ Route::middleware(['auth', 'verified.user', 'permission:Akses Video Conference']
     });
 
 // Video Conference Request - Admin Routes
-Route::middleware(['auth', 'role:Admin'])
+Route::middleware(['auth', 'permission:admin.vidcon.index'])
     ->prefix('admin/digital/vidcon')
     ->name('admin.vidcon.')
     ->group(function () {
@@ -994,7 +1027,7 @@ Route::middleware(['auth', 'verified.user', 'permission:Akses Survei Kepuasan'])
     });
 
 // Survei Kepuasan Layanan - Admin Routes
-Route::middleware(['auth', 'role:Admin', 'permission:Kelola Survei Kepuasan'])
+Route::middleware(['auth', 'permission:Kelola Survei Kepuasan'])
     ->prefix('admin/survei-kepuasan')
     ->name('admin.survei-kepuasan.')
     ->group(function () {
@@ -1021,7 +1054,7 @@ Route::middleware(['auth', 'verified.user', 'permission:Akses Kuesioner Portal']
     });
 
 // Kuesioner Portal - Admin Routes
-Route::middleware(['auth', 'role:Admin', 'permission:Kelola Kuesioner Portal'])
+Route::middleware(['auth', 'permission:Kelola Kuesioner Portal'])
     ->prefix('admin/kuesioner-portal')
     ->name('admin.kuesioner-portal.')
     ->controller(\App\Http\Controllers\Admin\KuesionerPortalAdminController::class)
@@ -1063,7 +1096,7 @@ Route::middleware(['auth', 'verified.user', 'permission:Akses Starlink Jelajah']
     });
 
 // Laporan Gangguan Internet - Admin Routes
-Route::middleware(['auth', 'role:Admin', 'permission:Kelola Laporan Gangguan Internet'])
+Route::middleware(['auth', 'permission:Kelola Laporan Gangguan Internet'])
     ->prefix('admin/digital/internet/laporan-gangguan')
     ->name('admin.internet.laporan-gangguan.')
     ->group(function () {
@@ -1076,7 +1109,7 @@ Route::middleware(['auth', 'role:Admin', 'permission:Kelola Laporan Gangguan Int
     });
 
 // Starlink Jelajah - Admin Routes
-Route::middleware(['auth', 'role:Admin', 'permission:Kelola Starlink Jelajah'])
+Route::middleware(['auth', 'permission:Kelola Starlink Jelajah'])
     ->prefix('admin/digital/internet/starlink')
     ->name('admin.internet.starlink.')
     ->group(function () {
@@ -1126,7 +1159,7 @@ Route::middleware(['auth','verified.user','permission:Akses JIP PDNS'])
     });
 
 // VPN Registration - Admin
-Route::middleware(['auth','role:Admin', 'permission:Kelola Pendaftaran VPN'])
+Route::middleware(['auth', 'permission:Kelola Pendaftaran VPN'])
     ->prefix('admin/digital/vpn/registration')
     ->name('admin.vpn.registration.')
     ->group(function () {
@@ -1140,7 +1173,7 @@ Route::middleware(['auth','role:Admin', 'permission:Kelola Pendaftaran VPN'])
     });
 
 // VPN Reset - Admin
-Route::middleware(['auth','role:Admin', 'permission:Kelola Reset Akun VPN'])
+Route::middleware(['auth', 'permission:Kelola Reset Akun VPN'])
     ->prefix('admin/digital/vpn/reset')
     ->name('admin.vpn.reset.')
     ->group(function () {
@@ -1153,7 +1186,7 @@ Route::middleware(['auth','role:Admin', 'permission:Kelola Reset Akun VPN'])
     });
 
 // JIP PDNS - Admin
-Route::middleware(['auth','role:Admin', 'permission:Kelola Akses JIP PDNS'])
+Route::middleware(['auth', 'permission:Kelola Akses JIP PDNS'])
     ->prefix('admin/digital/vpn/jip-pdns')
     ->name('admin.vpn.jip-pdns.')
     ->group(function () {
@@ -1214,7 +1247,7 @@ Route::middleware(['auth','verified.user','permission:Akses Cloud Storage'])
     });
 
 // Visitation/Colocation - Admin
-Route::middleware(['auth','role:Admin'])
+Route::middleware(['auth', 'permission:Kelola Kunjungan/Colocation'])
     ->prefix('admin/digital/datacenter/visitation')
     ->name('admin.datacenter.visitation.')
     ->group(function () {
@@ -1227,7 +1260,7 @@ Route::middleware(['auth','role:Admin'])
     });
 
 // VPS - Admin
-Route::middleware(['auth','role:Admin'])
+Route::middleware(['auth', 'permission:Kelola VPS/VM'])
     ->prefix('admin/digital/datacenter/vps')
     ->name('admin.datacenter.vps.')
     ->group(function () {
@@ -1243,7 +1276,7 @@ Route::middleware(['auth','role:Admin'])
     });
 
 // Backup - Admin
-Route::middleware(['auth','role:Admin'])
+Route::middleware(['auth', 'permission:Kelola Backup'])
     ->prefix('admin/digital/datacenter/backup')
     ->name('admin.datacenter.backup.')
     ->group(function () {
@@ -1256,7 +1289,7 @@ Route::middleware(['auth','role:Admin'])
     });
 
 // Cloud Storage - Admin
-Route::middleware(['auth','role:Admin'])
+Route::middleware(['auth', 'permission:Kelola Cloud Storage'])
     ->prefix('admin/digital/datacenter/cloud-storage')
     ->name('admin.datacenter.cloud-storage.')
     ->group(function () {
@@ -1360,7 +1393,7 @@ Route::middleware(['auth','verified.user','permission:Akses Pembaruan Sertifikat
     });
 
 // TTE - Pendampingan Aktivasi dan Penggunaan TTE (Admin)
-Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Bantuan TTE'])
+Route::middleware(['auth', 'permission:Kelola Bantuan TTE'])
     ->prefix('admin/tte/assistance')
     ->name('admin.tte.assistance.')
     ->group(function () {
@@ -1371,7 +1404,7 @@ Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Bantua
     });
 
 // TTE - Pendaftaran Akun TTE (Admin)
-Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Registrasi TTE'])
+Route::middleware(['auth', 'permission:Kelola Registrasi TTE'])
     ->prefix('admin/tte/registration')
     ->name('admin.tte.registration.')
     ->group(function () {
@@ -1384,7 +1417,7 @@ Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Regist
     });
 
 // TTE - Reset Passphrase TTE (Admin)
-Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Reset Passphrase TTE'])
+Route::middleware(['auth', 'permission:Kelola Reset Passphrase TTE'])
     ->prefix('admin/tte/passphrase-reset')
     ->name('admin.tte.passphrase-reset.')
     ->group(function () {
@@ -1397,7 +1430,7 @@ Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Reset 
     });
 
 // TTE - Pembaruan Sertifikat TTE (Admin)
-Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Pembaruan Sertifikat TTE'])
+Route::middleware(['auth', 'permission:Kelola Pembaruan Sertifikat TTE'])
     ->prefix('admin/tte/certificate-update')
     ->name('admin.tte.certificate-update.')
     ->group(function () {
@@ -1410,7 +1443,7 @@ Route::middleware(['auth','role:Admin,Operator-Sandi', 'permission:Kelola Pembar
     });
 
 // Manajemen Survei Digital - Admin (kelola token embed survei SPBE)
-Route::middleware(['auth','role:Admin'])
+Route::middleware(['auth', 'permission:admin.survei-digital'])
     ->prefix('admin/survei-digital')
     ->name('admin.survei-digital.')
     ->group(function () {
@@ -1418,8 +1451,8 @@ Route::middleware(['auth','role:Admin'])
         Route::put('/', [\App\Http\Controllers\Admin\SurveiDigitalController::class, 'update'])->name('update');
     });
 
-// Aset Vidcon - admin + admin-vidcon
-Route::middleware(['auth','role:Admin,Operator-Vidcon'])
+// Aset Vidcon (Inventaris Digital)
+Route::middleware(['auth', 'permission:admin.tik.assets'])
     ->prefix('admin/aset-vidcon')->name('admin.tik.')
     ->group(function () {
         // Assets
@@ -1439,7 +1472,7 @@ Route::middleware(['auth','role:Admin,Operator-Vidcon'])
     });
 
 // ===== Google Aset TIK Routes (Admin Only) =====
-Route::middleware(['auth', 'role:Admin'])
+Route::middleware(['auth', 'permission:admin.google-aset-tik'])
     ->prefix('admin/aset-tik/google-sheets')
     ->name('admin.google-aset-tik.')
     ->group(function () {
@@ -1458,7 +1491,7 @@ Route::middleware(['auth', 'role:Admin'])
     });
 
 // Sync Management Routes (Admin Only)
-Route::middleware(['auth', 'role:Admin'])
+Route::middleware(['auth', 'permission:admin.google-aset-tik'])
     ->prefix('admin/aset-tik/google-sheets/sync')
     ->name('admin.google-aset-tik.sync.')
     ->group(function () {
@@ -1471,7 +1504,7 @@ Route::middleware(['auth', 'role:Admin'])
     });
 
 // ===== Admin + Admin Vidcon: Pelacakan & Detail Borrowing =====
-Route::middleware(['auth','role:Admin,Operator-Vidcon'])
+Route::middleware(['auth', 'permission:admin.tik.borrow'])
     ->prefix('admin/aset-vidcon/borrowings')->name('admin.tik.borrow.')
     ->group(function () {
         Route::get('/',            \App\Http\Controllers\Admin\TikBorrowingAdminController::class.'@index')->name('index');
@@ -1481,7 +1514,7 @@ Route::middleware(['auth','role:Admin,Operator-Vidcon'])
 
 
 // ===== Operator Vidcon: Peminjaman Aset (bisa diakses Admin & Operator-Vidcon) =====
-Route::middleware(['auth','role:Admin,Operator-Vidcon'])
+Route::middleware(['auth', 'permission:op.tik.borrow.index,op.tik.borrow.create'])
     ->prefix('op/tik/borrow')->name('op.tik.borrow.')
     ->group(function () {
         Route::get('/',              [OpBorrow::class, 'index'])->name('index');
@@ -1499,19 +1532,22 @@ Route::middleware(['auth','role:Admin,Operator-Vidcon'])
     });
 
 // ===== Operator Vidcon: Jadwal Vidcon (menggunakan data dari vidcon_data table) =====
-Route::middleware(['auth','role:Operator-Vidcon,Admin'])
+Route::middleware(['auth'])
     ->prefix('op/tik')->name('op.tik.')
     ->group(function () {
-        // Halaman jadwal menggunakan data dari vidcon_data table
-        Route::get('/schedule', [\App\Http\Controllers\Operator\TikScheduleController::class, 'schedule'])->name('schedule.index');
-        // Detail jadwal vidcon
-        Route::get('/schedule/{vidconData}', [\App\Http\Controllers\Operator\TikScheduleController::class, 'show'])->name('schedule.show');
+        Route::middleware('permission:admin.schedule,op.tik.schedule')->group(function () {
+            // Halaman jadwal menggunakan data dari vidcon_data table
+            Route::get('/schedule', [\App\Http\Controllers\Operator\TikScheduleController::class, 'schedule'])->name('schedule.index');
+            // Detail jadwal vidcon
+            Route::get('/schedule/{vidconData}', [\App\Http\Controllers\Operator\TikScheduleController::class, 'show'])->name('schedule.show');
+        });
         // Halaman statistik menggunakan data dari vidcon_data table
-        Route::get('/statistic', [\App\Http\Controllers\Operator\TikScheduleController::class, 'statistic'])->name('statistic.index');
+        Route::get('/statistic', [\App\Http\Controllers\Operator\TikScheduleController::class, 'statistic'])
+            ->middleware('permission:admin.statistic')->name('statistic.index');
     });
 
 // ===== Operator Vidcon: Pelaporan & Dokumentasi =====
-Route::middleware(['auth','role:Operator-Vidcon,Admin'])
+Route::middleware(['auth', 'permission:operator.vidcon'])
     ->prefix('operator/vidcon')->name('operator.vidcon.')
     ->group(function () {
         Route::get('/', [\App\Http\Controllers\Operator\OperatorVidconController::class, 'index'])->name('index');
