@@ -86,9 +86,10 @@
                     $atAdminTte = request()->routeIs('admin.tte.*');
                     $atAdminPse = request()->routeIs('admin.pse-update.*');
                     $atAdminSurveiKepuasan = request()->routeIs('admin.survei-kepuasan.*');
+                    $atAdminKuesionerPortal = request()->routeIs('admin.kuesioner-portal.*');
                     $atAdminSplpPermohonan = request()->routeIs('admin.splp.provider.*', 'admin.splp.consumer.*', 'admin.splp.sandbox.*', 'admin.splp.change.*', 'admin.splp.deactivation.*');
                     $atAdminDtsen = request()->routeIs('admin.dtsen.akun.*', 'admin.dtsen.permohonan.*', 'admin.dtsen.substansi.*', 'admin.dtsen.perpanjangan.*', 'admin.dtsen.laporan.*', 'admin.dtsen.pengaduan.*');
-                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan || $atAdminSplpPermohonan || $atAdminDtsen;
+                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan || $atAdminKuesionerPortal || $atAdminSplpPermohonan || $atAdminDtsen;
                    
                 @endphp
                 @php
@@ -318,6 +319,15 @@
                                     </a>
                                 </div>
                             </div>
+                        @endif
+
+                        {{-- Kuesioner Kualitas Layanan Portal (Admin) --}}
+                        @if (auth()->user()?->hasPermission('Kelola Kuesioner Portal'))
+                            <a href="{{ route('admin.kuesioner-portal.index') }}"
+                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ $atAdminKuesionerPortal ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Kuesioner Kualitas Portal
+                            </a>
                         @endif
 
                         {{-- Internet Submenu (Admin) --}}
@@ -698,10 +708,11 @@
                     $atTteUser = request()->routeIs('user.tte.*');
                     $atPseUser = request()->routeIs('user.pse-update.*');
                     $atSurveiKepuasan = request()->routeIs('survei-kepuasan.*');
+                    $atKuesionerPortal = request()->routeIs('kuesioner-portal.*');
                     $atSplpUser = request()->routeIs('user.splp.*');
                     $atDtsenUser = request()->routeIs('user.dtsen.*');
                     $openUserPermohonan =
-                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan || $atSplpUser || $atDtsenUser;
+                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan || $atKuesionerPortal || $atSplpUser || $atDtsenUser;
                     
     
                 @endphp
@@ -857,6 +868,15 @@
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atSurveiKepuasan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Survei Kepuasan Layanan
+                            </a>
+                        @endif
+
+                        {{-- Kuesioner Kualitas Layanan Portal --}}
+                        @if (auth()->user()?->hasPermission('Akses Kuesioner Portal'))
+                            <a href="{{ route('kuesioner-portal.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ $atKuesionerPortal ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Kuesioner Kualitas Portal
                             </a>
                         @endif
 

@@ -1005,6 +1005,39 @@ Route::middleware(['auth', 'role:Admin', 'permission:Kelola Survei Kepuasan'])
         Route::get('/{id}', [\App\Http\Controllers\Admin\SurveiKepuasanAdminController::class, 'show'])->name('show');
     });
 
+// ===== KUESIONER KUALITAS LAYANAN PORTAL (E-GovQual + IPA + Kano) =====
+
+// Kuesioner Portal - User Routes
+Route::middleware(['auth', 'verified.user', 'permission:Akses Kuesioner Portal'])
+    ->prefix('digital/kuesioner-portal')
+    ->name('kuesioner-portal.')
+    ->controller(\App\Http\Controllers\User\KuesionerPortalController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/persetujuan', 'persetujuan')->name('persetujuan');
+        Route::get('/isi', 'isi')->name('isi');
+        Route::post('/isi', 'simpan')->name('simpan');
+        Route::get('/jawaban-saya', 'lihat')->name('lihat');
+    });
+
+// Kuesioner Portal - Admin Routes
+Route::middleware(['auth', 'role:Admin', 'permission:Kelola Kuesioner Portal'])
+    ->prefix('admin/kuesioner-portal')
+    ->name('admin.kuesioner-portal.')
+    ->controller(\App\Http\Controllers\Admin\KuesionerPortalAdminController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/pratinjau', 'pratinjau')->name('pratinjau');
+        Route::post('/periode', 'periodeStore')->name('periode.store');
+        Route::post('/periode/{periode}/buka', 'periodeBuka')->name('periode.buka');
+        Route::post('/periode/{periode}/tutup', 'periodeTutup')->name('periode.tutup');
+        Route::get('/periode/{periode}/respons', 'responses')->name('responses');
+        Route::get('/periode/{periode}/analisis', 'analisis')->name('analisis');
+        Route::get('/periode/{periode}/export', 'export')->name('export');
+        Route::get('/respons/{response}', 'show')->name('show');
+        Route::post('/respons/{response}/eksklusi', 'eksklusi')->name('eksklusi');
+    });
+
 // ===== INTERNET SERVICES =====
 
 // Laporan Gangguan Internet - User Routes
