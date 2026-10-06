@@ -85,7 +85,6 @@ class DataRequestController extends Controller
             $item->save();
 
             $this->syncVariables($item, $variables);
-            $this->storeSupportingDocuments($request, $item);
 
             return $item;
         });
@@ -171,7 +170,6 @@ class DataRequestController extends Controller
             $item->save();
 
             $this->syncVariables($item, $variables);
-            $this->storeSupportingDocuments($request, $item);
         });
 
         DtsenRequestLog::record(
@@ -284,7 +282,10 @@ class DataRequestController extends Controller
     private function formData(): array
     {
         return [
-            'variables' => DtsenVariable::active()->ordered()->get()->groupBy('kategori'),
+            // Katalog dikelompokkan per set data (Keluarga/Anggota), lalu per kategori.
+            'variables' => DtsenVariable::active()->ordered()->get()
+                ->groupBy(fn ($v) => $v->set_data ?: 'lainnya')
+                ->map(fn ($daftar) => $daftar->groupBy(fn ($v) => $v->kategori ?: 'Lainnya')),
             'wilayahTree' => DtsenWilayah::active()->with(['children' => fn ($q) => $q->active()->orderBy('nama')])
                 ->whereIn('tingkat', ['provinsi', 'kabupaten_kota'])
                 ->orderBy('tingkat')
@@ -325,50 +326,17 @@ class DataRequestController extends Controller
             'tujuan_penggunaan' => ['required', 'string'],
             'surat_permohonan' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
 
-            // Form 2.6
-            'metode_akses' => ['nullable', Rule::in(array_keys(DtsenDataRequest::metodeAksesLabels()))],
-            'metode_enkripsi' => ['nullable', 'string', 'max:255'],
-            'kapasitas_sdm' => ['nullable', 'string'],
-
-            // Form 2.4 (KAK) - kewajiban isian dicek terpisah sesuai level akses
-            'kak_latar_belakang' => ['nullable', 'string'],
-            'kak_dasar_hukum' => ['nullable', 'array'],
-            'kak_dasar_hukum.*' => ['nullable', 'string', 'max:500'],
-            'kak_maksud_tujuan' => ['nullable', 'string'],
-            'kak_metodologi' => ['nullable', 'string'],
-            'kak_keluaran' => ['nullable', 'string'],
-            'kak_unit_akses' => ['nullable', 'string', 'max:255'],
-            'kak_jangka_mulai' => ['nullable', 'date'],
-            'kak_jangka_akhir' => ['nullable', 'date', 'after_or_equal:kak_jangka_mulai'],
-            'kak_infrastruktur_penyimpanan' => ['nullable', 'string'],
-            'kak_personel_akses' => ['nullable', 'array'],
-            'kak_personel_akses.*.nama' => ['nullable', 'string', 'max:150'],
-            'kak_personel_akses.*.nip' => ['nullable', 'string', 'max:30'],
-            'kak_personel_akses.*.jabatan' => ['nullable', 'string', 'max:150'],
-            'kak_teknik_pelindungan' => ['nullable', 'array'],
-            'kak_teknik_pelindungan.*' => [Rule::in(array_keys(DtsenDataRequest::teknikPelindunganOptions()))],
-            'kak_retensi_batas_waktu' => ['nullable', 'date'],
-            'kak_metode_pemusnahan' => ['nullable', 'string'],
+            // Form 2.4 - KAK cukup diunggah sebagai PDF bertanda tangan Kepala OPD
             'kak_pernyataan' => ['nullable', 'boolean'],
             'kak_file' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
 
-            // Form 2.5
-            'dokumen_pendukung' => ['nullable', 'array', 'max:10'],
-            'dokumen_pendukung.*' => ['file', 'mimes:pdf,doc,docx,xls,xlsx,zip', 'max:10240'],
-            'dokumen_keterangan' => ['nullable', 'array'],
-            'dokumen_keterangan.*' => ['nullable', 'string', 'max:500'],
-
             'consent_true' => ['accepted'],
         ], [
-            'kak_jangka_akhir.after_or_equal' => 'Tanggal akhir pemanfaatan tidak boleh mendahului tanggal mulai.',
             'consent_true.accepted' => 'Anda harus menyatakan kebenaran data dan menyetujui ketentuan layanan.',
         ]);
 
         return collect($validated)
-            ->except(['surat_permohonan', 'kak_file', 'dokumen_pendukung', 'dokumen_keterangan'])
-            ->put('kak_dasar_hukum', $this->cleanList($request->input('kak_dasar_hukum', [])))
-            ->put('kak_personel_akses', $this->cleanPersonnel($request->input('kak_personel_akses', [])))
-            ->put('kak_teknik_pelindungan', array_values($request->input('kak_teknik_pelindungan', [])))
+            ->except(['surat_permohonan', 'kak_file'])
             ->put('kak_pernyataan', $request->boolean('kak_pernyataan'))
             ->put('consent_true', true)
             ->all();
@@ -390,46 +358,13 @@ class DataRequestController extends Controller
             $errors['variabel'] = 'Pilih minimal satu variabel data yang dimohonkan.';
         }
 
+        // KAK tidak lagi diisi di formulir; cukup unggah dokumen bertanda tangan Kepala OPD.
         if ($level >= 3) {
-            $wajibKak = [
-                'kak_latar_belakang' => 'Latar belakang',
-                'kak_maksud_tujuan' => 'Maksud dan tujuan',
-                'kak_metodologi' => 'Rencana pemanfaatan data/metodologi',
-                'kak_infrastruktur_penyimpanan' => 'Infrastruktur/media penyimpanan data',
-                'kak_metode_pemusnahan' => 'Metode pemusnahan',
-            ];
-            foreach ($wajibKak as $field => $label) {
-                if (blank($request->input($field))) {
-                    $errors[$field] = "{$label} pada KAK wajib diisi untuk permohonan level {$level}.";
-                }
-            }
-
-            if (blank($request->input('kak_jangka_mulai')) || blank($request->input('kak_jangka_akhir'))) {
-                $errors['kak_jangka_akhir'] = 'Jangka waktu pemanfaatan data wajib diisi untuk permohonan level ' . $level . '.';
-            }
-            if (blank($request->input('kak_retensi_batas_waktu'))) {
-                $errors['kak_retensi_batas_waktu'] = 'Batas waktu pemusnahan data wajib diisi untuk permohonan level ' . $level . '.';
-            }
-            if (empty($this->cleanList($request->input('kak_dasar_hukum', [])))) {
-                $errors['kak_dasar_hukum'] = 'Cantumkan minimal satu dasar hukum yang melandasi tugas dan fungsi OPD.';
-            }
-            if (empty($this->cleanPersonnel($request->input('kak_personel_akses', [])))) {
-                $errors['kak_personel_akses'] = 'Cantumkan minimal satu personel/unit yang diberi akses data.';
-            }
-            if (empty($request->input('kak_teknik_pelindungan', []))) {
-                $errors['kak_teknik_pelindungan'] = 'Pilih minimal satu teknik pelindungan data yang diterapkan.';
+            if (! $request->hasFile('kak_file') && ! $existing?->kak_file_path) {
+                $errors['kak_file'] = "KAK bertanda tangan Kepala OPD (PDF) wajib diunggah untuk permohonan level {$level}.";
             }
             if (! $request->boolean('kak_pernyataan')) {
                 $errors['kak_pernyataan'] = 'Pernyataan tanggung jawab pada KAK wajib disetujui.';
-            }
-        }
-
-        if ($level >= 4) {
-            $adaDokumen = ! empty($request->file('dokumen_pendukung'))
-                || ($existing && $existing->documents()->where('jenis', 'pendukung')->exists());
-
-            if (! $adaDokumen) {
-                $errors['dokumen_pendukung'] = 'Permohonan level 4 (BNBA) wajib melampirkan dokumen pendukung (dokumen perencanaan program/proposal kegiatan).';
             }
         }
 
@@ -488,58 +423,5 @@ class DataRequestController extends Controller
                 'public'
             );
         }
-    }
-
-    private function storeSupportingDocuments(Request $request, DtsenDataRequest $item): void
-    {
-        $files = $request->file('dokumen_pendukung', []);
-        $keterangan = (array) $request->input('dokumen_keterangan', []);
-
-        foreach ($files as $i => $file) {
-            if (! $file) {
-                continue;
-            }
-
-            $path = $file->storeAs(
-                'dtsen-docs/pendukung',
-                'DOK_' . $item->ticket_no . '_' . time() . '_' . $i . '.' . $file->extension(),
-                'public'
-            );
-
-            DtsenRequestDocument::create([
-                'dtsen_data_request_id' => $item->id,
-                'jenis' => 'pendukung',
-                'nama_dokumen' => $file->getClientOriginalName(),
-                'keterangan' => $keterangan[$i] ?? null,
-                'file_path' => $path,
-                'uploaded_by' => auth()->id(),
-            ]);
-        }
-    }
-
-    /** Buang baris repeatable yang kosong. */
-    private function cleanList(array $items): array
-    {
-        return array_values(array_filter(array_map(
-            fn ($v) => is_string($v) ? trim($v) : $v,
-            $items
-        ), fn ($v) => $v !== null && $v !== ''));
-    }
-
-    private function cleanPersonnel(array $items): array
-    {
-        $clean = [];
-        foreach ($items as $row) {
-            if (! is_array($row) || blank($row['nama'] ?? null)) {
-                continue;
-            }
-            $clean[] = [
-                'nama' => trim($row['nama']),
-                'nip' => trim((string) ($row['nip'] ?? '')),
-                'jabatan' => trim((string) ($row['jabatan'] ?? '')),
-            ];
-        }
-
-        return $clean;
     }
 }

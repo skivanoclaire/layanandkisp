@@ -18,6 +18,15 @@
 
     <form method="GET" class="bg-white rounded-lg shadow-sm border p-4 mb-6 flex flex-wrap gap-3 items-end">
         <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Set</label>
+            <select name="set" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="">Semua</option>
+                @foreach (\App\Models\DtsenVariable::setLabels() as $val => $label)
+                    <option value="{{ $val }}" @selected(request('set') === $val)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Kategori</label>
             <select name="kategori" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 <option value="">Semua</option>
@@ -59,8 +68,8 @@
                 <tr>
                     <th class="px-4 py-3 text-left">Kode</th>
                     <th class="px-4 py-3 text-left">Nama Variabel</th>
-                    <th class="px-4 py-3 text-left">Kategori</th>
-                    <th class="px-4 py-3 text-center">Level</th>
+                    <th class="px-4 py-3 text-left">Set / Kategori</th>
+                    <th class="px-4 py-3 text-center">Sensitivitas</th>
                     <th class="px-4 py-3 text-left">Rilis</th>
                     <th class="px-4 py-3 text-center">Status</th>
                     <th class="px-4 py-3 text-center">Aksi</th>
@@ -71,16 +80,22 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-3 font-mono text-xs">{{ $item->kode }}</td>
                         <td class="px-4 py-3">
-                            {{ $item->nama }}
+                            <span class="font-mono">{{ $item->nama }}</span>
+                            @if ($item->bisa_filter)
+                                <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600">filter</span>
+                            @endif
                             @if ($item->deskripsi)
                                 <p class="text-xs text-gray-500">{{ Str::limit($item->deskripsi, 90) }}</p>
                             @endif
                         </td>
-                        <td class="px-4 py-3">{{ $item->kategori ?: '-' }}</td>
+                        <td class="px-4 py-3">
+                            <span class="block text-xs text-gray-500">{{ $item->set_data ? $item->set_label : '-' }}</span>
+                            {{ $item->kategori ?: '-' }}
+                        </td>
                         <td class="px-4 py-3 text-center">
                             <span class="px-2 py-0.5 rounded text-xs font-semibold
                                 {{ $item->level_minimal >= 4 ? 'bg-red-100 text-red-700' : ($item->level_minimal === 3 ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700') }}">
-                                L{{ $item->level_minimal }}
+                                {{ $item->sensitivitas ? $item->sensitivitas_label . ' · ' : '' }}L{{ $item->level_minimal }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-xs">{{ $item->release->nomor_rilis ?? '-' }}</td>

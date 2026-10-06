@@ -20,13 +20,8 @@
     // Blade membuat bentuk PHP inline menelan isi sampai penutup blok berikutnya.
     $checklistAdministrasi = ['adm_check_surat' => 'Surat permohonan lengkap & sesuai'];
     if ($item->requiresKak()) {
-        $checklistAdministrasi['adm_check_kak'] = 'KAK lengkap sesuai Lampiran IV';
+        $checklistAdministrasi['adm_check_kak'] = 'KAK bertanda tangan Kepala OPD terlampir & sesuai Lampiran IV';
     }
-    if ($item->requiresDokumenPendukung()) {
-        $checklistAdministrasi['adm_check_dokumen_pendukung'] = 'Dokumen pendukung terlampir';
-    }
-    $checklistAdministrasi['adm_check_metode_akses'] = 'Metode akses/infrastruktur memadai';
-    $checklistAdministrasi['adm_check_enkripsi'] = 'Enkripsi & kanal penyaluran memadai';
 @endphp
 
 <div class="container mx-auto p-6">

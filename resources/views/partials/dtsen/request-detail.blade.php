@@ -58,11 +58,8 @@
                     'Surat Permohonan Data' => (bool) $item->surat_permohonan_path,
                 ];
                 if ($item->requiresKak()) {
-                    $kelengkapan['Kerangka Acuan Kerja (isian digital)'] = filled($item->kak_latar_belakang) && filled($item->kak_maksud_tujuan);
-                    $kelengkapan['KAK bertanda tangan (opsional)'] = (bool) $item->kak_file_path;
-                }
-                if ($item->requiresDokumenPendukung()) {
-                    $kelengkapan['Dokumen Pendukung'] = $item->documents->where('jenis', 'pendukung')->isNotEmpty();
+                    $kelengkapan['KAK bertanda tangan Kepala OPD'] = (bool) $item->kak_file_path;
+                    $kelengkapan['Pernyataan tanggung jawab Kepala OPD'] = (bool) $item->kak_pernyataan;
                 }
                 if ($item->requiresBast()) {
                     $kelengkapan['BAST'] = (bool) $item->bast_file_path;
@@ -102,6 +99,7 @@
                 <tr>
                     <th class="px-3 py-2 text-left">Kode</th>
                     <th class="px-3 py-2 text-left">Variabel</th>
+                    <th class="px-3 py-2 text-left">Set</th>
                     <th class="px-3 py-2 text-center">Level</th>
                     <th class="px-3 py-2 text-left">Kegunaan / Alasan Kebutuhan</th>
                     <th class="px-3 py-2 text-center">Hasil</th>
@@ -112,6 +110,7 @@
                     <tr>
                         <td class="px-3 py-2 font-mono text-xs">{{ $rv->variable->kode ?? '-' }}</td>
                         <td class="px-3 py-2">{{ $rv->variable->nama ?? '-' }}</td>
+                        <td class="px-3 py-2 text-xs text-gray-600">{{ $rv->variable?->set_data ? $rv->variable->set_label : '-' }}</td>
                         <td class="px-3 py-2 text-center">L{{ $rv->variable->level_minimal ?? '-' }}</td>
                         <td class="px-3 py-2 text-gray-600">{{ $rv->kegunaan }}</td>
                         <td class="px-3 py-2 text-center">
@@ -125,15 +124,15 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-3 py-6 text-center text-gray-500">Tidak ada variabel dipilih.</td></tr>
+                    <tr><td colspan="6" class="px-3 py-6 text-center text-gray-500">Tidak ada variabel dipilih.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-{{-- KAK --}}
-@if ($item->requiresKak() || filled($item->kak_latar_belakang))
+{{-- Isian KAK digital — hanya ada pada permohonan sebelum KAK cukup diunggah sebagai PDF --}}
+@if (filled($item->kak_latar_belakang))
     <div class="bg-white rounded-lg shadow-sm border p-6">
         <h3 class="font-bold text-gray-800 mb-3">Kerangka Acuan Kerja</h3>
         <dl class="space-y-3 text-sm">
@@ -183,7 +182,8 @@
     </div>
 @endif
 
-{{-- Kesiapan teknis & keamanan (Form 2.6) --}}
+{{-- Kesiapan teknis & keamanan (Form 2.6) — hanya ada pada permohonan lama --}}
+@if (filled($item->metode_akses) || filled($item->metode_enkripsi) || filled($item->kapasitas_sdm))
 <div class="bg-white rounded-lg shadow-sm border p-6">
     <h3 class="font-bold text-gray-800 mb-3">Kesiapan Teknis &amp; Keamanan</h3>
     <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
@@ -193,6 +193,7 @@
         <div class="md:col-span-2"><dt class="text-gray-500">Kapasitas Teknis SDM</dt><dd class="whitespace-pre-line">{{ $item->kapasitas_sdm ?: '-' }}</dd></div>
     </dl>
 </div>
+@endif
 
 {{-- Berita acara klarifikasi --}}
 @if ($item->clarifications->isNotEmpty())

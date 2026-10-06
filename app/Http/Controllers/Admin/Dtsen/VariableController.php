@@ -17,6 +17,9 @@ class VariableController extends Controller
     {
         $query = DtsenVariable::with('release')->ordered();
 
+        if ($request->filled('set')) {
+            $query->where('set_data', $request->set);
+        }
         if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);
         }
@@ -103,9 +106,12 @@ class VariableController extends Controller
             'kode' => ['required', 'string', 'max:50', Rule::unique('dtsen_variables', 'kode')->ignore($ignoreId)],
             'nama' => ['required', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
+            'nilai_kode' => ['nullable', 'string'],
             'kategori' => ['nullable', 'string', 'max:100'],
+            'set_data' => ['required', Rule::in(array_keys(DtsenVariable::setLabels()))],
+            'sensitivitas' => ['required', Rule::in(array_keys(DtsenVariable::sensitivitasLabels()))],
+            'bisa_filter' => ['nullable', 'boolean'],
             'satuan' => ['nullable', 'string', 'max:50'],
-            'level_minimal' => ['required', 'integer', 'min:1', 'max:4'],
             'dtsen_release_id' => ['nullable', 'exists:dtsen_releases,id'],
             'is_active' => ['nullable', 'boolean'],
             'urutan' => ['nullable', 'integer', 'min:0'],
@@ -114,6 +120,9 @@ class VariableController extends Controller
         // Checkbox yang tidak dicentang tidak ikut terkirim, jadi nilainya
         // ditentukan eksplisit agar penonaktifan lewat form ikut tersimpan.
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['bisa_filter'] = $request->boolean('bisa_filter');
+        // Level hak akses minimal mengikuti sensitivitas variabel.
+        $validated['level_minimal'] = DtsenVariable::levelForSensitivitas()[$validated['sensitivitas']];
         $validated['urutan'] = $validated['urutan'] ?? 0;
 
         return $validated;

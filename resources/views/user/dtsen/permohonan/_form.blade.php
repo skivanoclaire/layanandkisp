@@ -16,8 +16,16 @@
     $selectedInit = old('variabel', $sumber?->requestVariables->pluck('dtsen_variable_id')->all() ?? []);
     $kegunaanInit = old('kegunaan', $sumber?->requestVariables->pluck('kegunaan', 'dtsen_variable_id')->all() ?? []);
     $levelMap = \App\Models\DtsenVariable::active()->pluck('level_minimal', 'id');
-    $dasarHukumInit = old('kak_dasar_hukum', $sumber?->kak_dasar_hukum ?? ['']);
-    $personelInit = old('kak_personel_akses', $sumber?->kak_personel_akses ?? [['nama' => '', 'nip' => '', 'jabatan' => '']]);
+    $kombinasiDataPribadi = \App\Models\DtsenVariable::kombinasiDataPribadiIds();
+    $selectedIds = array_map('intval', (array) $selectedInit);
+    $setLabels = \App\Models\DtsenVariable::setLabels();
+    $setDescriptions = \App\Models\DtsenVariable::setDescriptions();
+    $sensitivitasLabels = \App\Models\DtsenVariable::sensitivitasLabels();
+    $sensitivitasBadge = [
+        'data_pribadi' => 'bg-red-100 text-red-700',
+        'quasi_identifier' => 'bg-amber-100 text-amber-700',
+        'terbuka' => 'bg-blue-100 text-blue-700',
+    ];
     $wilayahInit = old('cakupan_wilayah_ids', $sumber?->cakupan_wilayah_ids ?? []);
 @endphp
 
@@ -42,6 +50,7 @@
         selected: {{ Js::from(array_map('intval', (array) $selectedInit)) }},
         kegunaan: {{ Js::from((array) $kegunaanInit) }},
         levels: {{ Js::from($levelMap) }},
+        kombinasi: {{ Js::from($kombinasiDataPribadi) }},
      })">
 
     {{-- Ringkasan level hak akses yang terbentuk dari pilihan variabel --}}
@@ -196,277 +205,129 @@
         </div>
     </div>
 
-    {{-- Form 2.3 - Pemilihan variabel data --}}
+    {{-- Form 2.3 - Pemilihan variabel data (Katalog Variabel BNBA/DTSEN Kaltara) --}}
     <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
         <div class="flex flex-wrap items-start justify-between gap-2 mb-1">
             <h2 class="text-lg font-bold text-gray-800">3. Pemilihan Variabel Data</h2>
             <span class="text-sm text-gray-600">Terpilih: <strong x-text="count"></strong> variabel</span>
         </div>
-        <p class="text-sm text-gray-500 mb-4">
-            Katalog dari Bapperida{{ $release ? ' — rilis ' . $release->nomor_rilis : '' }}.
+        <p class="text-sm text-gray-500">
+            Katalog Variabel BNBA/DTSEN Kaltara{{ $release ? ' — rilis ' . $release->nomor_rilis : '' }}.
+            Set Keluarga dan set Anggota terhubung lewat nomor kartu keluarga.
             Setiap variabel yang dipilih wajib disertai kegunaan/alasan kebutuhannya.
         </p>
+        <div class="mt-3 mb-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+            <span><span class="px-1.5 py-0.5 rounded font-semibold bg-blue-100 text-blue-700">Terbuka · L2</span> baris tanpa nama, NIK, atau alamat</span>
+            <span><span class="px-1.5 py-0.5 rounded font-semibold bg-amber-100 text-amber-700">Quasi-identifier · L3</span> dapat mengidentifikasi orang bila digabung</span>
+            <span><span class="px-1.5 py-0.5 rounded font-semibold bg-red-100 text-red-700">Data pribadi · L4</span> hanya untuk permintaan yang disetujui</span>
+            <span><span class="px-1.5 py-0.5 rounded font-semibold bg-gray-100 text-gray-600">filter</span> dapat dipakai membatasi baris</span>
+        </div>
+        <p class="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800" x-show="kombinasiAktif" x-cloak>
+            Gabungan RT/RW KTP dengan jenis kelamin atau tanggal lahir diperlakukan sebagai permintaan data pribadi (Level 4).
+        </p>
 
-        @forelse ($variables as $kategori => $daftar)
-            <div class="mb-4 border rounded-lg" x-data="{ open: {{ $loop->first ? 'true' : 'false' }} }">
-                <button type="button" @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 hover:bg-gray-100 rounded-t-lg text-left">
-                    <span class="font-semibold text-sm text-gray-800">{{ $kategori ?: 'Lainnya' }} <span class="font-normal text-gray-500">({{ $daftar->count() }})</span></span>
-                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                    </svg>
-                </button>
-                <div x-show="open" class="divide-y">
-                    @foreach ($daftar as $variable)
-                        <div class="p-3">
-                            <label class="flex items-start gap-2">
-                                <input type="checkbox" name="variabel[]" value="{{ $variable->id }}" class="mt-1"
-                                       @checked(in_array($variable->id, array_map('intval', (array) $selectedInit)))
-                                       @change="toggle({{ $variable->id }}, $event.target.checked)">
-                                <span class="min-w-0">
-                                    <span class="text-sm font-medium text-gray-800">{{ $variable->nama }}</span>
-                                    <span class="ml-2 px-1.5 py-0.5 rounded text-[10px] font-semibold
-                                        {{ $variable->level_minimal >= 4 ? 'bg-red-100 text-red-700' : ($variable->level_minimal === 3 ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700') }}">
-                                        L{{ $variable->level_minimal }}
-                                    </span>
-                                    <span class="block font-mono text-[11px] text-gray-400">{{ $variable->kode }}</span>
-                                    @if ($variable->deskripsi)
-                                        <span class="block text-xs text-gray-500 mt-0.5">{{ $variable->deskripsi }}</span>
-                                    @endif
-                                </span>
-                            </label>
-                            <div class="ml-6 mt-2" x-show="isSelected({{ $variable->id }})" x-cloak>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Kegunaan / Alasan Kebutuhan <span class="text-red-500">*</span></label>
-                                <input type="text" name="kegunaan[{{ $variable->id }}]"
-                                       value="{{ $kegunaanInit[$variable->id] ?? '' }}"
-                                       placeholder="mis. dasar penetapan sasaran penerima bantuan"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                            </div>
+        @forelse ($variables as $set => $kategoriList)
+            <div class="mb-6">
+                <h3 class="font-bold text-gray-800">
+                    {{ $setLabels[$set] ?? 'Lainnya' }}
+                    <span class="font-normal text-sm text-gray-500">({{ $kategoriList->flatten()->count() }} variabel)</span>
+                </h3>
+                @if (isset($setDescriptions[$set]))
+                    <p class="text-xs text-gray-500 mb-2">{{ $setDescriptions[$set] }}</p>
+                @endif
+
+                @foreach ($kategoriList as $kategori => $daftar)
+                    @php
+                        $idsKategori = $daftar->pluck('id')->all();
+                        $adaTerpilih = count(array_intersect($idsKategori, $selectedIds)) > 0;
+                    @endphp
+                    <div class="mb-3 border rounded-lg" x-data="{ open: {{ $adaTerpilih ? 'true' : 'false' }} }">
+                        <div class="flex items-center justify-between gap-2 px-4 py-2.5 bg-gray-50 rounded-t-lg">
+                            <button type="button" @click="open = !open" class="flex-1 flex items-center gap-2 text-left">
+                                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="font-semibold text-sm text-gray-800">{{ $kategori }}</span>
+                                <span class="text-xs text-gray-500">(<span x-text="countOf({{ Js::from($idsKategori) }})"></span>/{{ $daftar->count() }})</span>
+                            </button>
+                            <button type="button" class="text-xs text-blue-600 hover:underline whitespace-nowrap"
+                                    @click="open = true; setMany({{ Js::from($idsKategori) }}, !allSelected({{ Js::from($idsKategori) }}))"
+                                    x-text="allSelected({{ Js::from($idsKategori) }}) ? 'Batal pilih semua' : 'Pilih semua'"></button>
                         </div>
-                    @endforeach
-                </div>
+                        <div x-show="open" x-cloak class="divide-y">
+                            @foreach ($daftar as $variable)
+                                <div class="p-3">
+                                    <label class="flex items-start gap-2">
+                                        <input type="checkbox" name="variabel[]" value="{{ $variable->id }}" class="mt-1"
+                                               @checked(in_array($variable->id, $selectedIds))
+                                               :checked="isSelected({{ $variable->id }})"
+                                               @change="toggle({{ $variable->id }}, $event.target.checked)">
+                                        <span class="min-w-0">
+                                            <span class="font-mono text-sm font-medium text-gray-800 break-all">{{ $variable->nama }}</span>
+                                            <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold whitespace-nowrap {{ $sensitivitasBadge[$variable->sensitivitas] ?? 'bg-gray-100 text-gray-700' }}">
+                                                {{ $sensitivitasLabels[$variable->sensitivitas] ?? 'Level' }} · L{{ $variable->level_minimal }}
+                                            </span>
+                                            @if ($variable->bisa_filter)
+                                                <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600">filter</span>
+                                            @endif
+                                            @if ($variable->deskripsi)
+                                                <span class="block text-xs text-gray-600 mt-0.5">{{ $variable->deskripsi }}</span>
+                                            @endif
+                                            @if ($variable->nilai_kode)
+                                                <span class="block text-[11px] text-gray-400 mt-0.5">Nilai/kode: {{ $variable->nilai_kode }}</span>
+                                            @endif
+                                        </span>
+                                    </label>
+                                    <div class="ml-6 mt-2" x-show="isSelected({{ $variable->id }})" x-cloak>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Kegunaan / Alasan Kebutuhan <span class="text-red-500">*</span></label>
+                                        <input type="text" name="kegunaan[{{ $variable->id }}]"
+                                               value="{{ $kegunaanInit[$variable->id] ?? '' }}"
+                                               placeholder="mis. dasar penetapan sasaran penerima bantuan"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
             </div>
         @empty
             <p class="text-sm text-gray-500">Katalog variabel DTSEN belum tersedia. Hubungi Bapperida/Admin untuk melengkapinya.</p>
         @endforelse
     </div>
 
-    {{-- Form 2.4 - Kerangka Acuan Kerja (wajib level 3 & 4) --}}
+    {{-- Form 2.4 - Kerangka Acuan Kerja (wajib level 3 & 4), diunggah sebagai PDF bertanda tangan --}}
     <div class="bg-white rounded-lg shadow-sm border p-6 mb-6" :class="level >= 3 ? '' : 'opacity-60'">
         <h2 class="text-lg font-bold text-gray-800 mb-1">4. Kerangka Acuan Kerja (KAK)</h2>
         <p class="text-sm mb-4" :class="level >= 3 ? 'text-red-600 font-medium' : 'text-gray-500'">
-            <span x-show="level >= 3" x-cloak>Wajib diisi untuk permohonan level 3 dan 4.</span>
-            <span x-show="level < 3" x-cloak>Tidak wajib untuk level 2, namun boleh diisi bila diperlukan.</span>
+            <span x-show="level >= 3" x-cloak>Wajib diunggah untuk permohonan level 3 dan 4.</span>
+            <span x-show="level < 3" x-cloak>Tidak wajib untuk level 2, namun boleh diunggah bila diperlukan.</span>
         </p>
 
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Latar Belakang</label>
-                <textarea name="kak_latar_belakang" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                          placeholder="Uraian permasalahan dan keterkaitannya dengan tugas & fungsi OPD.">{{ old('kak_latar_belakang', $sumber->kak_latar_belakang ?? '') }}</textarea>
-            </div>
-
-            {{-- Dasar hukum (repeatable) --}}
-            <div x-data="{ items: {{ Js::from(array_values((array) $dasarHukumInit) ?: ['']) }} }">
-                <div class="flex items-center justify-between mb-1">
-                    <label class="block text-sm font-medium text-gray-700">Dasar Hukum</label>
-                    <button type="button" @click="items.push('')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded font-semibold">+ Tambah</button>
-                </div>
-                <template x-for="(d, i) in items" :key="i">
-                    <div class="flex gap-2 mb-2">
-                        <input type="text" :name="`kak_dasar_hukum[${i}]`" x-model="items[i]"
-                               placeholder="mis. Perda No. ... tentang ... / Pergub No. ... tentang SOTK"
-                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        <button type="button" @click="items.length > 1 && items.splice(i, 1)"
-                                class="px-3 text-red-600 hover:bg-red-50 rounded-lg text-sm">Hapus</button>
-                    </div>
-                </template>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Maksud dan Tujuan</label>
-                <textarea name="kak_maksud_tujuan" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                          placeholder="Spesifik dan terukur, termasuk output/outcome yang diharapkan.">{{ old('kak_maksud_tujuan', $sumber->kak_maksud_tujuan ?? '') }}</textarea>
-            </div>
-
-            <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
-                <p class="font-medium text-gray-700">Ruang lingkup &amp; variabel data</p>
-                <p class="mt-1">Bagian ini terisi otomatis dari level hak akses, cakupan wilayah, dan tabel variabel beserta
-                    kegunaannya yang Anda isi di atas — tidak perlu diketik ulang.</p>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Rencana Pemanfaatan Data / Metodologi</label>
-                <textarea name="kak_metodologi" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                          placeholder="Rencana pengolahan/analisis data.">{{ old('kak_metodologi', $sumber->kak_metodologi ?? '') }}</textarea>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Keluaran yang Dihasilkan</label>
-                    <textarea name="kak_keluaran" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                              placeholder="mis. dashboard, laporan, basis data sasaran">{{ old('kak_keluaran', $sumber->kak_keluaran ?? '') }}</textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Unit yang Mengakses Keluaran</label>
-                    <input type="text" name="kak_unit_akses" value="{{ old('kak_unit_akses', $sumber->kak_unit_akses ?? '') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jangka Waktu Pemanfaatan — Mulai</label>
-                    <input type="date" name="kak_jangka_mulai" value="{{ old('kak_jangka_mulai', optional($sumber->kak_jangka_mulai ?? null)->format('Y-m-d')) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                    <p class="text-xs text-gray-500 mt-1">Terhitung sejak BAST ditandatangani.</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jangka Waktu Pemanfaatan — Akhir</label>
-                    <input type="date" name="kak_jangka_akhir" value="{{ old('kak_jangka_akhir', optional($sumber->kak_jangka_akhir ?? null)->format('Y-m-d')) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                </div>
-            </div>
-
-            <div class="border-t pt-4">
-                <p class="text-sm font-semibold text-gray-800 mb-3">Mekanisme Keamanan &amp; Pelindungan Data Pribadi</p>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Infrastruktur / Media Penyimpanan Data</label>
-                        <textarea name="kak_infrastruktur_penyimpanan" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                                  placeholder="mis. server OPD di Pusat Data Provinsi, akses terbatas VPN">{{ old('kak_infrastruktur_penyimpanan', $sumber->kak_infrastruktur_penyimpanan ?? '') }}</textarea>
-                    </div>
-
-                    {{-- Personel yang diberi akses (repeatable) --}}
-                    <div x-data="{ rows: {{ Js::from(array_values((array) $personelInit) ?: [['nama' => '', 'nip' => '', 'jabatan' => '']]) }} }">
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="block text-sm font-medium text-gray-700">Personel / Unit yang Diberi Akses</label>
-                            <button type="button" @click="rows.push({ nama: '', nip: '', jabatan: '' })"
-                                    class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded font-semibold">+ Tambah</button>
-                        </div>
-                        <template x-for="(r, i) in rows" :key="i">
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
-                                <input type="text" :name="`kak_personel_akses[${i}][nama]`" x-model="r.nama" placeholder="Nama"
-                                       class="md:col-span-4 px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                <input type="text" :name="`kak_personel_akses[${i}][nip]`" x-model="r.nip" placeholder="NIP"
-                                       class="md:col-span-3 px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                <input type="text" :name="`kak_personel_akses[${i}][jabatan]`" x-model="r.jabatan" placeholder="Jabatan"
-                                       class="md:col-span-4 px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                <button type="button" @click="rows.length > 1 && rows.splice(i, 1)"
-                                        class="md:col-span-1 px-2 text-red-600 hover:bg-red-50 rounded-lg text-sm">×</button>
-                            </div>
-                        </template>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Teknik Pelindungan Data yang Diterapkan</label>
-                        @php($teknikInit = old('kak_teknik_pelindungan', $sumber->kak_teknik_pelindungan ?? []))
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            @foreach (\App\Models\DtsenDataRequest::teknikPelindunganOptions() as $val => $label)
-                                <label class="flex items-center gap-2 text-sm border rounded-lg px-3 py-2">
-                                    <input type="checkbox" name="kak_teknik_pelindungan[]" value="{{ $val }}"
-                                           @checked(in_array($val, (array) $teknikInit))>
-                                    <span>{{ $label }}</span>
-                                </label>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Batas Waktu Pemusnahan Data</label>
-                            <input type="date" name="kak_retensi_batas_waktu" value="{{ old('kak_retensi_batas_waktu', optional($sumber->kak_retensi_batas_waktu ?? null)->format('Y-m-d')) }}"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Metode Pemusnahan</label>
-                            <textarea name="kak_metode_pemusnahan" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                                      placeholder="mis. penghapusan permanen berkas beserta salinan cadangan">{{ old('kak_metode_pemusnahan', $sumber->kak_metode_pemusnahan ?? '') }}</textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="border-t pt-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Unggah KAK Bertanda Tangan Kepala OPD (opsional, PDF)</label>
-                <input type="file" name="kak_file" accept=".pdf" class="w-full text-sm border border-gray-300 rounded-lg p-2">
-                @if ($item && $item->kak_file_path)
-                    <p class="text-xs text-green-600 mt-1">
-                        Terlampir: <a href="{{ Storage::url($item->kak_file_path) }}" target="_blank" class="underline">{{ basename($item->kak_file_path) }}</a>
-                    </p>
-                @endif
-                <label class="flex items-start gap-2 mt-3">
-                    <input type="checkbox" name="kak_pernyataan" value="1" class="mt-1"
-                           @checked(old('kak_pernyataan', $sumber->kak_pernyataan ?? false))>
-                    <span class="text-sm text-gray-700">
-                        Kepala Perangkat Daerah menyatakan bertanggung jawab atas penggunaan, penyimpanan, pelindungan,
-                        dan pemusnahan data DTSEN sesuai KAK ini.
-                    </span>
-                </label>
-            </div>
-        </div>
-    </div>
-
-    {{-- Form 2.5 - Dokumen pendukung (wajib level 4) --}}
-    <div class="bg-white rounded-lg shadow-sm border p-6 mb-6" x-show="level >= 4" x-cloak>
-        <h2 class="text-lg font-bold text-gray-800 mb-1">5. Dokumen Pendukung</h2>
-        <p class="text-sm text-red-600 font-medium mb-4">Wajib untuk permohonan level 4 (BNBA): dokumen perencanaan program, proposal kegiatan, atau dokumen sejenis.</p>
-
-        @if ($item && $item->documents->where('jenis', 'pendukung')->isNotEmpty())
-            <div class="mb-4 space-y-2">
-                @foreach ($item->documents->where('jenis', 'pendukung') as $doc)
-                    <div class="flex items-center justify-between border rounded-lg px-3 py-2 text-sm bg-gray-50">
-                        <div class="min-w-0">
-                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="text-blue-600 hover:underline">📎 {{ $doc->nama_dokumen }}</a>
-                            @if ($doc->keterangan)<p class="text-xs text-gray-500">{{ $doc->keterangan }}</p>@endif
-                        </div>
-                        <button type="button"
-                                onclick="if (confirm('Hapus dokumen ini?')) document.getElementById('hapus-dok-{{ $doc->id }}').submit()"
-                                class="text-red-600 hover:underline text-xs ml-3">Hapus</button>
-                    </div>
-                @endforeach
-            </div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+            KAK Bertanda Tangan Kepala OPD <span class="font-normal text-gray-500">(PDF, maks 10MB)</span>
+        </label>
+        <input type="file" name="kak_file" accept=".pdf" class="w-full text-sm border border-gray-300 rounded-lg p-2">
+        <p class="text-xs text-gray-500 mt-1">
+            Susun KAK mengacu Lampiran IV Juknis: latar belakang, dasar hukum, maksud dan tujuan, rencana pemanfaatan,
+            jangka waktu, serta mekanisme keamanan dan pemusnahan data.
+        </p>
+        @if ($item && $item->kak_file_path)
+            <p class="text-xs text-green-600 mt-1">
+                Terlampir: <a href="{{ Storage::url($item->kak_file_path) }}" target="_blank" class="underline">{{ basename($item->kak_file_path) }}</a>
+            </p>
         @endif
+        @error('kak_file')<p class="text-sm text-red-500 mt-1">{{ $message }}</p>@enderror
 
-        <div x-data="{ slots: 1 }">
-            <template x-for="i in slots" :key="i">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                    <input type="file" :name="`dokumen_pendukung[${i - 1}]`" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip"
-                           class="w-full text-sm border border-gray-300 rounded-lg p-2">
-                    <input type="text" :name="`dokumen_keterangan[${i - 1}]`" placeholder="Keterangan dokumen"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                </div>
-            </template>
-            <button type="button" @click="slots < 10 && slots++"
-                    class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg font-semibold">+ Tambah Berkas</button>
-        </div>
-    </div>
-
-    {{-- Form 2.6 - Kesiapan teknis & keamanan --}}
-    <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <h2 class="text-lg font-bold text-gray-800 mb-1">6. Kesiapan Teknis &amp; Keamanan</h2>
-        <p class="text-sm text-gray-500 mb-4">Menjadi bahan kesepakatan infrastruktur pengiriman data dengan DKISP.</p>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Metode Akses yang Diinginkan</label>
-                <select name="metode_akses" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                    <option value="">-- Pilih --</option>
-                    @foreach (\App\Models\DtsenDataRequest::metodeAksesLabels() as $val => $label)
-                        <option value="{{ $val }}" @selected(old('metode_akses', $sumber->metode_akses ?? '') === $val)>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Metode Enkripsi / Kanal Penyaluran</label>
-                <input type="text" name="metode_enkripsi" value="{{ old('metode_enkripsi', $sumber->metode_enkripsi ?? '') }}"
-                       placeholder="mis. AES-256 pada berkas, kanal HTTPS/VPN"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-            </div>
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kapasitas Teknis SDM OPD</label>
-                <textarea name="kapasitas_sdm" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                          placeholder="mis. 2 pranata komputer, mampu mengonsumsi API dan mengelola basis data">{{ old('kapasitas_sdm', $sumber->kapasitas_sdm ?? '') }}</textarea>
-            </div>
-        </div>
+        <label class="flex items-start gap-2 mt-3">
+            <input type="checkbox" name="kak_pernyataan" value="1" class="mt-1"
+                   @checked(old('kak_pernyataan', $sumber->kak_pernyataan ?? false))>
+            <span class="text-sm text-gray-700">
+                Kepala Perangkat Daerah menyatakan bertanggung jawab atas penggunaan, penyimpanan, pelindungan,
+                dan pemusnahan data DTSEN sesuai KAK ini.
+            </span>
+        </label>
+        @error('kak_pernyataan')<p class="text-sm text-red-500 mt-1">{{ $message }}</p>@enderror
     </div>
 
     <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
@@ -496,20 +357,30 @@
     const DTSEN_LEVEL_LABELS = @json(\App\Models\DtsenDataRequest::levelLabels());
     const DTSEN_LEVEL_DOCS = @json(\App\Models\DtsenDataRequest::levelRequirements());
 
-    function dtsenForm({ selected, kegunaan, levels }) {
+    function dtsenForm({ selected, kegunaan, levels, kombinasi }) {
         return {
             selected: selected.map(Number),
             kegunaan,
             levels,
+            kombinasi,
             get count() { return this.selected.length },
+            // Sama dengan DtsenDataRequest::highestLevelFor(): gabungan RT/RW KTP dengan
+            // jenis kelamin/tanggal lahir diperlakukan sebagai data pribadi.
+            get kombinasiAktif() {
+                return this.kombinasi.some(([a, b]) => a.some((id) => this.isSelected(id)) && b.some((id) => this.isSelected(id)));
+            },
             get level() {
                 if (this.selected.length === 0) return 2;
+                if (this.kombinasiAktif) return 4;
                 const max = Math.max(...this.selected.map((id) => Number(this.levels[id] ?? 2)));
                 return Math.min(4, Math.max(2, max));
             },
             get levelLabel() { return DTSEN_LEVEL_LABELS[this.level] ?? ('Level ' + this.level) },
             get requiredDocs() { return DTSEN_LEVEL_DOCS[this.level] ?? [] },
             isSelected(id) { return this.selected.includes(Number(id)) },
+            countOf(ids) { return ids.filter((id) => this.isSelected(id)).length },
+            allSelected(ids) { return ids.every((id) => this.isSelected(id)) },
+            setMany(ids, checked) { ids.forEach((id) => this.toggle(id, checked)) },
             toggle(id, checked) {
                 id = Number(id);
                 if (checked) {

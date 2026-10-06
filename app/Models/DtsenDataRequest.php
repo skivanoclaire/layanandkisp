@@ -203,8 +203,8 @@ class DtsenDataRequest extends Model
     {
         return [
             2 => ['Surat Permohonan Data'],
-            3 => ['Surat Permohonan Data', 'Kerangka Acuan Kerja (KAK)'],
-            4 => ['Surat Permohonan Data', 'Kerangka Acuan Kerja (KAK)', 'Dokumen Pendukung', 'Berita Acara Serah Terima (BAST)'],
+            3 => ['Surat Permohonan Data', 'KAK bertanda tangan Kepala OPD (PDF)'],
+            4 => ['Surat Permohonan Data', 'KAK bertanda tangan Kepala OPD (PDF)', 'Berita Acara Serah Terima (BAST)'],
         ];
     }
 
@@ -216,11 +216,6 @@ class DtsenDataRequest extends Model
     public function requiresKak(): bool
     {
         return $this->level_akses >= 3;
-    }
-
-    public function requiresDokumenPendukung(): bool
-    {
-        return $this->level_akses >= 4;
     }
 
     public function requiresBast(): bool
@@ -240,7 +235,17 @@ class DtsenDataRequest extends Model
             return 2;
         }
 
-        $max = (int) DtsenVariable::whereIn('id', $variableIds)->max('level_minimal');
+        $variables = DtsenVariable::whereIn('id', $variableIds)->get(['id', 'nama', 'set_data', 'level_minimal']);
+        $max = (int) $variables->max('level_minimal');
+
+        // Gabungan variabel tertentu (mis. RT/RW KTP + jenis kelamin) diperlakukan
+        // sebagai permintaan data pribadi walau masing-masing tercatat terbuka.
+        $namaAnggota = $variables->where('set_data', 'anggota')->pluck('nama');
+        foreach (DtsenVariable::kombinasiDataPribadi() as [$salahSatu, $digabungDengan]) {
+            if ($namaAnggota->intersect($salahSatu)->isNotEmpty() && $namaAnggota->intersect($digabungDengan)->isNotEmpty()) {
+                $max = 4;
+            }
+        }
 
         return max(2, min(4, $max));
     }

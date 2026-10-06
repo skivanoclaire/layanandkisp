@@ -22,12 +22,5 @@
         @csrf @method('PUT')
         @include('user.dtsen.permohonan._form')
     </form>
-
-    {{-- Form penghapusan dokumen diletakkan di luar form utama agar tidak bersarang. --}}
-    @foreach ($item->documents->where('jenis', 'pendukung') as $doc)
-        <form id="hapus-dok-{{ $doc->id }}" action="{{ route('user.dtsen.permohonan.dokumen.destroy', [$item->id, $doc->id]) }}" method="POST" class="hidden">
-            @csrf @method('DELETE')
-        </form>
-    @endforeach
 </div>
 @endsection

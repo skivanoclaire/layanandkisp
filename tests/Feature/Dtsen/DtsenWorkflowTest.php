@@ -85,7 +85,7 @@ class DtsenWorkflowTest extends TestCase
         $this->assertSame(4, $permohonan->level_akses, 'Variabel BNBA memaksa level tertinggi.');
         $this->assertSame(DtsenDataRequest::STATUS_DIAJUKAN, $permohonan->status);
         $this->assertCount(2, $permohonan->requestVariables);
-        $this->assertTrue($permohonan->documents()->where('jenis', 'pendukung')->exists());
+        $this->assertNotNull($permohonan->kak_file_path, 'KAK bertanda tangan tersimpan.');
 
         // --- Tahap 3a: verifikasi administrasi ---
         $this->actingAs($this->dkisp)
@@ -203,16 +203,16 @@ class DtsenWorkflowTest extends TestCase
         ]);
     }
 
-    public function test_permohonan_level_4_ditolak_bila_dokumen_pendukung_belum_ada(): void
+    public function test_permohonan_level_4_ditolak_bila_kak_belum_diunggah(): void
     {
         $this->approveAkun();
 
         $payload = $this->payloadPermintaanData();
-        unset($payload['dokumen_pendukung']);
+        unset($payload['kak_file']);
 
         $this->actingAs($this->pemohon)
             ->post(route('user.dtsen.permohonan.store'), $payload)
-            ->assertSessionHasErrors('dokumen_pendukung');
+            ->assertSessionHasErrors('kak_file');
 
         $this->assertDatabaseCount('dtsen_data_requests', 0);
     }
@@ -226,11 +226,11 @@ class DtsenWorkflowTest extends TestCase
         $payload = $this->payloadPermintaanData();
         $payload['variabel'] = [$variabelLevel3->id];
         $payload['kegunaan'] = [$variabelLevel3->id => 'Analisis sasaran.'];
-        unset($payload['dokumen_pendukung'], $payload['kak_latar_belakang'], $payload['kak_maksud_tujuan']);
+        unset($payload['kak_file'], $payload['kak_pernyataan']);
 
         $this->actingAs($this->pemohon)
             ->post(route('user.dtsen.permohonan.store'), $payload)
-            ->assertSessionHasErrors(['kak_latar_belakang', 'kak_maksud_tujuan']);
+            ->assertSessionHasErrors(['kak_file', 'kak_pernyataan']);
     }
 
     public function test_permohonan_level_2_tidak_memerlukan_kak(): void
@@ -242,7 +242,7 @@ class DtsenWorkflowTest extends TestCase
         $payload = $this->payloadPermintaanData();
         $payload['variabel'] = [$variabelLevel2->id];
         $payload['kegunaan'] = [$variabelLevel2->id => 'Rekap agregat wilayah.'];
-        unset($payload['dokumen_pendukung'], $payload['kak_latar_belakang'], $payload['kak_maksud_tujuan']);
+        unset($payload['kak_file'], $payload['kak_pernyataan']);
 
         $this->actingAs($this->pemohon)
             ->post(route('user.dtsen.permohonan.store'), $payload)
@@ -573,27 +573,8 @@ class DtsenWorkflowTest extends TestCase
             'surat_permohonan' => UploadedFile::fake()->create('surat-permohonan.pdf', 100, 'application/pdf'),
             'variabel' => $variabel,
             'kegunaan' => array_fill_keys($variabel, 'Dasar penetapan sasaran penerima bantuan.'),
-            'metode_akses' => 'excel_terenkripsi',
-            'metode_enkripsi' => 'AES-256 pada berkas, kanal HTTPS.',
-            'kapasitas_sdm' => 'Dua pranata komputer.',
-            'kak_latar_belakang' => 'Ketimpangan penetapan sasaran bantuan sosial.',
-            'kak_dasar_hukum' => ['Perda No. 1 Tahun 2020 tentang Kesejahteraan Sosial'],
-            'kak_maksud_tujuan' => 'Menetapkan 1.200 keluarga sasaran secara tepat.',
-            'kak_metodologi' => 'Pemadanan dan analisis desil kesejahteraan.',
-            'kak_keluaran' => 'Basis data sasaran dan dashboard monitoring.',
-            'kak_unit_akses' => 'Bidang Perlindungan dan Jaminan Sosial',
-            'kak_jangka_mulai' => now()->toDateString(),
-            'kak_jangka_akhir' => now()->addMonths(6)->toDateString(),
-            'kak_infrastruktur_penyimpanan' => 'Server OPD di Pusat Data Provinsi, akses terbatas VPN.',
-            'kak_personel_akses' => [
-                ['nama' => 'Analis Data', 'nip' => '199203032016011002', 'jabatan' => 'Analis'],
-            ],
-            'kak_teknik_pelindungan' => ['masking', 'access_control'],
-            'kak_retensi_batas_waktu' => now()->addMonths(7)->toDateString(),
-            'kak_metode_pemusnahan' => 'Penghapusan permanen beserta salinan cadangan.',
+            'kak_file' => UploadedFile::fake()->create('kak-bertanda-tangan.pdf', 120, 'application/pdf'),
             'kak_pernyataan' => 1,
-            'dokumen_pendukung' => [UploadedFile::fake()->create('proposal.pdf', 80, 'application/pdf')],
-            'dokumen_keterangan' => ['Dokumen perencanaan program'],
             'consent_true' => 1,
             'action' => 'submit',
         ];

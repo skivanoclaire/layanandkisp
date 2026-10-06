@@ -87,7 +87,12 @@
                             @forelse ($item->requestVariables as $rv)
                                 <tr>
                                     <td class="px-3 py-2 font-mono text-xs">{{ $rv->variable->kode ?? '-' }}</td>
-                                    <td class="px-3 py-2">{{ $rv->variable->nama ?? '-' }}</td>
+                                    <td class="px-3 py-2">
+                                        <span class="font-mono">{{ $rv->variable->nama ?? '-' }}</span>
+                                        @if ($rv->variable?->set_data)
+                                            <span class="block text-xs text-gray-500">{{ $rv->variable->set_label }}</span>
+                                        @endif
+                                    </td>
                                     <td class="px-3 py-2 text-gray-600">{{ $rv->kegunaan }}</td>
                                     <td class="px-3 py-2 text-center">
                                         @if ($item->verif_substansi_at)
@@ -110,8 +115,8 @@
                 </div>
             </div>
 
-            {{-- Ringkasan KAK --}}
-            @if ($item->requiresKak())
+            {{-- Isian KAK digital — hanya ada pada permohonan sebelum KAK cukup diunggah sebagai PDF --}}
+            @if (filled($item->kak_latar_belakang))
                 <div class="bg-white rounded-lg shadow-sm border p-6">
                     <h3 class="font-bold text-gray-800 mb-3">Kerangka Acuan Kerja</h3>
                     <dl class="space-y-3 text-sm">

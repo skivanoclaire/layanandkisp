@@ -116,6 +116,57 @@ class DtsenMasterDataTest extends TestCase
         $this->assertSame(2, DtsenDataRequest::highestLevelFor([]));
     }
 
+    public function test_katalog_mengikuti_katalog_variabel_bnba_tanpa_agregat(): void
+    {
+        $aktif = DtsenVariable::active()->get();
+
+        $this->assertCount(100, $aktif);
+        $this->assertCount(52, $aktif->where('set_data', 'keluarga'));
+        $this->assertCount(48, $aktif->where('set_data', 'anggota'));
+        $this->assertCount(89, $aktif->where('sensitivitas', 'terbuka'));
+        $this->assertCount(2, $aktif->where('sensitivitas', 'quasi_identifier'));
+        $this->assertCount(9, $aktif->where('sensitivitas', 'data_pribadi'));
+        $this->assertCount(67, $aktif->where('bisa_filter', true));
+        $this->assertFalse(DtsenVariable::where('kategori', 'Agregat')->exists());
+
+        // Level minimal mengikuti sensitivitas.
+        foreach (DtsenVariable::levelForSensitivitas() as $sensitivitas => $level) {
+            $this->assertTrue($aktif->where('sensitivitas', $sensitivitas)->every(fn ($v) => $v->level_minimal === $level));
+        }
+    }
+
+    public function test_level_variabel_baru_ditentukan_dari_sensitivitas(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('admin.dtsen.variables.store'), [
+                'kode' => 'AGT-901',
+                'nama' => 'nomor_telepon',
+                'set_data' => 'anggota',
+                'sensitivitas' => 'quasi_identifier',
+                'bisa_filter' => 1,
+                'level_minimal' => 2, // diabaikan: level mengikuti sensitivitas
+                'is_active' => 1,
+            ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('dtsen_variables', [
+            'kode' => 'AGT-901',
+            'set_data' => 'anggota',
+            'sensitivitas' => 'quasi_identifier',
+            'bisa_filter' => true,
+            'level_minimal' => 3,
+        ]);
+    }
+
+    public function test_gabungan_rt_rw_ktp_dengan_jenis_kelamin_diperlakukan_sebagai_data_pribadi(): void
+    {
+        $anggota = DtsenVariable::where('set_data', 'anggota')->pluck('id', 'nama');
+
+        $this->assertSame(2, DtsenDataRequest::highestLevelFor([$anggota['rt_ktp']]));
+        $this->assertSame(2, DtsenDataRequest::highestLevelFor([$anggota['jenis_kelamin'], $anggota['status_kawin']]));
+        $this->assertSame(4, DtsenDataRequest::highestLevelFor([$anggota['rt_ktp'], $anggota['jenis_kelamin']]));
+        $this->assertSame(4, DtsenDataRequest::highestLevelFor([$anggota['rw_ktp'], $anggota['jenis_kelamin']]));
+    }
+
     public function test_rilis_yang_masih_memuat_variabel_tidak_dapat_dihapus(): void
     {
         $rilis = DtsenRelease::firstOrFail();
