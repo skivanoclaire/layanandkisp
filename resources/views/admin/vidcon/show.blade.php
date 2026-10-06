@@ -231,7 +231,7 @@
         </div>
 
         <!-- Meeting Info (if approved) -->
-        @if($item->status === 'selesai' && $item->link_meeting)
+        @if($item->status === 'selesai')
             <div class="mb-6 bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
                 <h2 class="text-lg font-semibold text-green-800 mb-4">Informasi Meeting</h2>
                 <div class="space-y-3">
@@ -284,7 +284,7 @@
             <!-- Revisi Informasi Meeting (untuk permohonan yang sudah selesai) -->
             <div id="revisi" class="mb-6 bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-amber-800">Revisi Informasi Meeting</h2>
+                    <h2 class="text-lg font-semibold text-amber-800">Revisi Informasi Meeting &amp; Operator</h2>
                     <button type="button" id="toggleRevisiBtn"
                             class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,15 +294,16 @@
                     </button>
                 </div>
                 <p class="text-sm text-amber-700 mt-1">
-                    Gunakan ini jika terjadi kesalahan (mis. link meeting salah) setelah permohonan diproses selesai. Perubahan juga akan memperbarui Data Fasilitasi Vidcon.
+                    Gunakan ini jika terjadi kesalahan (mis. link meeting salah) atau operator yang ditugaskan perlu diganti setelah permohonan diproses selesai. Perubahan juga akan memperbarui Master Data Vidcon, begitu pula sebaliknya.
                 </p>
 
                 <form action="{{ route('admin.vidcon.revise', $item->id) }}" method="POST"
                       id="revisiForm" class="mt-4 {{ $errors->any() ? '' : 'hidden' }}">
                     @csrf
+                    @php $revisiOperatorOnly = $item->jenis_layanan === 'operator'; @endphp
                     <div class="mb-3">
-                        <label class="block text-sm font-semibold text-amber-800 mb-1">Link Meeting <span class="text-red-500">*</span></label>
-                        <input type="text" name="link_meeting" required
+                        <label class="block text-sm font-semibold text-amber-800 mb-1">Link Meeting @unless($revisiOperatorOnly)<span class="text-red-500">*</span>@endunless</label>
+                        <input type="text" name="link_meeting" {{ $revisiOperatorOnly ? '' : 'required' }}
                                value="{{ old('link_meeting', $item->link_meeting) }}"
                                class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                                placeholder="https://zoom.us/j/123456789">
@@ -339,13 +340,43 @@
                                   placeholder="Informasi penting lainnya untuk peserta">{{ old('informasi_tambahan', $item->informasi_tambahan) }}</textarea>
                     </div>
                     <div class="mb-3">
+                        <label class="block text-sm font-semibold text-amber-800 mb-1">Operator Ditugaskan:</label>
+                        @php $revisiOperatorIds = array_map('intval', old('operators', $item->operators->pluck('id')->all())); @endphp
+                        <div class="border border-amber-300 rounded-lg p-3 bg-white max-h-64 overflow-y-auto">
+                            @forelse($operators as $op)
+                                <label class="flex items-start py-2 hover:bg-amber-50 rounded px-2 cursor-pointer">
+                                    <input type="checkbox"
+                                           name="operators[]"
+                                           value="{{ $op->id }}"
+                                           {{ in_array($op->id, $revisiOperatorIds, true) ? 'checked' : '' }}
+                                           class="w-4 h-4 mt-1 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                                    <span class="ml-3 flex-1">
+                                        <span class="font-medium text-gray-900">{{ $op->name }}</span>
+                                        <span class="text-gray-500 text-xs">({{ $op->email }})</span>
+                                        <span class="block text-xs text-gray-600 mt-0.5">
+                                            Aktif: <strong>{{ $op->active_vidcon_workload ?? 0 }}</strong>
+                                            <span class="mx-1">•</span>
+                                            Total: <strong>{{ $op->vidcon_workload ?? 0 }}</strong>
+                                        </span>
+                                    </span>
+                                </label>
+                            @empty
+                                <p class="text-sm text-gray-500 italic">Tidak ada operator vidcon terdaftar</p>
+                            @endforelse
+                        </div>
+                        @error('operators')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                        <p class="text-xs text-amber-700 mt-1">Operator yang dipilih juga diterapkan ke Master Data Vidcon dan jadwal operator.</p>
+                    </div>
+                    <div class="mb-3">
                         <label class="block text-sm font-semibold text-amber-800 mb-1">Catatan Admin:</label>
                         <textarea name="admin_notes" rows="2"
                                   class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                                   placeholder="Catatan internal (mis. alasan revisi)">{{ old('admin_notes', $item->admin_notes) }}</textarea>
                     </div>
                     <button type="submit"
-                            onclick="return confirm('Simpan revisi informasi meeting?')"
+                            onclick="return confirm('Simpan revisi informasi meeting & operator?')"
                             class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded font-semibold">
                         Simpan Revisi
                     </button>

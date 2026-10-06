@@ -214,8 +214,68 @@ class VidconDataController extends Controller
             $vidconData->update(['operator' => null]);
         }
 
+        $this->syncToVidconRequest($vidconData);
+
         return redirect()->route('admin.vidcon-data.index')
             ->with('success', 'Data vidcon berhasil diupdate.');
+    }
+
+    /**
+     * Data yang berasal dari permohonan (vidcon_request_id terisi) harus tetap
+     * selaras dengan halaman Permohonan Vidcon: operator, informasi meeting,
+     * dan akun Zoom ikut diperbarui di sisi permohonan.
+     */
+    private function syncToVidconRequest(VidconData $vidconData): void
+    {
+        $item = $vidconData->vidconRequest()->with('operators')->first();
+        if (!$item) {
+            return;
+        }
+
+        $vidconData->load('operators');
+
+        $oldValues = [
+            'link_meeting' => $item->link_meeting,
+            'meeting_id' => $item->meeting_id,
+            'meeting_password' => $item->meeting_password,
+            'akun_zoom' => $item->akun_zoom,
+            'informasi_tambahan' => $item->informasi_tambahan,
+            'operators' => $item->operators->pluck('name')->join(', '),
+        ];
+
+        $item->link_meeting       = $vidconData->link_meeting;
+        $item->meeting_id         = $vidconData->meeting_id;
+        $item->meeting_password   = $vidconData->meeting_password;
+        $item->akun_zoom          = $vidconData->akun_zoom;
+        $item->informasi_tambahan = $vidconData->informasi_tambahan;
+        $item->operators()->sync($vidconData->operators->pluck('id')->all());
+
+        $newValues = [
+            'link_meeting' => $item->link_meeting,
+            'meeting_id' => $item->meeting_id,
+            'meeting_password' => $item->meeting_password,
+            'akun_zoom' => $item->akun_zoom,
+            'informasi_tambahan' => $item->informasi_tambahan,
+            'operators' => $vidconData->operators->pluck('name')->join(', '),
+        ];
+
+        if ($oldValues === $newValues) {
+            return;
+        }
+
+        $item->last_info_updated_at = now();
+        $item->info_update_count    = $item->info_update_count + 1;
+        $item->last_updated_by      = auth()->id();
+        $item->save();
+
+        \App\Models\VidconRequestActivity::create([
+            'vidcon_request_id' => $item->id,
+            'user_id' => auth()->id(),
+            'action' => 'info_updated',
+            'old_values' => $oldValues,
+            'new_values' => $newValues,
+            'notes' => 'Diperbarui dari Master Data Vidcon (VidconData ID: ' . $vidconData->id . ')',
+        ]);
     }
 
     public function destroy(VidconData $vidconData)
