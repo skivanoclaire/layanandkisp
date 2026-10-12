@@ -42,7 +42,7 @@
                             'perlu_revisi' => 'bg-orange-100 text-orange-800',
                         ];
                     @endphp
-                    <span class="px-3 py-1 rounded-full text-sm font-medium {{ $statusColors[$verifikasi->status] }}">
+                    <span class="px-3 py-1 rounded-full text-sm font-medium {{ $statusColors[$verifikasi->status] ?? 'bg-gray-100 text-gray-800' }}">
                         {{ $verifikasi->status_display }}
                     </span>
                 </div>

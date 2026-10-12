@@ -133,9 +133,11 @@ class RekomendasiVerifikasiController extends Controller
         $verifikasi = $proposal->verifikasi;
 
         if (!$verifikasi || $verifikasi->status === 'menunggu') {
+            // Route "start" hanya menerima POST sehingga tidak bisa dituju lewat redirect (405);
+            // kembalikan ke halaman detail yang menyediakan tombol "Mulai Verifikasi".
             return redirect()
-                ->route('admin.rekomendasi.verifikasi.start', $id)
-                ->with('info', 'Silakan mulai verifikasi terlebih dahulu.');
+                ->route('admin.rekomendasi.verifikasi.show', $id)
+                ->with('error', 'Verifikasi belum dimulai. Klik "Mulai Verifikasi" terlebih dahulu.');
         }
 
         return view('admin.rekomendasi.verifikasi.verify', compact('proposal', 'verifikasi'));

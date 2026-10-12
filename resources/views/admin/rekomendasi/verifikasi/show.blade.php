@@ -22,23 +22,20 @@
                     </svg>
                     Ekspor PDF
                 </a>
-                @if($proposal->status === 'diajukan')
-                    @if($proposal->verifikasi)
-                        @if(in_array($proposal->verifikasi->status, ['menunggu', 'sedang_diverifikasi']))
-                            <a href="{{ route('admin.rekomendasi.verifikasi.verify', $proposal->id) }}"
-                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                                Proses Verifikasi
-                            </a>
-                        @endif
-                    @else
-                        <!-- Fallback: Show button to start verification if no verifikasi record exists -->
-                        <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.start', $proposal->id) }}" class="inline">
-                            @csrf
-                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
-                                Mulai Verifikasi
-                            </button>
-                        </form>
-                    @endif
+                {{-- Sama seperti halaman daftar: verifikasi yang sudah berjalan dilanjutkan lewat tautan,
+                     sedangkan yang belum dimulai (atau belum punya record) harus dimulai lewat POST. --}}
+                @if($proposal->verifikasi?->status === 'sedang_diverifikasi')
+                    <a href="{{ route('admin.rekomendasi.verifikasi.verify', $proposal->id) }}"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Proses Verifikasi
+                    </a>
+                @elseif($proposal->status === 'diajukan' && (!$proposal->verifikasi || $proposal->verifikasi->status === 'menunggu'))
+                    <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.start', $proposal->id) }}" class="inline">
+                        @csrf
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                            Mulai Verifikasi
+                        </button>
+                    </form>
                 @endif
             </div>
         </div>
