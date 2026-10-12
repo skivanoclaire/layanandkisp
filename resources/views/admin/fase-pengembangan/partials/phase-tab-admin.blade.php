@@ -1,3 +1,5 @@
+@include('partials.fase-pengembangan.petunjuk', ['fase' => $fase])
+
 <h3 class="text-lg font-semibold text-gray-800 mb-4">Dokumen {{ $title }}</h3>
 
 @if ($documents->isEmpty())

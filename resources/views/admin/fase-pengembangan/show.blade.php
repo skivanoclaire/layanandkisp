@@ -142,55 +142,16 @@
             </nav>
         </div>
 
-        <!-- Tab Content: Rancang Bangun -->
-        <div x-show="activeTab === 'rancang_bangun'" class="p-6">
-            @include('admin.fase-pengembangan.partials.phase-tab-admin', [
-                'fase' => 'rancang_bangun',
-                'title' => 'Rancang Bangun',
-                'documents' => $dokumenByFase->get('rancang_bangun', collect()),
-                'proposalId' => $proposal->id
-            ])
-        </div>
-
-        <!-- Tab Content: Implementasi -->
-        <div x-show="activeTab === 'implementasi'" class="p-6">
-            @include('admin.fase-pengembangan.partials.phase-tab-admin', [
-                'fase' => 'implementasi',
-                'title' => 'Implementasi',
-                'documents' => $dokumenByFase->get('implementasi', collect()),
-                'proposalId' => $proposal->id
-            ])
-        </div>
-
-        <!-- Tab Content: Uji Kelaikan -->
-        <div x-show="activeTab === 'uji_kelaikan'" class="p-6">
-            @include('admin.fase-pengembangan.partials.phase-tab-admin', [
-                'fase' => 'uji_kelaikan',
-                'title' => 'Uji Kelaikan',
-                'documents' => $dokumenByFase->get('uji_kelaikan', collect()),
-                'proposalId' => $proposal->id
-            ])
-        </div>
-
-        <!-- Tab Content: Pemeliharaan -->
-        <div x-show="activeTab === 'pemeliharaan'" class="p-6">
-            @include('admin.fase-pengembangan.partials.phase-tab-admin', [
-                'fase' => 'pemeliharaan',
-                'title' => 'Pemeliharaan',
-                'documents' => $dokumenByFase->get('pemeliharaan', collect()),
-                'proposalId' => $proposal->id
-            ])
-        </div>
-
-        <!-- Tab Content: Evaluasi -->
-        <div x-show="activeTab === 'evaluasi'" class="p-6">
-            @include('admin.fase-pengembangan.partials.phase-tab-admin', [
-                'fase' => 'evaluasi',
-                'title' => 'Evaluasi',
-                'documents' => $dokumenByFase->get('evaluasi', collect()),
-                'proposalId' => $proposal->id
-            ])
-        </div>
+        @foreach (config('fase_pengembangan.tahap') as $fase => $tahap)
+            <div x-show="activeTab === '{{ $fase }}'" class="p-6">
+                @include('admin.fase-pengembangan.partials.phase-tab-admin', [
+                    'fase' => $fase,
+                    'title' => $tahap['judul'],
+                    'documents' => $dokumenByFase->get($fase, collect()),
+                    'proposalId' => $proposal->id,
+                ])
+            </div>
+        @endforeach
     </div>
 
     <!-- Delete Modal -->
