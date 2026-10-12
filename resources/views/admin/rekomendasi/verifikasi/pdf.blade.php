@@ -116,7 +116,6 @@
 
         .section {
             margin-bottom: 20px;
-            page-break-inside: avoid;
         }
 
         .section-title {
@@ -230,9 +229,126 @@
         li {
             margin-bottom: 4px;
         }
+
+        /* Isi rich text dari editor (paragraf, penomoran, butir, heading, tabel) */
+        .rich p,
+        .rich div,
+        .rich blockquote {
+            margin-bottom: 6px;
+        }
+
+        .rich h1,
+        .rich h2,
+        .rich h3,
+        .rich h4,
+        .rich h5,
+        .rich h6 {
+            font-weight: bold;
+            color: #1f2937;
+            text-align: left;
+            margin-top: 8px;
+            margin-bottom: 4px;
+            page-break-after: avoid;
+        }
+
+        .rich h1,
+        .rich h2 {
+            font-size: 11.5pt;
+        }
+
+        .rich h3 {
+            font-size: 10.5pt;
+        }
+
+        .rich h4,
+        .rich h5,
+        .rich h6 {
+            font-size: 10pt;
+        }
+
+        .rich ul,
+        .rich ol {
+            margin: 0 0 6px 0;
+            padding-left: 22px;
+        }
+
+        .rich ul {
+            list-style-type: disc;
+        }
+
+        .rich ol {
+            list-style-type: decimal;
+        }
+
+        .rich ul ul {
+            list-style-type: circle;
+        }
+
+        .rich ul ul ul {
+            list-style-type: square;
+        }
+
+        .rich li {
+            margin-bottom: 3px;
+        }
+
+        .rich li ul,
+        .rich li ol {
+            margin-top: 3px;
+            margin-bottom: 0;
+        }
+
+        .rich li p {
+            margin-bottom: 3px;
+        }
+
+        .rich blockquote {
+            padding-left: 10px;
+            border-left: 3px solid #cbd5e1;
+            color: #4b5563;
+        }
+
+        .rich a {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        .rich hr {
+            border: 0;
+            border-top: 1px solid #d1d5db;
+            margin: 8px 0;
+        }
+
+        .rich table {
+            margin: 4px 0 8px 0;
+            font-size: 9pt;
+            text-align: left;
+        }
+
+        .rich th,
+        .rich td {
+            border: 1px solid #9ca3af;
+            padding: 4px 6px;
+        }
+
+        .rich th {
+            background-color: #e5e7eb;
+            font-weight: bold;
+        }
+
+        .rich td p,
+        .rich th p {
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 <body>
+    {{-- Footer (position: fixed) ditaruh paling awal agar tercetak di semua halaman --}}
+    <div class="footer">
+        Dokumen ini digenerate secara otomatis oleh Sistem E-Layanan DKISP<br>
+        {{ now()->format('d F Y H:i:s') }}
+    </div>
+
     <!-- Header -->
     <div class="header">
         <h1>Permohonan Pertimbangan Pembangunan Aplikasi</h1>
@@ -248,6 +364,9 @@
         <img src="data:image/png;base64,{{ $logoBase64 }}" alt="Logo Kaltara">
         <div class="province-name">PEMERINTAH PROVINSI KALIMANTAN UTARA</div>
     </div>
+
+    {{-- Halaman pertama khusus sampul --}}
+    <div class="page-break"></div>
 
     <!-- Informasi Dasar -->
     <div class="section">
@@ -320,37 +439,37 @@
 
         <div class="subsection">
             <div class="subsection-title">Deskripsi Aplikasi</div>
-            <div class="content">{!! strip_tags($proposal->deskripsi) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->deskripsi) !!}</div>
         </div>
 
         <div class="subsection">
             <div class="subsection-title">Tujuan</div>
-            <div class="content">{!! strip_tags($proposal->tujuan) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->tujuan) !!}</div>
         </div>
 
         <div class="subsection">
             <div class="subsection-title">Manfaat</div>
-            <div class="content">{!! strip_tags($proposal->manfaat) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->manfaat) !!}</div>
         </div>
 
         @if($proposal->integrasi_sistem_lain === 'ya' && $proposal->detail_integrasi)
         <div class="subsection">
             <div class="subsection-title">Detail Integrasi</div>
-            <div class="content">{!! strip_tags($proposal->detail_integrasi) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->detail_integrasi) !!}</div>
         </div>
         @endif
 
         @if($proposal->kebutuhan_khusus)
         <div class="subsection">
             <div class="subsection-title">Kebutuhan Khusus</div>
-            <div class="content">{!! strip_tags($proposal->kebutuhan_khusus) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->kebutuhan_khusus) !!}</div>
         </div>
         @endif
 
         @if($proposal->dampak_tidak_dibangun)
         <div class="subsection">
             <div class="subsection-title">Dampak Jika Tidak Dibangun</div>
-            <div class="content">{!! strip_tags($proposal->dampak_tidak_dibangun) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->dampak_tidak_dibangun) !!}</div>
         </div>
         @endif
     </div>
@@ -364,42 +483,42 @@
         @if($proposal->dasar_hukum)
         <div class="subsection">
             <div class="subsection-title">Dasar Hukum</div>
-            <div class="content">{!! strip_tags($proposal->dasar_hukum) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->dasar_hukum) !!}</div>
         </div>
         @endif
 
         @if($proposal->uraian_permasalahan)
         <div class="subsection">
             <div class="subsection-title">Uraian Permasalahan</div>
-            <div class="content">{!! strip_tags($proposal->uraian_permasalahan) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->uraian_permasalahan) !!}</div>
         </div>
         @endif
 
         @if($proposal->pihak_terkait)
         <div class="subsection">
             <div class="subsection-title">Pihak Terkait</div>
-            <div class="content">{!! strip_tags($proposal->pihak_terkait) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->pihak_terkait) !!}</div>
         </div>
         @endif
 
         @if($proposal->ruang_lingkup)
         <div class="subsection">
             <div class="subsection-title">Ruang Lingkup</div>
-            <div class="content">{!! strip_tags($proposal->ruang_lingkup) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->ruang_lingkup) !!}</div>
         </div>
         @endif
 
         @if($proposal->analisis_biaya_manfaat)
         <div class="subsection">
             <div class="subsection-title">Analisis Biaya Manfaat</div>
-            <div class="content">{!! strip_tags($proposal->analisis_biaya_manfaat) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->analisis_biaya_manfaat) !!}</div>
         </div>
         @endif
 
         @if($proposal->lokasi_implementasi)
         <div class="subsection">
             <div class="subsection-title">Lokasi Implementasi</div>
-            <div class="content">{!! strip_tags($proposal->lokasi_implementasi) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->lokasi_implementasi) !!}</div>
         </div>
         @endif
     </div>
@@ -414,21 +533,21 @@
         @if($proposal->uraian_ruang_lingkup)
         <div class="subsection">
             <div class="subsection-title">Uraian Ruang Lingkup</div>
-            <div class="content">{!! strip_tags($proposal->uraian_ruang_lingkup) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->uraian_ruang_lingkup) !!}</div>
         </div>
         @endif
 
         @if($proposal->proses_bisnis)
         <div class="subsection">
             <div class="subsection-title">Proses Bisnis</div>
-            <div class="content">{!! strip_tags($proposal->proses_bisnis) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->proses_bisnis) !!}</div>
         </div>
         @endif
 
         @if($proposal->kerangka_kerja)
         <div class="subsection">
             <div class="subsection-title">Kerangka Kerja</div>
-            <div class="content">{!! strip_tags($proposal->kerangka_kerja) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->kerangka_kerja) !!}</div>
         </div>
         @endif
 
@@ -451,70 +570,70 @@
         @if($proposal->peran_tanggung_jawab)
         <div class="subsection">
             <div class="subsection-title">Peran dan Tanggung Jawab</div>
-            <div class="content">{!! strip_tags($proposal->peran_tanggung_jawab) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->peran_tanggung_jawab) !!}</div>
         </div>
         @endif
 
         @if($proposal->jadwal_pelaksanaan)
         <div class="subsection">
             <div class="subsection-title">Jadwal Pelaksanaan</div>
-            <div class="content">{!! strip_tags($proposal->jadwal_pelaksanaan) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->jadwal_pelaksanaan) !!}</div>
         </div>
         @endif
 
         @if($proposal->rencana_aksi)
         <div class="subsection">
             <div class="subsection-title">Rencana Aksi</div>
-            <div class="content">{!! strip_tags($proposal->rencana_aksi) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->rencana_aksi) !!}</div>
         </div>
         @endif
 
         @if($proposal->keamanan_informasi)
         <div class="subsection">
             <div class="subsection-title">Keamanan Informasi</div>
-            <div class="content">{!! strip_tags($proposal->keamanan_informasi) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->keamanan_informasi) !!}</div>
         </div>
         @endif
 
         @if($proposal->sumber_daya_manusia)
         <div class="subsection">
             <div class="subsection-title">Sumber Daya Manusia</div>
-            <div class="content">{!! strip_tags($proposal->sumber_daya_manusia) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->sumber_daya_manusia) !!}</div>
         </div>
         @endif
 
         @if($proposal->sumber_daya_anggaran)
         <div class="subsection">
             <div class="subsection-title">Sumber Daya Anggaran</div>
-            <div class="content">{!! strip_tags($proposal->sumber_daya_anggaran) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->sumber_daya_anggaran) !!}</div>
         </div>
         @endif
 
         @if($proposal->sumber_daya_sarana)
         <div class="subsection">
             <div class="subsection-title">Sumber Daya Sarana</div>
-            <div class="content">{!! strip_tags($proposal->sumber_daya_sarana) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->sumber_daya_sarana) !!}</div>
         </div>
         @endif
 
         @if($proposal->indikator_keberhasilan)
         <div class="subsection">
             <div class="subsection-title">Indikator Keberhasilan</div>
-            <div class="content">{!! strip_tags($proposal->indikator_keberhasilan) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->indikator_keberhasilan) !!}</div>
         </div>
         @endif
 
         @if($proposal->alih_pengetahuan)
         <div class="subsection">
             <div class="subsection-title">Alih Pengetahuan</div>
-            <div class="content">{!! strip_tags($proposal->alih_pengetahuan) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->alih_pengetahuan) !!}</div>
         </div>
         @endif
 
         @if($proposal->pemantauan_pelaporan)
         <div class="subsection">
             <div class="subsection-title">Pemantauan dan Pelaporan</div>
-            <div class="content">{!! strip_tags($proposal->pemantauan_pelaporan) !!}</div>
+            <div class="content rich">{!! \App\Services\RichTextPdfFormatter::format($proposal->pemantauan_pelaporan) !!}</div>
         </div>
         @endif
     </div>
@@ -580,19 +699,19 @@
                 @if(isset($risiko['uraian_kejadian']) && $risiko['uraian_kejadian'])
                 <div class="risk-detail">
                     <span class="risk-label">Uraian Kejadian:</span><br>
-                    {{ $risiko['uraian_kejadian'] }}
+                    {!! nl2br(e($risiko['uraian_kejadian'])) !!}
                 </div>
                 @endif
 
                 @if(isset($risiko['penyebab']) && $risiko['penyebab'])
                 <div class="risk-detail">
-                    <span class="risk-label">Penyebab:</span> {{ $risiko['penyebab'] }}
+                    <span class="risk-label">Penyebab:</span> {!! nl2br(e($risiko['penyebab'])) !!}
                 </div>
                 @endif
 
                 @if(isset($risiko['dampak']) && $risiko['dampak'])
                 <div class="risk-detail">
-                    <span class="risk-label">Dampak:</span> {{ $risiko['dampak'] }}
+                    <span class="risk-label">Dampak:</span> {!! nl2br(e($risiko['dampak'])) !!}
                 </div>
                 @endif
 
@@ -618,7 +737,7 @@
 
                     @if(isset($risiko['rencana_aksi']) && $risiko['rencana_aksi'])
                     <div class="risk-detail">
-                        - Rencana Aksi: {{ $risiko['rencana_aksi'] }}
+                        - Rencana Aksi: {!! nl2br(e($risiko['rencana_aksi'])) !!}
                     </div>
                     @endif
 
@@ -640,11 +759,5 @@
         @endforelse
     </div>
     @endif
-
-    <!-- Footer -->
-    <div class="footer">
-        Dokumen ini digenerate secara otomatis oleh Sistem E-Layanan DKISP<br>
-        {{ now()->format('d F Y H:i:s') }}
-    </div>
 </body>
 </html>
