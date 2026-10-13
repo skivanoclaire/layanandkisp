@@ -227,7 +227,9 @@ class SsoController extends Controller
       // Aman menimpa NIP: pencarian NIP di atas memastikan belum ada akun lain yang memakainya.
       $updateData = ['nip' => $nip];
 
-      if ($name) {
+      // Nama akun yang sudah ada tidak ditimpa: nama di SSO bisa tidak lengkap,
+      // sedangkan nama lokal sudah dipakai di dokumen layanan.
+      if ($name && blank($user->name)) {
           $updateData['name'] = $name;
       }
 

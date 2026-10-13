@@ -32,12 +32,15 @@ class SsoLoginTest extends TestCase
         $lama = User::factory()->create([
             'nip' => self::NIP,
             'email' => 'lama@example.com',
+            'name' => 'Nama Lengkap Lama',
             'is_verified' => true,
         ]);
 
         $this->loginSso(self::NIP, 'baru@example.com')->assertRedirect('/dashboard');
 
         $this->assertAuthenticatedAs($lama);
+        // Nama di SSO bisa tidak lengkap; nama akun lama dipertahankan.
+        $this->assertSame('Nama Lengkap Lama', $lama->fresh()->name);
         $this->assertSame(1, User::where('nip', self::NIP)->count());
         $this->assertDatabaseMissing('users', ['email' => 'baru@example.com']);
         // Email akun lama adalah kredensial login lokal, tidak boleh ditimpa SSO.
