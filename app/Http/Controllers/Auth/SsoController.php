@@ -59,64 +59,14 @@ class SsoController extends Controller
                 return redirect()->route('login')->with('error', 'Data SSO tidak lengkap. NIP atau email tidak ditemukan.');
             }
 
-            // Find user by NIP, Email, atau NIK (via hash) — cek NIK penting
-            // supaya user existing tidak ter-duplikasi saat SSO bawa NIP/email baru.
-            $nikHash = User::hashNik($nik);
-            $user = User::where(function($query) use ($nip, $email, $nikHash) {
-                $query->where('nip', $nip)
-                      ->orWhere('email', $email);
-                if ($nikHash) {
-                    $query->orWhere('nik_hash', $nikHash);
-                }
-            })->first();
+            $user = $this->resolveSsoUser($nip, $email, $name, $nik, $phone);
 
-            if (!$user) {
-                // Create new user from SSO
-                $user = User::create([
-                    'nip' => $nip,
-                    'nik' => $nik,
-                    'phone' => $phone ?? '-', // Use phone from SSO if available, otherwise default
-                    'email' => $email,
-                    'name' => $name,
-                    'password' => bcrypt(Str::random(32)), // Random password for SSO users
-                    'is_verified' => true, // Auto-verify SSO users
-                    'is_sso_user' => true, // Mark as SSO user
-                    'verified_at' => now(),
-                    'verified_by' => 'SSO System',
-                ]);
-
+            if ($user->wasRecentlyCreated) {
                 // Assign default role: User
                 $defaultRole = Role::where('name', 'User')->first();
                 if ($defaultRole) {
                     $user->roles()->attach($defaultRole->id);
                 }
-
-                Log::info('New user created via SSO', ['nip' => $nip, 'email' => $email]);
-            } else {
-                // Build update data - update all fields that SSO provides
-                $updateData = [
-                    'name' => $name,
-                    'email' => $email,
-                ];
-
-                // Update NIP if token provides it
-                if ($nip) {
-                    $updateData['nip'] = $nip;
-                }
-
-                // Update NIK if token provides it
-                if ($nik) {
-                    $updateData['nik'] = $nik;
-                }
-
-                // Update phone if token provides it
-                if ($phone) {
-                    $updateData['phone'] = $phone;
-                }
-
-                $user->update($updateData);
-
-                Log::info('User logged in via SSO', ['nip' => $nip]);
             }
 
             // Log the user in
@@ -191,51 +141,7 @@ class SsoController extends Controller
           return $this->fail($request, 'Data token tidak lengkap (nip/email).', 401);
       }
 
-      $nikHash = User::hashNik($nik);
-      $user = User::where(function($q) use ($nip, $email, $nikHash) {
-          $q->where('nip', $nip)->orWhere('email', $email);
-          if ($nikHash) {
-              $q->orWhere('nik_hash', $nikHash);
-          }
-      })->first();
-
-      if (! $user) {
-          $user = User::create([
-              'nip' => $nip,
-              'nik' => $nik,
-              'phone' => $phone ?? '-',
-              'email' => $email,
-              'name' => $name,
-              'password' => bcrypt(Str::random(32)),
-              'is_verified' => true,
-              'is_sso_user' => true,
-              'verified_at' => now(),
-              'verified_by' => 'SSO System',
-          ]);
-      } else {
-          // Build update data - update all fields that SSO provides
-          $updateData = [
-              'name' => $name,
-              'email' => $email,
-          ];
-
-          // Update NIP if token provides it
-          if ($nip) {
-              $updateData['nip'] = $nip;
-          }
-
-          // Update NIK if token provides it
-          if ($nik) {
-              $updateData['nik'] = $nik;
-          }
-
-          // Update phone if token provides it
-          if ($phone) {
-              $updateData['phone'] = $phone;
-          }
-
-          $user->update($updateData);
-      }
+      $user = $this->resolveSsoUser($nip, $email, $name, $nik, $phone);
 
       // Mapping role dari token -> role lokal
       $roleCode = $decoded->role->code ?? null;
@@ -270,6 +176,79 @@ class SsoController extends Controller
       }
 
       return redirect('/dashboard');
+  }
+
+  /**
+   * Cari akun lokal untuk identitas SSO, atau buat baru bila belum ada.
+   *
+   * NIP adalah identitas utama ASN: bila NIP sudah dipakai sebuah akun, SSO
+   * masuk ke akun itu walaupun email di SSO berbeda. Email akun yang sudah ada
+   * tidak ditimpa — email adalah kredensial login lokal dan kolomnya unik.
+   */
+  protected function resolveSsoUser(string $nip, string $email, ?string $name, ?string $nik, ?string $phone): User
+  {
+      $nip = preg_replace('/\s+/', '', $nip);
+      $nikHash = User::hashNik($nik);
+
+      // Urutan prioritas: NIP, lalu NIK, lalu email. Bila NIP terlanjur ganda,
+      // pilih akun lama (bukan buatan SSO) supaya riwayat layanan tetap menyatu.
+      $user = User::where('nip', $nip)->orderBy('is_sso_user')->orderBy('id')->first();
+      $matchedBy = 'nip';
+
+      if (! $user && $nikHash) {
+          $user = User::where('nik_hash', $nikHash)->orderBy('is_sso_user')->orderBy('id')->first();
+          $matchedBy = 'nik';
+      }
+
+      if (! $user) {
+          $user = User::where('email', $email)->first();
+          $matchedBy = 'email';
+      }
+
+      if (! $user) {
+          $user = User::create([
+              'nip' => $nip,
+              'nik' => $nik,
+              'phone' => $phone ?? '-', // Use phone from SSO if available, otherwise default
+              'email' => $email,
+              'name' => $name,
+              'password' => bcrypt(Str::random(32)), // Random password for SSO users
+              'is_verified' => true, // Auto-verify SSO users
+              'is_sso_user' => true, // Mark as SSO user
+              'verified_at' => now(),
+              'verified_by' => 'SSO System',
+          ]);
+
+          Log::info('New user created via SSO', ['nip' => $nip, 'email' => $email]);
+
+          return $user;
+      }
+
+      // Aman menimpa NIP: pencarian NIP di atas memastikan belum ada akun lain yang memakainya.
+      $updateData = ['nip' => $nip];
+
+      if ($name) {
+          $updateData['name'] = $name;
+      }
+
+      if ($nik) {
+          $updateData['nik'] = $nik;
+      }
+
+      if ($phone) {
+          $updateData['phone'] = $phone;
+      }
+
+      $user->update($updateData);
+
+      Log::info('User logged in via SSO', [
+          'nip' => $nip,
+          'user_id' => $user->id,
+          'matched_by' => $matchedBy,
+          'email_differs' => strcasecmp($user->email, $email) !== 0,
+      ]);
+
+      return $user;
   }
 
   protected function validateIssuer(object $decoded): bool
