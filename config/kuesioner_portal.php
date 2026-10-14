@@ -282,4 +282,11 @@ return [
         // Responden dengan proporsi jawaban Kano questionable di atas ini dikeluarkan dari analisis Kano.
         'batas_questionable' => 0.20,
     ],
+
+    // IPA eksploratif per kelompok responden (Subbab 3.3.4). Kelompok dengan responden
+    // di bawah minimum hanya dilaporkan jumlahnya.
+    'ipa_per_kelompok' => [
+        'profil' => 'frekuensi',
+        'minimum_responden' => 30,
+    ],
 ];

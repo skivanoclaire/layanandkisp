@@ -16,7 +16,7 @@ class Penjelasan
         'menolak' => 'Akun yang memilih "Tidak bersedia". Tetap dicatat agar tingkat respons dapat dilaporkan apa adanya.',
         'belum_selesai' => 'Sudah menyatakan bersedia tetapi belum menekan "Kirim Jawaban". Belum ikut dianalisis.',
         'selesai' => 'Kuesioner terkirim lengkap.',
-        'dianalisis' => 'Respons selesai yang lolos pra-pemrosesan (Subbab 3.3.2): tidak dikecualikan peneliti, durasi wajar, item kosong tidak lebih dari 20%, dan jawabannya tidak seragam. Angka ini menjadi dasar uji instrumen, gap, Tk, dan IPA.',
+        'dianalisis' => 'Respons selesai yang lolos pra-pemrosesan (Subbab 3.3.2): tidak dikecualikan peneliti, durasi pengisian minimal lima menit, dan jawabannya tidak seragam. Semua item wajib diisi di formulir, sehingga tidak ada data hilang. Angka ini menjadi dasar uji instrumen, gap, Tk, dan IPA.',
         'dianalisis_kano' => 'Respons yang dianalisis dikurangi responden yang jawaban Kano-nya questionable (Q) pada lebih dari 20% atribut. Jawaban Kano mereka dianggap tidak konsisten sehingga tidak dipakai untuk klasifikasi Kano, tetapi tetap dipakai untuk IPA.',
 
         // Uji instrumen (3.3.1)
@@ -48,6 +48,8 @@ class Penjelasan
         'kuadran_III' => 'Kepentingan rendah, kinerja rendah. Prioritas rendah, tetapi lihat kategori Kano-nya: atribut must-be di kuadran ini tetap perlu diperhatikan.',
         'kuadran_IV' => 'Kepentingan rendah, kinerja tinggi. Mungkin berlebihan sehingga sumber daya dapat dialihkan, kecuali bila kategorinya attractive karena justru menjadi sumber kepuasan.',
         'ketahanan' => 'Uji ketahanan (robustness): kuadran dihitung ulang dengan garis potong di titik tengah skala (3,0), sesuai pendekatan asli Martilla dan James. Atribut yang berpindah kuadran posisinya sensitif terhadap pilihan garis potong, jadi perlu ditafsirkan hati-hati.',
+
+        'ipa_kelompok' => 'IPA eksploratif per kelompok frekuensi penggunaan, mengikuti saran Martilla dan James (1977) untuk membandingkan grid IPA antarkelompok pelanggan. Garis potong setiap kelompok dihitung dari rata-rata atributnya sendiri. Kelompok baru dianalisis bila memiliki minimal 30 responden; di bawah itu rata-ratanya terlalu tidak stabil. Kuadran yang berbeda dari IPA semua responden diberi warna. Hasilnya pelengkap, bukan dasar prioritas utama.',
 
         // Kano (3.3.5)
         'kano' => 'Model Kano (Kano dkk, 1984) membedakan cara atribut memengaruhi kepuasan. Setiap atribut ditanyakan dua kali, saat terpenuhi (F) dan saat tidak terpenuhi (D). Pasangan jawaban diterjemahkan dengan Tabel 2.3 menjadi satu kategori.',

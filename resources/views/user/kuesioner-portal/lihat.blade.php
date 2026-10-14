@@ -7,6 +7,7 @@
     $atribut = \App\Services\KuesionerPortal\Instrumen::atribut();
     $kepuasan = config('kuesioner_portal.kepuasan');
     $profil = config('kuesioner_portal.profil');
+    $skalaKano = config('kuesioner_portal.skala_kano');
     $jawaban = $response->answers->keyBy('kode');
 @endphp
 
@@ -47,8 +48,8 @@
                             <td class="py-2 pr-3 text-gray-800">{{ $a['kinerja'] }}</td>
                             <td class="py-2 px-2 text-center">{{ $jawaban[$kode]->kepentingan ?? '-' }}</td>
                             <td class="py-2 px-2 text-center">{{ $jawaban[$kode]->kinerja ?? '-' }}</td>
-                            <td class="py-2 px-2 text-center">{{ $jawaban[$kode]->kano_fungsional ?? '-' }}</td>
-                            <td class="py-2 px-2 text-center">{{ $jawaban[$kode]->kano_disfungsional ?? '-' }}</td>
+                            <td class="py-2 px-2 text-center text-xs">{{ $skalaKano[$jawaban[$kode]->kano_fungsional ?? 0] ?? '-' }}</td>
+                            <td class="py-2 px-2 text-center text-xs">{{ $skalaKano[$jawaban[$kode]->kano_disfungsional ?? 0] ?? '-' }}</td>
                         </tr>
                     @endforeach
                     @foreach ($kepuasan as $kode => $teks)

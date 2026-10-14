@@ -65,8 +65,47 @@ class Analisis
             'garis' => $garis,
             'kepuasan' => $this->kepuasan($jawaban),
             'spearman_kepentingan_worse' => $this->spearmanKepentinganWorse($hasilAtribut),
+            'ipa_kelompok' => $this->ipaPerKelompok($dipakai),
             'profil' => $this->profil($dipakai),
         ];
+    }
+
+    /**
+     * IPA eksploratif per kelompok profil (bawaan: frekuensi penggunaan). Garis potong dihitung
+     * dari rata-rata atribut di dalam kelompok itu sendiri, seperti IPA utama.
+     */
+    private function ipaPerKelompok(Collection $responses): array
+    {
+        $cfg = config('kuesioner_portal.ipa_per_kelompok');
+        $field = $cfg['profil'];
+        $minimum = $cfg['minimum_responden'];
+
+        $kelompok = [];
+        foreach (config("kuesioner_portal.profil.{$field}") as $kunci => $label) {
+            $anggota = $responses->where($field, $kunci)->values();
+            $baris = ['label' => $label, 'n' => $anggota->count(), 'cukup' => $anggota->count() >= $minimum, 'garis' => null, 'atribut' => []];
+
+            if ($baris['cukup']) {
+                $jawaban = $this->matriksJawaban($anggota);
+                $hasil = [];
+                foreach (Instrumen::kodeAtribut() as $kode) {
+                    $hasil[$kode] = $this->ipaAtribut($jawaban, $kode);
+                }
+                $garis = $this->garisPotong($hasil);
+                foreach ($hasil as $kode => $h) {
+                    $baris['atribut'][$kode] = [
+                        'kinerja' => $h['kinerja'],
+                        'kepentingan' => $h['kepentingan'],
+                        'kuadran' => $this->kuadran($h['kinerja'], $h['kepentingan'], $garis['x'], $garis['y']),
+                    ];
+                }
+                $baris['garis'] = $garis;
+            }
+
+            $kelompok[$kunci] = $baris;
+        }
+
+        return ['profil' => $field, 'minimum' => $minimum, 'kelompok' => $kelompok];
     }
 
     /**
@@ -96,34 +135,24 @@ class Analisis
                 $alasan[] = 'Durasi pengisian tidak wajar (' . gmdate('i:s', $r->durasi_detik) . ')';
             }
 
-            // Item yang seharusnya diisi responden ini
-            $harus = 0;
-            $kosong = 0;
+            // Semua item wajib diisi di formulir (Subbab 3.3.2), jadi tidak ada aturan data hilang.
+            // Skor Likert dikumpulkan untuk deteksi straight-lining.
             $skorLikert = [];
             foreach ($kodeAtribut as $kode) {
                 $jw = $a->get($kode);
                 $perluKinerja = ! in_array($kode, $bersyarat, true) || $r->pernah_hubungi_petugas;
-                foreach (['kepentingan' => true, 'kinerja' => $perluKinerja, 'kano_fungsional' => true, 'kano_disfungsional' => true] as $kolom => $perlu) {
-                    if (! $perlu) {
-                        continue;
-                    }
-                    $harus++;
+                foreach (['kepentingan' => true, 'kinerja' => $perluKinerja] as $kolom => $perlu) {
                     $nilai = $jw?->{$kolom};
-                    if ($nilai === null) {
-                        $kosong++;
-                    } elseif (in_array($kolom, ['kepentingan', 'kinerja'], true)) {
+                    if ($perlu && $nilai !== null) {
                         $skorLikert[] = $nilai;
                     }
                 }
             }
             foreach ($kodeKepuasan as $kode) {
-                $harus++;
                 $nilai = $a->get($kode)?->kinerja;
-                $nilai === null ? $kosong++ : $skorLikert[] = $nilai;
-            }
-
-            if ($harus && $kosong / $harus > 0.20) {
-                $alasan[] = 'Lebih dari 20% item tidak diisi';
+                if ($nilai !== null) {
+                    $skorLikert[] = $nilai;
+                }
             }
 
             if (count($skorLikert) > 1 && count(array_unique($skorLikert)) === 1) {

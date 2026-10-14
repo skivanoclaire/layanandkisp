@@ -82,7 +82,9 @@ class KuesionerPortalTest extends TestCase
         $this->actingAs($user)->get(route('kuesioner-portal.isi'))
             ->assertOk()
             ->assertSee('Bagian D. Reaksi terhadap Kondisi Layanan')
-            ->assertSee('Bagaimana perasaan Anda apabila struktur menu portal membingungkan?');
+            ->assertSee('Bagaimana perasaan Anda apabila struktur menu portal membingungkan?')
+            ->assertSee('bukan untuk mengurutkan', false)
+            ->assertDontSee('<strong>1</strong> = Saya suka', false);
 
         $this->actingAs($user)->post(route('kuesioner-portal.simpan'), $this->payload(hubungiPetugas: false))
             ->assertRedirect(route('kuesioner-portal.lihat'))
@@ -100,7 +102,10 @@ class KuesionerPortalTest extends TestCase
         $this->assertSame(4, $response->answers()->where('kode', 'EF1')->value('kinerja'));
         $this->assertSame(5, $response->answers()->where('kode', 'KPS1')->value('kinerja'));
 
-        $this->actingAs($user)->get(route('kuesioner-portal.lihat'))->assertOk()->assertSee($response->kode_responden);
+        // Jawaban Kano (F=1, D=5) ditampilkan sebagai label, bukan angka
+        $this->actingAs($user)->get(route('kuesioner-portal.lihat'))->assertOk()->assertSee($response->kode_responden)
+            ->assertSee(config('kuesioner_portal.skala_kano.1'))
+            ->assertSee(config('kuesioner_portal.skala_kano.5'));
     }
 
     public function test_satu_akun_hanya_mengisi_satu_kali(): void
@@ -163,6 +168,38 @@ class KuesionerPortalTest extends TestCase
         $this->assertStringContainsString('Durasi', implode(' ', $eksklusi['semua'][$kilat->kode_responden]));
         $this->assertArrayNotHasKey($asal->kode_responden, $eksklusi['semua']);
         $this->assertArrayHasKey($asal->kode_responden, $eksklusi['kano']);
+    }
+
+    public function test_pra_pemrosesan_tidak_memakai_aturan_item_kosong(): void
+    {
+        // Semua item wajib diisi di formulir, jadi alasan "item tidak diisi" tidak boleh muncul lagi
+        $respons = $this->responsSelesai(fn ($kode) => [4, 3, 1, 5]);
+        $respons->answers()->where('kode', 'EF1')->update(['kepentingan' => null, 'kinerja' => null]);
+
+        $eksklusi = app(Analisis::class)->eksklusi(KuesionerPortalResponse::with('answers')->whereKey($respons->id)->get());
+
+        $this->assertArrayNotHasKey($respons->kode_responden, $eksklusi['semua']);
+    }
+
+    public function test_ipa_per_kelompok_frekuensi_hanya_untuk_kelompok_yang_cukup_responden(): void
+    {
+        config(['kuesioner_portal.ipa_per_kelompok.minimum_responden' => 2]);
+
+        // Kelompok mingguan: EF1 kepentingan tinggi, kinerja rendah → kuadran I
+        foreach ([1, 2] as $_) {
+            $this->responsSelesai(fn ($kode) => $kode === 'EF1' ? [5, 1, 1, 5] : [4, 4, 1, 5], frekuensi: 'mingguan');
+        }
+        $this->responsSelesai(fn ($kode) => [4, 3, 1, 5], kepuasan: 3, frekuensi: 'bulanan');
+
+        $kelompok = app(Analisis::class)->jalankan($this->periode)['ipa_kelompok']['kelompok'];
+
+        $this->assertSame(2, $kelompok['mingguan']['n']);
+        $this->assertTrue($kelompok['mingguan']['cukup']);
+        $this->assertSame('I', $kelompok['mingguan']['atribut']['EF1']['kuadran']);
+        $this->assertSame(1, $kelompok['bulanan']['n']);
+        $this->assertFalse($kelompok['bulanan']['cukup']);
+        $this->assertSame([], $kelompok['bulanan']['atribut']);
+        $this->assertSame(0, $kelompok['tahunan']['n']);
     }
 
     public function test_analisis_memadukan_ipa_dan_kano(): void
@@ -330,7 +367,7 @@ class KuesionerPortalTest extends TestCase
     /**
      * @param  callable(string): array{0:int,1:int,2:int,3:int}  $nilai  [kepentingan, kinerja, F, D]
      */
-    private function responsSelesai(callable $nilai, int $kepuasan = 4, int $durasi = 900): KuesionerPortalResponse
+    private function responsSelesai(callable $nilai, int $kepuasan = 4, int $durasi = 900, string $frekuensi = 'mingguan'): KuesionerPortalResponse
     {
         $user = $this->responden();
         $respons = KuesionerPortalResponse::create([
@@ -345,7 +382,7 @@ class KuesionerPortalTest extends TestCase
             'status_kepegawaian' => 'pns',
             'peran' => 'staf',
             'lama_penggunaan' => 'gt2t',
-            'frekuensi' => 'mingguan',
+            'frekuensi' => $frekuensi,
             'layanan_diajukan' => ['email'],
             'pernah_hubungi_petugas' => true,
         ]);

@@ -167,12 +167,15 @@
             <section x-show="langkah === 3" x-cloak data-langkah="3" class="bg-white rounded-lg shadow-sm p-6">
                 <h2 class="text-lg font-semibold text-gray-900">Bagian D. Reaksi terhadap Kondisi Layanan</h2>
                 <p class="text-sm text-gray-600 mt-1">Setiap kondisi ditanyakan dua kali: saat kondisi <strong>terpenuhi</strong> dan saat
-                    <strong>tidak terpenuhi</strong>. Pilih satu jawaban pada setiap baris.</p>
-                <div class="mt-3 mb-5 grid grid-cols-1 sm:grid-cols-5 gap-1 text-xs text-gray-600">
-                    @foreach ($skalaKano as $skor => $label)
-                        <span><strong>{{ $skor }}</strong> = {{ $label }}</span>
-                    @endforeach
-                </div>
+                    <strong>tidak terpenuhi</strong>. Pilih satu jawaban yang paling menggambarkan perasaan Bapak/Ibu pada setiap baris.</p>
+                {{-- Petunjuk mengikuti saran Berger dkk (1993) bagian Vb --}}
+                <ul class="mt-3 mb-5 list-disc ml-5 space-y-1 text-xs text-gray-600">
+                    <li>Pertanyaan ini dipakai untuk <strong>menggolongkan</strong> sifat setiap atribut layanan, bukan untuk mengurutkan
+                        atribut yang paling penting. Tidak perlu memilih jawaban tertentu agar suatu atribut terlihat lebih penting.</li>
+                    <li>Pilih <em>{{ $skalaKano[1] }}</em> bila kondisi itu memberi nilai lebih bagi Bapak/Ibu, dan
+                        <em>{{ $skalaKano[2] }}</em> bila kondisi itu memang sewajarnya ada.</li>
+                    <li>Urutan pilihan bukan nilai atau peringkat. Bila ada pilihan yang terasa kurang cocok, abaikan dan pilih yang paling sesuai.</li>
+                </ul>
                 <div class="space-y-4">
                     @foreach ($atribut as $kode => $a)
                         <div class="rounded-lg border border-gray-200 p-4">
@@ -181,13 +184,13 @@
                                 <span class="inline-block px-1.5 py-0.5 mr-1 rounded bg-green-100 text-green-800 text-[11px] font-semibold">Terpenuhi</span>
                                 Bagaimana perasaan Anda apabila {{ lcfirst($a['fungsional']) }}?
                             </p>
-                            @include('user.kuesioner-portal._skala', ['nama' => "kano[$kode][f]", 'pilihan' => $skalaKano, 'nilai' => old("kano.$kode.f")])
+                            @include('user.kuesioner-portal._skala', ['nama' => "kano[$kode][f]", 'pilihan' => $skalaKano, 'nilai' => old("kano.$kode.f"), 'tanpaAngka' => true])
                             <p class="text-sm text-gray-900 mt-4 mb-2">
                                 <span class="font-semibold mr-1">{{ $loop->iteration }}b.</span>
                                 <span class="inline-block px-1.5 py-0.5 mr-1 rounded bg-red-100 text-red-800 text-[11px] font-semibold">Tidak terpenuhi</span>
                                 Bagaimana perasaan Anda apabila {{ lcfirst($a['disfungsional']) }}?
                             </p>
-                            @include('user.kuesioner-portal._skala', ['nama' => "kano[$kode][d]", 'pilihan' => $skalaKano, 'nilai' => old("kano.$kode.d")])
+                            @include('user.kuesioner-portal._skala', ['nama' => "kano[$kode][d]", 'pilihan' => $skalaKano, 'nilai' => old("kano.$kode.d"), 'tanpaAngka' => true])
                         </div>
                     @endforeach
                 </div>

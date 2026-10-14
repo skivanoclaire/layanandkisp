@@ -16,6 +16,8 @@
     $namaDimensi = collect(config('kuesioner_portal.dimensi'))->map(fn ($d) => $d['nama']);
     $warnaKano = ['M' => 'bg-red-100 text-red-800', 'O' => 'bg-blue-100 text-blue-800', 'A' => 'bg-green-100 text-green-800', 'I' => 'bg-gray-100 text-gray-700', 'R' => 'bg-purple-100 text-purple-800'];
     $pindah = collect($atribut)->filter(fn ($a) => $a['pindah_kuadran']);
+    $ipaKelompok = $hasil['ipa_kelompok'];
+    $kelompokCukup = collect($ipaKelompok['kelompok'])->filter(fn ($k) => $k['cukup']);
 @endphp
 
 @section('content')
@@ -222,6 +224,42 @@
                             <li><span class="font-mono">{{ $kode }}</span>: kuadran {{ $a['kuadran'] }} → {{ $a['kuadran_titik_tengah'] }}</li>
                         @endforeach
                     </ul>
+                @endif
+            </div>
+            <div class="mt-5 text-sm overflow-x-auto">
+                <p class="font-medium text-gray-900">IPA per kelompok frekuensi penggunaan (eksploratif) @include('admin.kuesioner-portal._info', ['k' => 'ipa_kelompok'])</p>
+                <p class="text-gray-600 mb-2">
+                    @foreach ($ipaKelompok['kelompok'] as $kel)
+                        {{ $kel['label'] }}: n = {{ $kel['n'] }}{{ $loop->last ? '.' : ';' }}
+                    @endforeach
+                    Kelompok dianalisis bila n ≥ {{ $ipaKelompok['minimum'] }}.
+                </p>
+                @if ($kelompokCukup->isEmpty())
+                    <p class="text-gray-600">Belum ada kelompok yang mencapai {{ $ipaKelompok['minimum'] }} responden.</p>
+                @else
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-xs text-gray-500 border-b">
+                                <th class="py-2 pr-3">Kode</th>
+                                <th class="py-2 px-2 text-center">Semua responden</th>
+                                @foreach ($kelompokCukup as $kel)
+                                    <th class="py-2 px-2 text-center">{{ $kel['label'] }}</th>
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            @foreach ($atribut as $kode => $a)
+                                <tr>
+                                    <td class="py-1.5 pr-3 font-mono text-xs">{{ $kode }}</td>
+                                    <td class="py-1.5 px-2 text-center">{{ $a['kuadran'] ?? '-' }}</td>
+                                    @foreach ($kelompokCukup as $kel)
+                                        @php $kq = $kel['atribut'][$kode]['kuadran'] ?? null; @endphp
+                                        <td class="py-1.5 px-2 text-center {{ $kq !== null && $kq !== $a['kuadran'] ? 'bg-amber-100 font-semibold' : '' }}">{{ $kq ?? '-' }}</td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 @endif
             </div>
         </section>
