@@ -1200,6 +1200,7 @@
             {{-- Master Data (grouped dropdown) --}}
             @php
                 $atMasterInstansi = request()->routeIs('admin.unit-kerja.*');
+                $atMasterArsitektur = request()->routeIs('admin.master-arsitektur.*');
                 $atMasterSubdomain = request()->routeIs('admin.web-monitor.index')
                     || request()->routeIs('admin.web-monitor.create')
                     || request()->routeIs('admin.web-monitor.show')
@@ -1216,6 +1217,7 @@
                     || request()->routeIs('admin.dtsen.releases.*')
                     || request()->routeIs('admin.dtsen.wilayah.*');
                 $openMasterData = $atMasterInstansi
+                    || $atMasterArsitektur
                     || $atMasterSubdomain
                     || $atMasterEmail
                     || $atMasterIp
@@ -1225,11 +1227,11 @@
                     || $atMasterDtsen;
 
                 $canSeeMasterData = auth()->user()?->hasPermission('admin.unit-kerja')
+                    || auth()->user()?->hasRole('Admin')
                     || auth()->user()?->hasPermission('admin.web-monitor')
                     || auth()->user()?->hasPermission('Kelola Master Data Email')
                     || auth()->user()?->hasPermission('admin.web-monitor.check-ip-publik')
                     || auth()->user()?->hasPermission('admin.vidcon.data')
-                $atMasterArsitektur = request()->routeIs('admin.master-arsitektur.*');
                     || auth()->user()?->hasPermission('admin.google-aset-tik')
                     || auth()->user()?->hasAnyPermission(['admin.splp.services', 'admin.splp.consumers', 'admin.splp.audit'])
                     || auth()->user()?->hasAnyPermission(['admin.dtsen.dashboard', 'admin.dtsen.variables', 'admin.dtsen.releases', 'admin.dtsen.wilayah']);
@@ -1246,7 +1248,6 @@
                                 clip-rule="evenodd" />
                         </svg>
                     </button>
-                    || $atMasterArsitektur
                     <div x-show="openMasterData" class="ml-4 space-y-1">
                         {{-- Master Data Instansi --}}
                         @if (auth()->user()?->hasPermission('admin.unit-kerja'))
@@ -1256,7 +1257,15 @@
                                 Master Data Instansi
                             </a>
                         @endif
-                    || auth()->user()?->hasRole('Admin')
+
+                        {{-- Master Data Arsitektur (khusus role Admin) --}}
+                        @if (auth()->user()?->hasRole('Admin'))
+                            <a href="{{ route('admin.master-arsitektur.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                       {{ $atMasterArsitektur ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Master Data Arsitektur
+                            </a>
+                        @endif
 
                         {{-- Master Data Subdomain --}}
                         @if (auth()->user()?->hasPermission('admin.web-monitor'))
@@ -1287,15 +1296,6 @@
 
                         {{-- Master Data Vidcon --}}
                         @if (auth()->user()?->hasPermission('admin.vidcon.data'))
-                        {{-- Master Data Arsitektur (khusus role Admin) --}}
-                        @if (auth()->user()?->hasRole('Admin'))
-                            <a href="{{ route('admin.master-arsitektur.index') }}"
-                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-                       {{ $atMasterArsitektur ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                Master Data Arsitektur
-                            </a>
-                        @endif
-
                             <a href="{{ route('admin.vidcon-data.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atMasterVidcon ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
