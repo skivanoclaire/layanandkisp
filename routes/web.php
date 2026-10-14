@@ -36,6 +36,16 @@ Route::get('/services', function () {
     return view('services');
 });
 
+// Arsitektur SPBE (publik, hanya lihat) - data dari Master Data Arsitektur
+Route::prefix('arsitektur')->name('arsitektur.')->middleware('throttle:60,1')
+    ->controller(\App\Http\Controllers\ArsitekturPublikController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/entri/{item}', 'show')->name('show')->whereNumber('item');
+        Route::get('/{kategori}', 'kategori')->name('kategori')
+            ->whereIn('kategori', config('master_arsitektur.publik.kategori'));
+    });
+
 // Public Document Verification
 Route::get('/verify/{code}', [VerificationController::class, 'verify'])->name('verify.document');
 

@@ -54,6 +54,24 @@ $kinerja = [
 
 return [
 
+    /*
+    | Halaman publik /arsitektur (hanya lihat, tanpa login).
+    | - "kategori": tab yang ditampilkan ke publik. Infrastruktur dan Keamanan
+    |   tidak dibuka karena memuat inventaris server/perangkat serta hasil audit,
+    |   kerentanan, dan insiden; tambahkan kuncinya di sini bila memang akan dibuka.
+    | - "kolom_tersembunyi": jenis => kolom yang tidak ditampilkan pada detail publik.
+    */
+    'publik' => [
+        'kategori' => ['proses-bisnis', 'layanan', 'data', 'aplikasi', 'peta-rencana'],
+        'kolom_tersembunyi' => [
+            'aplikasi' => [
+                'basis_data', 'bahasa_pemrograman', 'basis_aplikasi', 'framework', 'nama_server', 'lokasi_server',
+                'standar_keamanan', 'audit_keamanan', 'peningkatan_keamanan', 'insiden_keamanan',
+                'edukasi_keamanan', 'kelaikan_keamanan', 'kerentanan_keamanan',
+            ],
+        ],
+    ],
+
     'kategori' => [
         'proses-bisnis' => [
             'label' => 'Proses Bisnis',
