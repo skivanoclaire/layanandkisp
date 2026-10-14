@@ -1103,6 +1103,36 @@ Route::middleware(['auth', 'permission:Kelola Kuesioner Portal'])
         Route::post('/respons/{response}/eksklusi', 'eksklusi')->name('eksklusi');
     });
 
+// ===== PEMBARUAN DATA ARSITEKTUR OLEH INSTANSI =====
+
+// Pengguna mengusulkan tambah/ubah Master Data Arsitektur milik instansinya
+Route::middleware(['auth', 'verified.user', 'permission:Akses Pembaruan Data Arsitektur'])
+    ->prefix('digital/arsitektur')
+    ->name('user.arsitektur.')
+    ->controller(\App\Http\Controllers\User\ArsitekturInstansiController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/permohonan', 'permohonan')->name('permohonan');
+        Route::get('/permohonan/{permohonan}', 'lihatPermohonan')->name('permohonan.show')->whereNumber('permohonan');
+        Route::delete('/permohonan/{permohonan}', 'batalkanPermohonan')->name('permohonan.batal')->whereNumber('permohonan');
+        Route::get('/entri/{item}/ubah', 'formUbah')->name('ubah')->whereNumber('item');
+        Route::post('/entri/{item}/ubah', 'simpanUbah')->name('ubah.simpan')->whereNumber('item');
+        Route::get('/tambah/{kategori}', 'formTambah')->name('tambah');
+        Route::post('/tambah/{kategori}', 'simpanTambah')->name('tambah.simpan');
+    });
+
+// Admin menyetujui/menolak usulan (Kelola Permohonan)
+Route::middleware(['auth', 'permission:Kelola Permohonan Data Arsitektur'])
+    ->prefix('admin/arsitektur-permohonan')
+    ->name('admin.arsitektur-permohonan.')
+    ->controller(\App\Http\Controllers\Admin\MasterArsitekturPermohonanController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/{permohonan}', 'show')->name('show')->whereNumber('permohonan');
+        Route::post('/{permohonan}/setujui', 'setujui')->name('setujui')->whereNumber('permohonan');
+        Route::post('/{permohonan}/tolak', 'tolak')->name('tolak')->whereNumber('permohonan');
+    });
+
 // ===== TATA KELOLA KEAMANAN INFORMASI (COBIT 2019 & ISO/IEC 27001:2022) =====
 
 Route::middleware(['auth', 'permission:Kelola Tata Kelola Keamanan'])

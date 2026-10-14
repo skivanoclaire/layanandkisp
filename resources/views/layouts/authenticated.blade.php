@@ -80,7 +80,7 @@
                     'admin.subdomain.index',
                     'admin.rekomendasi.verifikasi.index', 'admin.rekomendasi.monitoring.index', 'admin.fase-pengembangan.view',
                     'admin.vidcon.index',
-                    'Kelola Survei Kepuasan', 'Kelola Kuesioner Portal', 'Kelola Tata Kelola Keamanan',
+                    'Kelola Survei Kepuasan', 'Kelola Kuesioner Portal', 'Kelola Tata Kelola Keamanan', 'Kelola Permohonan Data Arsitektur',
                     'Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah',
                     'Kelola Pendaftaran VPN', 'Kelola Reset Akun VPN', 'Kelola Akses JIP PDNS',
                     'Kelola Kunjungan/Colocation', 'Kelola VPS/VM', 'Kelola Backup', 'Kelola Cloud Storage',
@@ -102,9 +102,10 @@
                     $atAdminSurveiKepuasan = request()->routeIs('admin.survei-kepuasan.*');
                     $atAdminKuesionerPortal = request()->routeIs('admin.kuesioner-portal.*');
                     $atAdminTataKelolaKeamanan = request()->routeIs('admin.tata-kelola-keamanan.*');
+                    $atAdminArsitekturPermohonan = request()->routeIs('admin.arsitektur-permohonan.*');
                     $atAdminSplpPermohonan = request()->routeIs('admin.splp.provider.*', 'admin.splp.consumer.*', 'admin.splp.sandbox.*', 'admin.splp.change.*', 'admin.splp.deactivation.*');
                     $atAdminDtsen = request()->routeIs('admin.dtsen.akun.*', 'admin.dtsen.permohonan.*', 'admin.dtsen.substansi.*', 'admin.dtsen.perpanjangan.*', 'admin.dtsen.laporan.*', 'admin.dtsen.pengaduan.*');
-                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan || $atAdminKuesionerPortal || $atAdminTataKelolaKeamanan || $atAdminSplpPermohonan || $atAdminDtsen;
+                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan || $atAdminKuesionerPortal || $atAdminArsitekturPermohonan || $atAdminTataKelolaKeamanan || $atAdminSplpPermohonan || $atAdminDtsen;
                    
                 @endphp
                 @php
@@ -351,6 +352,16 @@
                                 class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atAdminTataKelolaKeamanan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Tata Kelola Keamanan Informasi
+                            </a>
+                        @endif
+
+                        {{-- Permohonan Pembaruan Data Arsitektur dari instansi (Admin) --}}
+                        @if (auth()->user()?->hasPermission('Kelola Permohonan Data Arsitektur'))
+                            <a href="{{ route('admin.arsitektur-permohonan.index') }}"
+                                class="flex items-center justify-between py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ $atAdminArsitekturPermohonan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                <span>Pembaruan Data Arsitektur</span>
+                                {!! $badge($pc['arsitektur_permohonan'] ?? 0) !!}
                             </a>
                         @endif
 
@@ -701,6 +712,7 @@
                         'Akses Konsultasi SPBE AI',
                         'Akses Survei Kepuasan',
                         'Akses Kuesioner Portal', 'Isi Kuesioner Tata Kelola Keamanan', 'Validasi Pakar Tata Kelola Keamanan',
+                        'Akses Pembaruan Data Arsitektur',
                         'Akses Bantuan TTE', 'Akses Registrasi TTE', 'Akses Reset Passphrase TTE', 'Akses Pembaruan Sertifikat TTE',
                         'Akses Video Conference',
                         'Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah',
@@ -725,11 +737,12 @@
                     $atPseUser = request()->routeIs('user.pse-update.*');
                     $atSurveiKepuasan = request()->routeIs('survei-kepuasan.*');
                     $atKuesionerPortal = request()->routeIs('kuesioner-portal.*');
+                    $atArsitekturInstansi = request()->routeIs('user.arsitektur.*');
                     $atTataKelolaKeamananResponden = request()->routeIs('tata-kelola-keamanan.responden.*', 'tata-kelola-keamanan.pakar.*');
                     $atSplpUser = request()->routeIs('user.splp.*');
                     $atDtsenUser = request()->routeIs('user.dtsen.*');
                     $openUserPermohonan =
-                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan || $atKuesionerPortal || $atTataKelolaKeamananResponden || $atSplpUser || $atDtsenUser;
+                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan || $atKuesionerPortal || $atArsitekturInstansi || $atTataKelolaKeamananResponden || $atSplpUser || $atDtsenUser;
                     
     
                 @endphp
@@ -912,6 +925,15 @@
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ request()->routeIs('tata-kelola-keamanan.pakar.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Validasi Pakar Tata Kelola Keamanan
+                            </a>
+                        @endif
+
+                        {{-- Pembaruan Data Arsitektur milik instansi pengguna --}}
+                        @if (auth()->user()?->hasPermission('Akses Pembaruan Data Arsitektur'))
+                            <a href="{{ route('user.arsitektur.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ $atArsitekturInstansi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Pembaruan Data Arsitektur
                             </a>
                         @endif
 

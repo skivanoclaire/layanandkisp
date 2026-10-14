@@ -64,6 +64,7 @@ return [
             'Survei Kepuasan' => ['Kelola Survei Kepuasan'],
             'Kuesioner Portal' => ['Kelola Kuesioner Portal'],
             'Tata Kelola Keamanan Informasi' => ['Kelola Tata Kelola Keamanan'],
+            'Pembaruan Data Arsitektur' => ['Kelola Permohonan Data Arsitektur'],
             'Internet' => ['Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah'],
             'Jaringan Privat/VPN' => ['Kelola Pendaftaran VPN', 'Kelola Reset Akun VPN', 'Kelola Akses JIP PDNS'],
             'Pusat Data/Komputasi' => [
@@ -123,6 +124,7 @@ return [
             'Survei Kepuasan' => ['Akses Survei Kepuasan'],
             'Kuesioner Portal' => ['Akses Kuesioner Portal'],
             'Tata Kelola Keamanan (Responden & Pakar)' => ['Isi Kuesioner Tata Kelola Keamanan', 'Validasi Pakar Tata Kelola Keamanan'],
+            'Pembaruan Data Arsitektur' => ['Akses Pembaruan Data Arsitektur'],
             'Tanda Tangan Elektronik' => [
                 'Akses Bantuan TTE',
                 'Akses Registrasi TTE',

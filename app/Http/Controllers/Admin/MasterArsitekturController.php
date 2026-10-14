@@ -8,6 +8,7 @@ use App\Models\MasterArsitektur\Item;
 use App\Models\UnitKerja;
 use App\Services\MasterArsitektur\Dasbor;
 use App\Services\MasterArsitektur\Importer;
+use App\Services\MasterArsitektur\IsianItem;
 use App\Services\MasterArsitektur\Skema;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -197,30 +198,11 @@ class MasterArsitekturController extends Controller
     private function simpan(Request $request, Item $item): void
     {
         $kolom = Skema::kolom($item->jenis);
-        $batas = ['kode' => 150, 'nama' => 1000, 'status' => 100, 'ref_1' => 255, 'ref_2' => 255, 'ref_3' => 255, 'tahun' => 20];
-
-        $rules = [];
-        $nama = [];
-        foreach ($kolom as $kunci => $definisi) {
-            if ($kunci === 'unit_kerja') {
-                $rules['unit_kerja_id'] = ['nullable', 'integer', 'exists:unit_kerjas,id'];
-                $nama['unit_kerja_id'] = $definisi['label'];
-            } elseif (isset($batas[$kunci])) {
-                $rules[$kunci] = [$kunci === 'nama' ? 'required' : 'nullable', 'string', 'max:' . $batas[$kunci]];
-                $nama[$kunci] = $definisi['label'];
-            } else {
-                $rules["atribut.$kunci"] = ['nullable', 'string', 'max:20000'];
-                $nama["atribut.$kunci"] = $definisi['label'];
-            }
-        }
+        [$rules, $nama] = IsianItem::aturan($item->jenis);
 
         $data = $request->validate($rules, [], $nama);
 
-        foreach (array_keys($batas) as $kunci) {
-            if (isset($kolom[$kunci])) {
-                $item->setAttribute($kunci, $data[$kunci] ?? null);
-            }
-        }
+        IsianItem::isi($item, IsianItem::datar($item->jenis, $data));
 
         if (isset($kolom['unit_kerja'])) {
             $unitKerjaId = isset($data['unit_kerja_id']) ? (int) $data['unit_kerja_id'] : null;
@@ -231,9 +213,6 @@ class MasterArsitekturController extends Controller
                 $item->unit_kerja_teks = $unitKerjaId ? UnitKerja::find($unitKerjaId)?->nama : null;
             }
         }
-
-        $atribut = array_filter($data['atribut'] ?? [], fn ($v) => $v !== null && $v !== '');
-        $item->atribut = $atribut ?: null;
 
         $item->save();
     }

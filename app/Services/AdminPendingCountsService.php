@@ -35,6 +35,7 @@ class AdminPendingCountsService
         'shortlink'                 => 'shortlink_requests',
         'dtsen_akun'                => 'dtsen_account_requests',
         'dtsen_permohonan'          => 'dtsen_data_requests',
+        'arsitektur_permohonan'     => 'master_arsitektur_permohonans',
     ];
 
     /**
@@ -67,6 +68,7 @@ class AdminPendingCountsService
         'shortlink'              => 'admin.shortlink.index',
         'dtsen_akun'             => 'Kelola Akun DTSEN',
         'dtsen_permohonan'       => 'Kelola Permohonan DTSEN',
+        'arsitektur_permohonan'  => 'Kelola Permohonan Data Arsitektur',
     ];
 
     /** Counter yang diakses berbasis role, bukan permission (sesuai sidebar L269). */
