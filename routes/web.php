@@ -385,6 +385,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/{id}/reject', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'reject'])->name('reject');
         Route::post('/{id}/request-revision', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'requestRevision'])->name('request-revision');
         Route::post('/{id}/change-status', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'changeStatus'])->name('change-status');
+        Route::post('/{id}/koreksi-status', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'koreksiStatus'])->name('koreksi-status');
         Route::get('/{id}/pdf', [\App\Http\Controllers\Admin\RekomendasiAplikasiController::class, 'generatePDF'])->name('pdf');
     });
 

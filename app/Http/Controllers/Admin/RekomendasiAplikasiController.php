@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\RekomendasiAplikasiForm;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Dompdf\Dompdf;
@@ -14,6 +16,22 @@ use Dompdf\Options;
 
 class RekomendasiAplikasiController extends Controller
 {
+    /**
+     * Koreksi status oleh admin: status asal => status tujuan yang diizinkan.
+     * Usulan yang sudah disetujui tidak termasuk karena sudah punya surat dan
+     * tahapan lanjutan (penandatanganan, kementerian, pengembangan).
+     */
+    public const KOREKSI_STATUS = [
+        'ditolak' => ['perlu_revisi', 'diajukan'],
+        'perlu_revisi' => ['diajukan', 'ditolak'],
+    ];
+
+    public const LABEL_STATUS = [
+        'diajukan' => 'Diajukan (masuk kembali ke antrean verifikasi)',
+        'perlu_revisi' => 'Perlu Revisi (pemohon dapat memperbaiki usulan)',
+        'ditolak' => 'Ditolak',
+    ];
+
     /**
      * Display a listing of all recommendation forms from all users
      */
@@ -165,6 +183,83 @@ class RekomendasiAplikasiController extends Controller
         return redirect()
             ->route('admin.rekomendasi.show', $id)
             ->with('success', "Status berhasil diubah dari '{$oldStatus}' ke '{$newStatus}'.");
+    }
+
+    /**
+     * Koreksi status usulan yang sudah ditolak / diminta revisi,
+     * mis. usulan yang ditolak dikembalikan ke "perlu revisi".
+     */
+    public function koreksiStatus(Request $request, $id)
+    {
+        $form = RekomendasiAplikasiForm::with('verifikasi')->findOrFail($id);
+        $tujuan = self::KOREKSI_STATUS[$form->status] ?? [];
+
+        if (! $tujuan) {
+            return redirect()
+                ->route('admin.rekomendasi.show', $id)
+                ->with('error', 'Status usulan ini tidak dapat dikoreksi.');
+        }
+
+        $request->validate([
+            'new_status' => ['required', Rule::in($tujuan)],
+            'catatan' => 'required|string|max:1000',
+        ], [], ['new_status' => 'status baru', 'catatan' => 'catatan']);
+
+        $lama = $form->status;
+        $baru = $request->new_status;
+        $catatan = $request->catatan;
+
+        DB::transaction(function () use ($form, $lama, $baru, $catatan) {
+            $data = match ($baru) {
+                'perlu_revisi' => [
+                    'fase_saat_ini' => 'usulan',
+                    'revision_notes' => $catatan,
+                    'revision_requested_by' => Auth::id(),
+                    'revision_requested_at' => now(),
+                    'rejected_by' => null,
+                    'rejected_at' => null,
+                ],
+                'ditolak' => [
+                    'fase_saat_ini' => 'usulan',
+                    'admin_feedback' => $catatan,
+                    'rejected_by' => Auth::id(),
+                    'rejected_at' => now(),
+                    'revision_notes' => null,
+                    'revision_requested_by' => null,
+                    'revision_requested_at' => null,
+                ],
+                // Hook model mengembalikan record verifikasi ke "menunggu"
+                'diajukan' => [
+                    'fase_saat_ini' => 'verifikasi',
+                    'admin_feedback' => 'Catatan: ' . $catatan,
+                    'rejected_by' => null,
+                    'rejected_at' => null,
+                    'revision_notes' => null,
+                    'revision_requested_by' => null,
+                    'revision_requested_at' => null,
+                ],
+            };
+
+            $form->update(['status' => $baru] + $data);
+
+            // Halaman pemohon dan halaman verifikasi membaca status & catatan dari record verifikasi
+            if ($baru !== 'diajukan' && $form->verifikasi) {
+                $form->verifikasi->update([
+                    'status' => $baru,
+                    'catatan_verifikasi' => $catatan,
+                    'tanggal_verifikasi' => now(),
+                ]);
+            }
+
+            $form->logActivity(
+                'Koreksi Status',
+                "Status dikoreksi dari '{$lama}' ke '{$baru}' oleh " . Auth::user()->name . '. Catatan: ' . $catatan
+            );
+        });
+
+        return redirect()
+            ->route('admin.rekomendasi.show', $id)
+            ->with('success', "Status berhasil dikoreksi dari '{$lama}' ke '{$baru}'.");
     }
 
     /**

@@ -18,6 +18,22 @@
             </div>
         @endif
 
+        @if (session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $galat)
+                        <li>{{ $galat }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         {{-- Info Pengusul --}}
         <div class="bg-white p-4 rounded shadow mb-6">
             <h2 class="text-lg font-bold mb-3">Informasi Pengusul</h2>
@@ -83,8 +99,25 @@
                             Cetak Surat Rekomendasi
                         </a>
                     </div>
+                @elseif (isset(\App\Http\Controllers\Admin\RekomendasiAplikasiController::KOREKSI_STATUS[$form->status]))
+                    <div class="flex gap-2">
+                        <button onclick="document.getElementById('koreksiModal').classList.remove('hidden')"
+                            class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+                            Koreksi Status
+                        </button>
+                    </div>
                 @endif
             </div>
+
+            @if ($form->status == 'ditolak' && $form->admin_feedback)
+                <div class="mt-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded p-3">
+                    <strong>Alasan penolakan:</strong> {{ $form->admin_feedback }}
+                </div>
+            @elseif ($form->status == 'perlu_revisi' && $form->revision_notes)
+                <div class="mt-3 text-sm text-orange-800 bg-orange-50 border border-orange-200 rounded p-3">
+                    <strong>Catatan revisi:</strong> {{ $form->revision_notes }}
+                </div>
+            @endif
         </div>
 
         {{-- Detail Aplikasi --}}
@@ -207,6 +240,38 @@
             </form>
         </div>
     </div>
+
+    {{-- Koreksi Status Modal --}}
+    @if (isset(\App\Http\Controllers\Admin\RekomendasiAplikasiController::KOREKSI_STATUS[$form->status]))
+        <div id="koreksiModal" class="{{ $errors->has('catatan') || $errors->has('new_status') ? '' : 'hidden' }} fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg w-full max-w-md">
+                <h3 class="text-lg font-bold mb-1">Koreksi Status</h3>
+                <p class="text-sm text-gray-600 mb-4">Status saat ini: <strong>{{ strtoupper($form->status) }}</strong></p>
+                <form action="{{ route('admin.rekomendasi.koreksi-status', $form->id) }}" method="POST">
+                    @csrf
+                    <div class="mb-4">
+                        <label class="block font-semibold mb-1">Ubah menjadi <span class="text-red-500">*</span></label>
+                        <select name="new_status" class="w-full border rounded p-2" required>
+                            @foreach (\App\Http\Controllers\Admin\RekomendasiAplikasiController::KOREKSI_STATUS[$form->status] as $tujuan)
+                                <option value="{{ $tujuan }}" @selected(old('new_status') === $tujuan)>{{ \App\Http\Controllers\Admin\RekomendasiAplikasiController::LABEL_STATUS[$tujuan] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block font-semibold mb-1">Catatan <span class="text-red-500">*</span></label>
+                        <textarea name="catatan" rows="3" class="w-full border rounded p-2" required maxlength="1000"
+                            placeholder="Alasan koreksi / hal yang perlu diperbaiki pemohon">{{ old('catatan') }}</textarea>
+                        <p class="text-xs text-gray-500 mt-1">Catatan ini ditampilkan kepada pemohon dan dicatat pada riwayat usulan.</p>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" onclick="document.getElementById('koreksiModal').classList.add('hidden')"
+                            class="bg-gray-500 text-white px-4 py-2 rounded">Batal</button>
+                        <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 
     {{-- Reject Modal --}}
     <div id="rejectModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
