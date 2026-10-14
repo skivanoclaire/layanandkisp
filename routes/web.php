@@ -412,7 +412,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Audit Logs
     Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('/audit-logs/{auditLog}', [\App\Http\Controllers\Admin\AuditLogController::class, 'show'])->name('audit-logs.show');
-    });
 
     // Master Data Arsitektur (dasbor per kategori, CRUD, impor/ekspor Excel)
     Route::prefix('master-arsitektur')->name('master-arsitektur.')
@@ -433,6 +432,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
                 Route::post('/{kategori}', 'store')->name('store');
             });
         });
+    });
 
     // Master Data Email Accounts
     Route::middleware('permission:Kelola Master Data Email')->group(function () {
@@ -1090,6 +1090,109 @@ Route::middleware(['auth', 'permission:Kelola Kuesioner Portal'])
         Route::get('/periode/{periode}/export', 'export')->name('export');
         Route::get('/respons/{response}', 'show')->name('show');
         Route::post('/respons/{response}/eksklusi', 'eksklusi')->name('eksklusi');
+    });
+
+// ===== TATA KELOLA KEAMANAN INFORMASI (COBIT 2019 & ISO/IEC 27001:2022) =====
+
+Route::middleware(['auth', 'permission:Kelola Tata Kelola Keamanan'])
+    ->prefix('admin/tata-kelola-keamanan')
+    ->name('admin.tata-kelola-keamanan.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\TataKelolaKeamanan\EvaluasiController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\TataKelolaKeamanan\EvaluasiController::class, 'store'])->name('store');
+        Route::get('/panduan', [\App\Http\Controllers\Admin\TataKelolaKeamanan\EvaluasiController::class, 'panduan'])->name('panduan');
+
+        Route::prefix('{evaluasi}')->group(function () {
+            Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\EvaluasiController::class)->group(function () {
+                Route::get('/', 'show')->name('show');
+                Route::put('/', 'update')->name('update');
+                Route::delete('/', 'destroy')->name('destroy');
+                Route::get('/laporan', 'laporan')->name('laporan');
+                Route::get('/export', 'export')->name('export');
+            });
+
+            Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\RespondenController::class)->group(function () {
+                Route::get('/responden', 'index')->name('responden');
+                Route::post('/responden', 'store')->name('responden.store');
+                Route::put('/responden/{responden}', 'update')->name('responden.update');
+                Route::delete('/responden/{responden}', 'destroy')->name('responden.destroy');
+            });
+
+            Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\DesignFactorController::class)->group(function () {
+                Route::get('/design-factors', 'index')->name('design-factors');
+                Route::post('/design-factors', 'store')->name('design-factors.store');
+                Route::delete('/design-factors/responden', 'destroyResponden')->name('design-factors.destroy-responden');
+            });
+
+            Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\ObjektifController::class)->group(function () {
+                Route::get('/objektif', 'index')->name('objektif');
+                Route::put('/objektif', 'update')->name('objektif.update');
+                Route::post('/objektif/terapkan-saran', 'terapkanSaran')->name('objektif.saran');
+            });
+
+            Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\PemetaanController::class)->group(function () {
+                Route::get('/pemetaan', 'index')->name('pemetaan');
+                Route::post('/pemetaan', 'store')->name('pemetaan.store');
+                Route::put('/pemetaan/{pemetaan}', 'update')->name('pemetaan.update');
+                Route::delete('/pemetaan/{pemetaan}', 'destroy')->name('pemetaan.destroy');
+                Route::post('/praktik', 'praktikStore')->name('praktik.store');
+                Route::delete('/praktik/{praktik}', 'praktikDestroy')->name('praktik.destroy');
+            });
+
+            Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\ValidasiController::class)->group(function () {
+                Route::get('/validasi', 'index')->name('validasi');
+                Route::post('/pakar', 'pakarStore')->name('pakar.store');
+                Route::put('/pakar/{pakar}', 'pakarUpdate')->name('pakar.update');
+                Route::delete('/pakar/{pakar}', 'pakarDestroy')->name('pakar.destroy');
+                Route::post('/putaran', 'bukaPutaran')->name('putaran.buka');
+                Route::post('/putaran/{putaran}/tutup', 'tutupPutaran')->name('putaran.tutup');
+            });
+
+            Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\AsesmenController::class)->group(function () {
+                Route::get('/asesmen', 'index')->name('asesmen');
+                Route::post('/aktivitas', 'aktivitasStore')->name('aktivitas.store');
+                Route::post('/aktivitas/impor', 'aktivitasImpor')->name('aktivitas.impor');
+                Route::post('/aktivitas/{aktivitas}/nilai', 'aktivitasNilai')->name('aktivitas.nilai');
+                Route::delete('/aktivitas/{aktivitas}', 'aktivitasDestroy')->name('aktivitas.destroy');
+                Route::get('/aktivitas/{aktivitas}/lampiran', 'lampiran')->name('aktivitas.lampiran');
+                Route::get('/lampiran-informan/{lampiran}', 'lampiranJawaban')->name('lampiran-informan');
+                Route::get('/kontrol', 'kontrol')->name('kontrol');
+                Route::post('/kontrol', 'kontrolSimpan')->name('kontrol.simpan');
+            });
+
+            Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\RekomendasiController::class)->group(function () {
+                Route::get('/rekomendasi', 'index')->name('rekomendasi');
+                Route::post('/rekomendasi', 'store')->name('rekomendasi.store');
+                Route::put('/rekomendasi/{rekomendasi}', 'update')->name('rekomendasi.update');
+                Route::delete('/rekomendasi/{rekomendasi}', 'destroy')->name('rekomendasi.destroy');
+            });
+        });
+    });
+
+// Kuesioner responden (akun yang didaftarkan pengelola pada evaluasi)
+Route::middleware(['auth', 'verified.user', 'permission:Isi Kuesioner Tata Kelola Keamanan'])
+    ->prefix('digital/tata-kelola-keamanan')
+    ->name('tata-kelola-keamanan.responden.')
+    ->controller(\App\Http\Controllers\User\TataKelolaKeamananRespondenController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/{evaluasi}/design-factors', 'designFactors')->name('design-factors');
+        Route::post('/{evaluasi}/design-factors', 'simpanDesignFactors')->name('design-factors.simpan');
+        Route::get('/{evaluasi}/aktivitas', 'aktivitas')->name('aktivitas');
+        Route::post('/{evaluasi}/aktivitas', 'simpanAktivitas')->name('aktivitas.simpan');
+        Route::get('/{evaluasi}/lampiran/{lampiran}', 'unduhLampiran')->name('lampiran.unduh');
+        Route::delete('/{evaluasi}/lampiran/{lampiran}', 'hapusLampiran')->name('lampiran.hapus');
+    });
+
+// Penilaian pakar (akun yang didaftarkan pengelola sebagai pakar pada evaluasi)
+Route::middleware(['auth', 'verified.user', 'permission:Validasi Pakar Tata Kelola Keamanan'])
+    ->prefix('digital/tata-kelola-keamanan/pakar')
+    ->name('tata-kelola-keamanan.pakar.')
+    ->controller(\App\Http\Controllers\User\TataKelolaKeamananPakarController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/{evaluasi}', 'show')->name('show');
+        Route::post('/{evaluasi}', 'store')->name('simpan');
     });
 
 // ===== INTERNET SERVICES =====

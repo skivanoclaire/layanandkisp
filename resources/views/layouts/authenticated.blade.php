@@ -80,7 +80,7 @@
                     'admin.subdomain.index',
                     'admin.rekomendasi.verifikasi.index', 'admin.rekomendasi.monitoring.index', 'admin.fase-pengembangan.view',
                     'admin.vidcon.index',
-                    'Kelola Survei Kepuasan', 'Kelola Kuesioner Portal',
+                    'Kelola Survei Kepuasan', 'Kelola Kuesioner Portal', 'Kelola Tata Kelola Keamanan',
                     'Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah',
                     'Kelola Pendaftaran VPN', 'Kelola Reset Akun VPN', 'Kelola Akses JIP PDNS',
                     'Kelola Kunjungan/Colocation', 'Kelola VPS/VM', 'Kelola Backup', 'Kelola Cloud Storage',
@@ -101,9 +101,10 @@
                     $atAdminPse = request()->routeIs('admin.pse-update.*');
                     $atAdminSurveiKepuasan = request()->routeIs('admin.survei-kepuasan.*');
                     $atAdminKuesionerPortal = request()->routeIs('admin.kuesioner-portal.*');
+                    $atAdminTataKelolaKeamanan = request()->routeIs('admin.tata-kelola-keamanan.*');
                     $atAdminSplpPermohonan = request()->routeIs('admin.splp.provider.*', 'admin.splp.consumer.*', 'admin.splp.sandbox.*', 'admin.splp.change.*', 'admin.splp.deactivation.*');
                     $atAdminDtsen = request()->routeIs('admin.dtsen.akun.*', 'admin.dtsen.permohonan.*', 'admin.dtsen.substansi.*', 'admin.dtsen.perpanjangan.*', 'admin.dtsen.laporan.*', 'admin.dtsen.pengaduan.*');
-                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan || $atAdminKuesionerPortal || $atAdminSplpPermohonan || $atAdminDtsen;
+                    $openPermohonan = $atPermohonan || $atEmail || $atSubdomain || $atRekomendasiV2 || $atAdminVidcon || $atAdminInternet || $atAdminVpn || $atAdminDatacenter || $atAdminTte || $atAdminPse || $atAdminSurveiKepuasan || $atAdminKuesionerPortal || $atAdminTataKelolaKeamanan || $atAdminSplpPermohonan || $atAdminDtsen;
                    
                 @endphp
                 @php
@@ -341,6 +342,15 @@
                                 class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atAdminKuesionerPortal ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Kuesioner Kualitas Portal
+                            </a>
+                        @endif
+
+                        {{-- Tata Kelola Keamanan Informasi: COBIT 2019 & ISO/IEC 27001:2022 (Admin) --}}
+                        @if (auth()->user()?->hasPermission('Kelola Tata Kelola Keamanan'))
+                            <a href="{{ route('admin.tata-kelola-keamanan.index') }}"
+                                class="block py-2 px-3 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ $atAdminTataKelolaKeamanan ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Tata Kelola Keamanan Informasi
                             </a>
                         @endif
 
@@ -690,7 +700,7 @@
                         'Akses Update Data PSE',
                         'Akses Konsultasi SPBE AI',
                         'Akses Survei Kepuasan',
-                        'Akses Kuesioner Portal',
+                        'Akses Kuesioner Portal', 'Isi Kuesioner Tata Kelola Keamanan', 'Validasi Pakar Tata Kelola Keamanan',
                         'Akses Bantuan TTE', 'Akses Registrasi TTE', 'Akses Reset Passphrase TTE', 'Akses Pembaruan Sertifikat TTE',
                         'Akses Video Conference',
                         'Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah',
@@ -715,10 +725,11 @@
                     $atPseUser = request()->routeIs('user.pse-update.*');
                     $atSurveiKepuasan = request()->routeIs('survei-kepuasan.*');
                     $atKuesionerPortal = request()->routeIs('kuesioner-portal.*');
+                    $atTataKelolaKeamananResponden = request()->routeIs('tata-kelola-keamanan.responden.*', 'tata-kelola-keamanan.pakar.*');
                     $atSplpUser = request()->routeIs('user.splp.*');
                     $atDtsenUser = request()->routeIs('user.dtsen.*');
                     $openUserPermohonan =
-                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan || $atKuesionerPortal || $atSplpUser || $atDtsenUser;
+                        $atEmailDigital || $atEmailPasswordReset || $atSubdomainDigital || $atRekomendasiUser || $atVidconUser || $atInternetUser || $atVpnUser || $atDatacenterUser || $atKonsultasiSpbeAi || $atTteUser || $atPseUser || $atSurveiKepuasan || $atKuesionerPortal || $atTataKelolaKeamananResponden || $atSplpUser || $atDtsenUser;
                     
     
                 @endphp
@@ -883,6 +894,24 @@
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ $atKuesionerPortal ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Kuesioner Kualitas Portal
+                            </a>
+                        @endif
+
+                        {{-- Tata Kelola Keamanan Informasi: hanya untuk akun yang didaftarkan sebagai responden/pakar --}}
+                        @if (auth()->user()?->hasPermission('Isi Kuesioner Tata Kelola Keamanan')
+                            && \App\Models\TataKelolaKeamanan\Responden::where('user_id', auth()->id())->exists())
+                            <a href="{{ route('tata-kelola-keamanan.responden.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ request()->routeIs('tata-kelola-keamanan.responden.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Kuesioner Tata Kelola Keamanan
+                            </a>
+                        @endif
+                        @if (auth()->user()?->hasPermission('Validasi Pakar Tata Kelola Keamanan')
+                            && \App\Models\TataKelolaKeamanan\Pakar::where('user_id', auth()->id())->where('aktif', true)->exists())
+                            <a href="{{ route('tata-kelola-keamanan.pakar.index') }}"
+                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
+                              {{ request()->routeIs('tata-kelola-keamanan.pakar.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
+                                Validasi Pakar Tata Kelola Keamanan
                             </a>
                         @endif
 
