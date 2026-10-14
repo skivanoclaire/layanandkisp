@@ -413,6 +413,26 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/audit-logs/{auditLog}', [\App\Http\Controllers\Admin\AuditLogController::class, 'show'])->name('audit-logs.show');
     });
 
+    // Master Data Arsitektur (dasbor per kategori, CRUD, impor/ekspor Excel)
+    Route::prefix('master-arsitektur')->name('master-arsitektur.')
+        ->controller(\App\Http\Controllers\Admin\MasterArsitekturController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/impor', 'formImpor')->name('impor.form');
+            Route::post('/impor', 'impor')->name('impor');
+            Route::get('/data/{item}', 'show')->name('show');
+            Route::get('/data/{item}/edit', 'edit')->name('edit');
+            Route::put('/data/{item}', 'update')->name('update');
+            Route::delete('/data/{item}', 'destroy')->name('destroy');
+
+            Route::whereIn('kategori', array_keys(config('master_arsitektur.kategori')))->group(function () {
+                Route::get('/{kategori}', 'kategori')->name('kategori');
+                Route::get('/{kategori}/ekspor', 'ekspor')->name('ekspor');
+                Route::get('/{kategori}/tambah', 'create')->name('create');
+                Route::post('/{kategori}', 'store')->name('store');
+            });
+        });
+
     // Master Data Email Accounts
     Route::middleware('permission:Kelola Master Data Email')->group(function () {
     Route::get('/email-accounts', [\App\Http\Controllers\Admin\EmailAccountController::class, 'index'])->name('email-accounts.index');
