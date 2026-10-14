@@ -110,6 +110,10 @@ class MasterArsitekturTest extends TestCase
             $this->actingAs($admin)->get(route('admin.master-arsitektur.kategori', $kunci))
                 ->assertOk()
                 ->assertSee($kategori['panel']['katalog']);
+
+            // Kategori "data" dulu bertabrakan dengan route /data/{item} sehingga ekspor & tambah berujung 404
+            $this->get(route('admin.master-arsitektur.ekspor', $kunci))->assertOk();
+            $this->get(route('admin.master-arsitektur.create', $kunci))->assertOk();
         }
 
         $this->actingAs($admin)->get(route('admin.master-arsitektur.kategori', 'infrastruktur'))->assertSee('xenkaltara');

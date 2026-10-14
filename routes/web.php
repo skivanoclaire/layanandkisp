@@ -420,10 +420,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::get('/', 'index')->name('index');
             Route::get('/impor', 'formImpor')->name('impor.form');
             Route::post('/impor', 'impor')->name('impor');
-            Route::get('/data/{item}', 'show')->name('show');
-            Route::get('/data/{item}/edit', 'edit')->name('edit');
-            Route::put('/data/{item}', 'update')->name('update');
-            Route::delete('/data/{item}', 'destroy')->name('destroy');
+            // whereNumber: tanpa ini /data/ekspor dan /data/tambah (kategori "data") tertangkap sebagai {item}
+            Route::get('/data/{item}', 'show')->name('show')->whereNumber('item');
+            Route::get('/data/{item}/edit', 'edit')->name('edit')->whereNumber('item');
+            Route::put('/data/{item}', 'update')->name('update')->whereNumber('item');
+            Route::delete('/data/{item}', 'destroy')->name('destroy')->whereNumber('item');
 
             Route::whereIn('kategori', array_keys(config('master_arsitektur.kategori')))->group(function () {
                 Route::get('/{kategori}', 'kategori')->name('kategori');
