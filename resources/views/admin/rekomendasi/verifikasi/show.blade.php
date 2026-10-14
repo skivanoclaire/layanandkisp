@@ -36,6 +36,14 @@
                             Mulai Verifikasi
                         </button>
                     </form>
+                @elseif($proposal->status === 'ditolak')
+                    <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.start', $proposal->id) }}" class="inline"
+                          onsubmit="return confirm('Usulan ini sudah ditolak. Mulai verifikasi ulang?');">
+                        @csrf
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                            Verifikasi Ulang
+                        </button>
+                    </form>
                 @endif
             </div>
         </div>

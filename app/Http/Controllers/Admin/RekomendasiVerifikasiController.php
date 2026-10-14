@@ -76,7 +76,10 @@ class RekomendasiVerifikasiController extends Controller
         try {
             $proposal = RekomendasiAplikasiForm::findOrFail($id);
 
-            if ($proposal->status !== 'diajukan') {
+            // Usulan yang sudah ditolak boleh diverifikasi ulang
+            $verifikasiUlang = $proposal->status === 'ditolak';
+
+            if ($proposal->status !== 'diajukan' && !$verifikasiUlang) {
                 return redirect()
                     ->back()
                     ->with('error', 'Usulan ini tidak dapat diverifikasi pada status saat ini.');
@@ -97,6 +100,27 @@ class RekomendasiVerifikasiController extends Controller
                     'status' => 'sedang_diverifikasi',
                     'tanggal_mulai_verifikasi' => now(),
                 ]);
+            }
+
+            if ($verifikasiUlang) {
+                // Catatan penolakan & checklist lama dibiarkan sebagai acuan verifikator
+                $verifikasi->update(['tanggal_verifikasi' => null]);
+
+                $proposal->update([
+                    'status' => 'diproses',
+                    'fase_saat_ini' => 'verifikasi',
+                    'rejected_by' => null,
+                    'rejected_at' => null,
+                ]);
+
+                $proposal->logActivity(
+                    'Verifikasi Ulang Dimulai',
+                    'Usulan yang ditolak diverifikasi ulang oleh ' . auth()->user()->name
+                );
+
+                return redirect()
+                    ->route('admin.rekomendasi.verifikasi.verify', $proposal->id)
+                    ->with('success', 'Verifikasi ulang dimulai. Silakan periksa kembali checklist verifikasi.');
             }
 
             $proposal->update(['status' => 'diproses']);

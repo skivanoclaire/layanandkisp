@@ -224,6 +224,14 @@
                                                     class="text-yellow-600 hover:text-yellow-800 text-sm font-medium">
                                                     Lanjutkan
                                                 </a>
+                                            @elseif($proposal->status === 'ditolak')
+                                                <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.start', $proposal->id) }}" class="inline"
+                                                      onsubmit="return confirm('Usulan ini sudah ditolak. Mulai verifikasi ulang?');">
+                                                    @csrf
+                                                    <button type="submit" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                                        Verifikasi Ulang
+                                                    </button>
+                                                </form>
                                             @endif
                                             @if($proposal->status === 'perlu_revisi' && $proposal->user?->phone)
                                                 <form method="POST" action="{{ route('admin.rekomendasi.verifikasi.notify-revisi', $proposal->id) }}"

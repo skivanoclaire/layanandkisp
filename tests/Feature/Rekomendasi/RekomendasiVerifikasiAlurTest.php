@@ -73,4 +73,49 @@ class RekomendasiVerifikasiAlurTest extends TestCase
             ->assertOk()
             ->assertSee('href="' . route('admin.rekomendasi.verifikasi.verify', $this->usulan->id) . '"', false);
     }
+
+    public function test_usulan_ditolak_dapat_diverifikasi_ulang(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.rekomendasi.verifikasi.start', $this->usulan->id));
+        $this->post(route('admin.rekomendasi.verifikasi.reject', $this->usulan->id), ['catatan_verifikasi' => 'Tidak sesuai'])
+            ->assertSessionHas('success');
+        $this->usulan->update(['rejected_by' => $this->admin->id, 'rejected_at' => now()]);
+
+        $this->assertSame('ditolak', $this->usulan->fresh()->status);
+
+        $this->get(route('admin.rekomendasi.verifikasi.show', $this->usulan->id))
+            ->assertOk()
+            ->assertSee('Verifikasi Ulang')
+            ->assertSee('action="' . route('admin.rekomendasi.verifikasi.start', $this->usulan->id) . '"', false);
+
+        $this->get(route('admin.rekomendasi.verifikasi.index', ['status' => 'ditolak']))
+            ->assertOk()
+            ->assertSee('Verifikasi Ulang');
+
+        $this->post(route('admin.rekomendasi.verifikasi.start', $this->usulan->id))
+            ->assertRedirect(route('admin.rekomendasi.verifikasi.verify', $this->usulan->id));
+
+        $usulan = $this->usulan->fresh();
+        $this->assertSame('diproses', $usulan->status);
+        $this->assertSame('verifikasi', $usulan->fase_saat_ini);
+        $this->assertNull($usulan->rejected_at);
+        $this->assertSame('sedang_diverifikasi', $usulan->verifikasi->status);
+        $this->assertSame('Tidak sesuai', $usulan->verifikasi->catatan_verifikasi);
+        $this->assertNull($usulan->verifikasi->tanggal_verifikasi);
+
+        $this->get(route('admin.rekomendasi.verifikasi.verify', $usulan->id))
+            ->assertOk()
+            ->assertSee('Checklist Verifikasi');
+    }
+
+    public function test_usulan_disetujui_tidak_dapat_diverifikasi_ulang(): void
+    {
+        $this->usulan->update(['status' => 'disetujui']);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.rekomendasi.verifikasi.start', $this->usulan->id))
+            ->assertSessionHas('error');
+
+        $this->assertSame('disetujui', $this->usulan->fresh()->status);
+    }
 }
