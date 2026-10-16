@@ -421,6 +421,8 @@ class WhmApiService
             $url = "{$this->baseUrl}/cpanel";
             $errors = [];
 
+            // suspend_login/suspend_incoming hanya ada di UAPI (apiversion 3), bukan API 2.
+            // UAPI menerima alamat email lengkap pada parameter "email".
             foreach ([$loginFunc, $incomingFunc] as $func) {
                 $response = Http::withHeaders([
                     'Authorization' => "WHM {$this->username}:{$this->token}",
@@ -431,9 +433,8 @@ class WhmApiService
                     'cpanel_jsonapi_user' => $cpanelUser,
                     'cpanel_jsonapi_module' => 'Email',
                     'cpanel_jsonapi_func' => $func,
-                    'cpanel_jsonapi_apiversion' => '2',
-                    'email' => $username,
-                    'domain' => $domain,
+                    'cpanel_jsonapi_apiversion' => '3',
+                    'email' => $email,
                 ]);
 
                 if (!$response->successful()) {
@@ -442,16 +443,20 @@ class WhmApiService
                 }
 
                 $data = $response->json();
-                $result = $data['cpanelresult'] ?? [];
 
-                if (isset($result['error'])) {
-                    $errors[] = "{$func}: " . $result['error'];
+                // Format respons UAPI via WHM: {"result": {"status": 1|0, "errors": [...]}}
+                $result = $data['result'] ?? ($data['cpanelresult']['result'] ?? null);
+
+                if (isset($data['cpanelresult']['error'])) {
+                    $errors[] = "{$func}: " . $data['cpanelresult']['error'];
                     continue;
                 }
 
-                $firstData = $result['data'][0] ?? null;
-                if ($firstData && isset($firstData['result']) && $firstData['result'] != 1) {
-                    $errors[] = "{$func}: " . ($firstData['reason'] ?? 'Unknown error');
+                if (!is_array($result) || ($result['status'] ?? 0) != 1) {
+                    $reason = is_array($result) && !empty($result['errors'])
+                        ? implode(', ', (array) $result['errors'])
+                        : 'Unexpected response: ' . substr(json_encode($data), 0, 200);
+                    $errors[] = "{$func}: {$reason}";
                 }
             }
 
