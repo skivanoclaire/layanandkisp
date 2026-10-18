@@ -20,6 +20,22 @@
                 <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Akun Pengguna Terverifikasi</p>
                 <p class="text-3xl font-bold text-gray-800">{{ number_format($userStats['verified']) }}</p>
                 <p class="text-xs text-gray-500 mt-1">dari {{ number_format($userStats['total']) }} akun terdaftar</p>
+                <div class="mt-3 pt-3 border-t border-gray-100 space-y-1 text-sm">
+                    <div class="flex justify-between gap-2">
+                        <span class="text-gray-600">ASN ber-NIP, unit kerja internal Kaltara</span>
+                        <span class="font-semibold text-gray-800">{{ number_format($userStats['verified_internal_nip']) }}</span>
+                    </div>
+                    <div class="flex justify-between gap-2">
+                        <span class="text-gray-600">Instansi Pusat/Lainnya</span>
+                        <span class="font-semibold text-gray-800">{{ number_format($userStats['verified_pusat']) }}</span>
+                    </div>
+                    @if($userStats['verified_other'] > 0)
+                        <div class="flex justify-between gap-2 text-xs text-gray-400">
+                            <span>Lainnya (tanpa NIP / tanpa unit kerja)</span>
+                            <span>{{ number_format($userStats['verified_other']) }}</span>
+                        </div>
+                    @endif
+                </div>
             </div>
             <div class="bg-white border-l-4 border-yellow-500 p-4 rounded-lg shadow">
                 <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Pengguna Menunggu Verifikasi</p>

@@ -123,7 +123,17 @@ class AdminController extends Controller
             'unverified' => User::where(function ($q) {
                                 $q->where('is_verified', false)->orWhereNull('is_verified');
                             })->count(),
+            // Rincian akun terverifikasi berdasarkan tipe unit kerja (Master Data Instansi)
+            'verified_internal_nip' => User::where('is_verified', true)
+                                ->whereNotNull('nip')->where('nip', '!=', '')
+                                ->whereHas('unitKerja', fn ($q) => $q->forLayananDigital())
+                                ->count(),
+            'verified_pusat'  => User::where('is_verified', true)
+                                ->whereHas('unitKerja', fn ($q) => $q->byTipe(\App\Models\UnitKerja::TIPE_PUSAT))
+                                ->count(),
         ];
+        // Sisa: terverifikasi tapi tanpa unit kerja, atau unit kerja internal tanpa NIP
+        $userStats['verified_other'] = max(0, $userStats['verified'] - $userStats['verified_internal_nip'] - $userStats['verified_pusat']);
 
         // Daftar jenis layanan
         $serviceTypes = [
