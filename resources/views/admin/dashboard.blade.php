@@ -9,6 +9,29 @@
     <div class="max-w-full overflow-hidden">
         <h1 class="text-3xl font-bold mb-8">Dashboard Admin - Permohonan Layanan</h1>
 
+        <!-- Ringkasan Permohonan & Akun Pengguna -->
+        <div class="max-w-full grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white border-l-4 border-green-500 p-4 rounded-lg shadow">
+                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Jumlah Permohonan</p>
+                <p class="text-3xl font-bold text-gray-800">{{ number_format($total) }}</p>
+                <p class="text-xs text-gray-500 mt-1">{{ number_format($waiting) }} menunggu tindak lanjut</p>
+            </div>
+            <div class="bg-white border-l-4 border-blue-500 p-4 rounded-lg shadow">
+                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Akun Pengguna Terverifikasi</p>
+                <p class="text-3xl font-bold text-gray-800">{{ number_format($userStats['verified']) }}</p>
+                <p class="text-xs text-gray-500 mt-1">dari {{ number_format($userStats['total']) }} akun terdaftar</p>
+            </div>
+            <div class="bg-white border-l-4 border-yellow-500 p-4 rounded-lg shadow">
+                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Pengguna Menunggu Verifikasi</p>
+                <p class="text-3xl font-bold text-gray-800">{{ number_format($userStats['unverified']) }}</p>
+                @if(auth()->user()->hasRole('Admin'))
+                    <a href="{{ route('admin.users') }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium mt-1 inline-block">Kelola pengguna &rarr;</a>
+                @else
+                    <p class="text-xs text-gray-500 mt-1">Belum diverifikasi admin</p>
+                @endif
+            </div>
+        </div>
+
         <!-- Kartu Ringkasan -->
         <div class="max-w-full grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div class="bg-green-100 p-4 rounded-lg text-center shadow">

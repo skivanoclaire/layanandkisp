@@ -116,6 +116,15 @@ class AdminController extends Controller
                 ];
             });
 
+        // Statistik akun pengguna (sama dengan definisi di halaman Manajemen Pengguna)
+        $userStats = [
+            'total'      => User::count(),
+            'verified'   => User::where('is_verified', true)->count(),
+            'unverified' => User::where(function ($q) {
+                                $q->where('is_verified', false)->orWhereNull('is_verified');
+                            })->count(),
+        ];
+
         // Daftar jenis layanan
         $serviceTypes = [
             'Subdomain', 'Email', 'Hosting', 'Cloud Storage', 'SPLP',
@@ -133,7 +142,8 @@ class AdminController extends Controller
             'summary',
             'serviceStats',
             'serviceTypes',
-            'digitalFormStats'
+            'digitalFormStats',
+            'userStats'
         ));
     }
 
