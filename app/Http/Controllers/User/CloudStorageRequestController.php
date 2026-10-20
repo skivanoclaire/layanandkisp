@@ -31,7 +31,7 @@ class CloudStorageRequestController extends Controller
             'nama' => 'required|string|max:255',
             'unit_kerja_id' => 'required|exists:unit_kerjas,id',
             'kapasitas_gb' => 'required|integer|min:1',
-            'tipe' => 'required|in:Internal Cloud (Synology),GoogleDrive',
+            'tipe' => 'required|in:Internal Cloud (Synology)',
             'keterangan' => 'nullable|string',
         ]);
 
