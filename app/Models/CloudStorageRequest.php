@@ -16,10 +16,12 @@ class CloudStorageRequest extends Model
         'nip',
         'unit_kerja_id',
         'kapasitas_gb',
+        'kapasitas_disetujui_gb',
         'tipe',
         'keterangan',
         'akses_url',
         'username',
+        'password',
         'keterangan_admin',
         'status',
         'processed_by',
@@ -29,7 +31,12 @@ class CloudStorageRequest extends Model
         'rejected_at',
     ];
 
+    protected $hidden = [
+        'password',
+    ];
+
     protected $casts = [
+        'password' => 'encrypted',
         'processing_at' => 'datetime',
         'completed_at' => 'datetime',
         'rejected_at' => 'datetime',
@@ -75,5 +82,37 @@ class CloudStorageRequest extends Model
     public function processedBy()
     {
         return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function kapasitasRevisis()
+    {
+        return $this->hasMany(CloudStorageKapasitasRevisi::class)->latest('id');
+    }
+
+    /**
+     * Set kapasitas yang disetujui; jika berbeda dari nilai sebelumnya
+     * (atau dari yang diminta, untuk penetapan pertama) dicatat sebagai revisi.
+     */
+    public function setKapasitasDisetujui(int $kapasitasBaru, ?string $alasan, ?int $adminId): void
+    {
+        $kapasitasLama = $this->kapasitas_disetujui_gb ?? $this->kapasitas_gb;
+
+        $this->kapasitas_disetujui_gb = $kapasitasBaru;
+        $this->save();
+
+        if ($kapasitasBaru !== (int) $kapasitasLama) {
+            $this->kapasitasRevisis()->create([
+                'kapasitas_lama_gb' => $kapasitasLama,
+                'kapasitas_baru_gb' => $kapasitasBaru,
+                'alasan' => $alasan,
+                'revised_by' => $adminId,
+            ]);
+        }
+    }
+
+    /** Kapasitas yang berlaku: yang disetujui admin, atau yang diminta jika belum ditetapkan. */
+    public function getKapasitasBerlakuGbAttribute(): int
+    {
+        return $this->kapasitas_disetujui_gb ?? $this->kapasitas_gb;
     }
 }

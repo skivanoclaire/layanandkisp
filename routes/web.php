@@ -1463,6 +1463,8 @@ Route::middleware(['auth', 'permission:Kelola Cloud Storage'])
         Route::post('/{cloudStorageRequest}/process', [\App\Http\Controllers\Admin\CloudStorageRequestController::class, 'process'])->name('process');
         Route::post('/{cloudStorageRequest}/complete', [\App\Http\Controllers\Admin\CloudStorageRequestController::class, 'complete'])->name('complete');
         Route::post('/{cloudStorageRequest}/reject', [\App\Http\Controllers\Admin\CloudStorageRequestController::class, 'reject'])->name('reject');
+        Route::post('/{cloudStorageRequest}/revise-kapasitas', [\App\Http\Controllers\Admin\CloudStorageRequestController::class, 'reviseKapasitas'])->name('revise-kapasitas');
+        Route::post('/{cloudStorageRequest}/update-credentials', [\App\Http\Controllers\Admin\CloudStorageRequestController::class, 'updateCredentials'])->name('update-credentials');
         Route::post('/{cloudStorageRequest}/update-notes', [\App\Http\Controllers\Admin\CloudStorageRequestController::class, 'updateNotes'])->name('update-notes');
     });
 

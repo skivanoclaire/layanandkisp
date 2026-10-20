@@ -65,6 +65,9 @@
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900">
                         <span class="font-semibold">{{ $item->kapasitas_gb }} GB</span><br>
+                        @if($item->kapasitas_disetujui_gb && $item->kapasitas_disetujui_gb != $item->kapasitas_gb)
+                            <span class="text-xs font-semibold text-orange-700">Disetujui {{ $item->kapasitas_disetujui_gb }} GB</span><br>
+                        @endif
                         <span class="text-xs text-gray-500">{{ $item->tipe }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">

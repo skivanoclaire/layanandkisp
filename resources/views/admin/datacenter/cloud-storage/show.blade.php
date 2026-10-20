@@ -24,6 +24,16 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="mb-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            <ul class="list-disc pl-5">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <!-- Ticket & Status -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 pb-6 border-b">
@@ -72,10 +82,21 @@
         <div class="mb-6">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">Spesifikasi Cloud Storage</h2>
             <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Kapasitas Maksimal</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Kapasitas Diminta</label>
                         <p class="text-2xl font-bold text-purple-700">{{ $cloudStorageRequest->kapasitas_gb }} GB</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Kapasitas Disetujui</label>
+                        @if($cloudStorageRequest->kapasitas_disetujui_gb)
+                            <p class="text-2xl font-bold text-green-700">{{ $cloudStorageRequest->kapasitas_disetujui_gb }} GB</p>
+                            @if($cloudStorageRequest->kapasitas_disetujui_gb != $cloudStorageRequest->kapasitas_gb)
+                                <span class="text-xs font-semibold text-orange-700">Direvisi admin</span>
+                            @endif
+                        @else
+                            <p class="text-lg text-gray-500">Belum ditetapkan</p>
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Tipe</label>
@@ -139,30 +160,54 @@
         <form action="{{ route('admin.datacenter.cloud-storage.complete', $cloudStorageRequest->id) }}" method="POST">
             @csrf
             <div class="grid grid-cols-1 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-semibold text-blue-700 mb-1">URL Akses: <span class="text-red-500">*</span></label>
-                    <input type="text" name="akses_url" required
-                           class="w-full px-3 py-2 border border-blue-300 rounded-lg"
-                           placeholder="Contoh: https://drive.google.com/... atau https://storage.kaltaraprov.go.id/...">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-blue-700 mb-1">Kapasitas Disetujui (GB): <span class="text-red-500">*</span></label>
+                        <input type="number" name="kapasitas_disetujui_gb" required min="1"
+                               value="{{ old('kapasitas_disetujui_gb', $cloudStorageRequest->kapasitas_gb) }}"
+                               class="w-full px-3 py-2 border border-blue-300 rounded-lg">
+                        <p class="mt-1 text-xs text-gray-500">Diminta: {{ $cloudStorageRequest->kapasitas_gb }} GB</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-blue-700 mb-1">Alasan Revisi Kapasitas:</label>
+                        <textarea name="alasan_kapasitas" rows="2"
+                                  class="w-full px-3 py-2 border border-blue-300 rounded-lg"
+                                  placeholder="Wajib diisi jika kapasitas disetujui berbeda dari yang diminta. Ditampilkan kepada pemohon.">{{ old('alasan_kapasitas') }}</textarea>
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-blue-700 mb-1">Username (opsional):</label>
-                    <input type="text" name="username"
+                    <label class="block text-sm font-semibold text-blue-700 mb-1">URL Akses: <span class="text-red-500">*</span></label>
+                    <input type="text" name="akses_url" required value="{{ old('akses_url') }}"
                            class="w-full px-3 py-2 border border-blue-300 rounded-lg"
-                           placeholder="Username untuk akses cloud storage (jika ada)">
+                           placeholder="Contoh: https://storage.kaltaraprov.go.id/...">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-blue-700 mb-1">Username: <span class="text-red-500">*</span></label>
+                        <input type="text" name="username" required value="{{ old('username') }}" autocomplete="off"
+                               class="w-full px-3 py-2 border border-blue-300 rounded-lg"
+                               placeholder="Username akun cloud storage">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-blue-700 mb-1">Password: <span class="text-red-500">*</span></label>
+                        <input type="password" name="password" required autocomplete="new-password"
+                               class="w-full px-3 py-2 border border-blue-300 rounded-lg"
+                               placeholder="Password akun cloud storage">
+                        <p class="mt-1 text-xs text-gray-500">Disimpan terenkripsi dan hanya ditampilkan kepada pemohon.</p>
+                    </div>
                 </div>
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-semibold text-blue-700 mb-1">Keterangan untuk User:</label>
                 <textarea name="keterangan_admin" rows="3"
                           class="w-full px-3 py-2 border border-blue-300 rounded-lg"
-                          placeholder="Informasi cara akses, password, dll (opsional)">{{ $cloudStorageRequest->keterangan_admin }}</textarea>
+                          placeholder="Informasi cara akses, dll (opsional)">{{ old('keterangan_admin', $cloudStorageRequest->keterangan_admin) }}</textarea>
             </div>
             <div>
-                <label class="block text-sm font-semibold text-blue-700 mb-1">Catatan Internal (opsional):</label>
+                <label class="block text-sm font-semibold text-blue-700 mb-1">Catatan untuk Pemohon (opsional):</label>
                 <textarea name="admin_notes" rows="2"
                           class="w-full px-3 py-2 border border-blue-300 rounded-lg"
-                          placeholder="Catatan untuk admin">{{ $cloudStorageRequest->admin_notes }}</textarea>
+                          placeholder="Ditampilkan sebagai &quot;Catatan Admin&quot; di halaman pemohon">{{ old('admin_notes', $cloudStorageRequest->admin_notes) }}</textarea>
             </div>
             <button type="submit" class="mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold">
                 Selesaikan & Berikan Akses
@@ -171,9 +216,90 @@
     </div>
     @endif
 
+    @if($cloudStorageRequest->status === 'selesai')
+    <div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-bold text-orange-800 mb-1">Revisi Kapasitas Disetujui</h3>
+        <p class="text-xs text-gray-600 mb-3">
+            Berlaku saat ini: <span class="font-semibold">{{ $cloudStorageRequest->kapasitas_berlaku_gb }} GB</span>
+            (diminta {{ $cloudStorageRequest->kapasitas_gb }} GB). Revisi dan alasannya ditampilkan kepada pemohon.
+        </p>
+        <form action="{{ route('admin.datacenter.cloud-storage.revise-kapasitas', $cloudStorageRequest->id) }}" method="POST">
+            @csrf
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                <div>
+                    <label class="block text-sm font-semibold text-orange-700 mb-1">Kapasitas Baru (GB): <span class="text-red-500">*</span></label>
+                    <input type="number" name="kapasitas_disetujui_gb" required min="1"
+                           value="{{ old('kapasitas_disetujui_gb') }}"
+                           class="w-full px-3 py-2 border border-orange-300 rounded-lg">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-orange-700 mb-1">Alasan Revisi: <span class="text-red-500">*</span></label>
+                    <textarea name="alasan_kapasitas" rows="2" required
+                              class="w-full px-3 py-2 border border-orange-300 rounded-lg"
+                              placeholder="Contoh: Penambahan kuota sesuai kebutuhan arsip tahun 2027">{{ old('alasan_kapasitas') }}</textarea>
+                </div>
+            </div>
+            <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded font-semibold">
+                Simpan Revisi Kapasitas
+            </button>
+        </form>
+
+        @if($cloudStorageRequest->kapasitasRevisis->isNotEmpty())
+        <div class="mt-5 pt-4 border-t border-orange-200">
+            <h4 class="text-sm font-semibold text-orange-800 mb-2">Riwayat Revisi</h4>
+            <ul class="space-y-2">
+                @foreach($cloudStorageRequest->kapasitasRevisis as $revisi)
+                <li class="bg-white rounded border border-orange-200 p-3 text-sm">
+                    <div class="flex flex-wrap justify-between gap-2">
+                        <span class="font-semibold text-gray-800">{{ $revisi->kapasitas_lama_gb }} GB → {{ $revisi->kapasitas_baru_gb }} GB</span>
+                        <span class="text-xs text-gray-500">{{ $revisi->created_at->format('d/m/Y H:i') }} WITA · {{ $revisi->revisedBy->name ?? '-' }}</span>
+                    </div>
+                    <p class="text-gray-700 whitespace-pre-wrap mt-1">{{ $revisi->alasan }}</p>
+                </li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+    </div>
+
+    <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-bold text-green-800 mb-3">Kredensial Akses yang Diberikan</h3>
+        <form action="{{ route('admin.datacenter.cloud-storage.update-credentials', $cloudStorageRequest->id) }}" method="POST">
+            @csrf
+            <div class="grid grid-cols-1 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-semibold text-green-700 mb-1">URL Akses: <span class="text-red-500">*</span></label>
+                    <input type="text" name="akses_url" required value="{{ old('akses_url', $cloudStorageRequest->akses_url) }}"
+                           class="w-full px-3 py-2 border border-green-300 rounded-lg">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-green-700 mb-1">Username: <span class="text-red-500">*</span></label>
+                        <input type="text" name="username" required value="{{ old('username', $cloudStorageRequest->username) }}" autocomplete="off"
+                               class="w-full px-3 py-2 border border-green-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-green-700 mb-1">Password Baru:</label>
+                        <input type="password" name="password" autocomplete="new-password"
+                               class="w-full px-3 py-2 border border-green-300 rounded-lg"
+                               placeholder="{{ $cloudStorageRequest->password ? 'Kosongkan jika tidak diubah' : 'Belum ada password' }}">
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ $cloudStorageRequest->password ? 'Password sudah tersimpan (terenkripsi).' : 'Belum ada password tersimpan.' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold">
+                Simpan Kredensial
+            </button>
+        </form>
+    </div>
+    @endif
+
     @if(in_array($cloudStorageRequest->status, ['proses', 'selesai']))
     <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Catatan Admin</h3>
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">Catatan Admin</h3>
+        <p class="text-xs text-gray-500 mb-4">Catatan ini ditampilkan kepada pemohon.</p>
         <form action="{{ route('admin.datacenter.cloud-storage.update-notes', $cloudStorageRequest->id) }}" method="POST">
             @csrf
             <textarea name="admin_notes" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Tambahkan catatan...">{{ $cloudStorageRequest->admin_notes }}</textarea>

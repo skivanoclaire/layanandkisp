@@ -66,10 +66,21 @@
         <div class="mb-6">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">Spesifikasi Cloud Storage</h2>
             <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Kapasitas Maksimal</label>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Kapasitas Diminta</label>
                         <p class="text-2xl font-bold text-purple-700">{{ $cloudStorageRequest->kapasitas_gb }} GB</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Kapasitas Disetujui</label>
+                        @if($cloudStorageRequest->kapasitas_disetujui_gb)
+                            <p class="text-2xl font-bold text-green-700">{{ $cloudStorageRequest->kapasitas_disetujui_gb }} GB</p>
+                            @if($cloudStorageRequest->kapasitas_disetujui_gb != $cloudStorageRequest->kapasitas_gb)
+                                <span class="text-xs font-semibold text-orange-700">Direvisi admin</span>
+                            @endif
+                        @else
+                            <p class="text-lg text-gray-500">Belum ditetapkan</p>
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Tipe</label>
@@ -77,6 +88,23 @@
                     </div>
                 </div>
             </div>
+
+            @if($cloudStorageRequest->kapasitasRevisis->isNotEmpty())
+            <div class="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h3 class="text-sm font-semibold text-orange-800 mb-2">Riwayat Revisi Kapasitas oleh Admin</h3>
+                <ul class="space-y-2">
+                    @foreach($cloudStorageRequest->kapasitasRevisis as $revisi)
+                    <li class="bg-white rounded border border-orange-200 p-3 text-sm">
+                        <div class="flex flex-wrap justify-between gap-2">
+                            <span class="font-semibold text-gray-800">{{ $revisi->kapasitas_lama_gb }} GB → {{ $revisi->kapasitas_baru_gb }} GB</span>
+                            <span class="text-xs text-gray-500">{{ $revisi->created_at->format('d/m/Y H:i') }} WITA</span>
+                        </div>
+                        <p class="text-gray-700 whitespace-pre-wrap mt-1">{{ $revisi->alasan }}</p>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
         </div>
 
         <!-- Keterangan -->
@@ -105,6 +133,25 @@
                     <p class="text-green-900 font-mono bg-white px-3 py-2 rounded border border-green-300 inline-block">{{ $cloudStorageRequest->username }}</p>
                 </div>
                 @endif
+                @if($cloudStorageRequest->password)
+                <div>
+                    <label class="block text-sm font-semibold text-green-700 mb-1">Password:</label>
+                    <div class="flex items-center gap-2">
+                        <input type="password" id="cloudStoragePassword" readonly value="{{ $cloudStorageRequest->password }}"
+                               class="text-green-900 font-mono bg-white px-3 py-2 rounded border border-green-300">
+                        <button type="button"
+                                onclick="const f = document.getElementById('cloudStoragePassword'); const show = f.type === 'password'; f.type = show ? 'text' : 'password'; this.textContent = show ? 'Sembunyikan' : 'Tampilkan';"
+                                class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm font-semibold">Tampilkan</button>
+                    </div>
+                </div>
+                @endif
+            </div>
+            <div class="mt-4 bg-yellow-50 border border-yellow-300 rounded p-3">
+                <p class="text-sm font-semibold text-yellow-800 mb-1">Kewajiban Pengguna</p>
+                <ul class="list-disc pl-5 text-sm text-yellow-900 space-y-1">
+                    <li>Jaga kerahasiaan akun yang diberikan. Jangan bagikan username dan password kepada pihak lain, dan segera ganti password setelah login pertama.</li>
+                    <li>Lakukan backup secara berkala terhadap data yang disimpan di cloud storage ini.</li>
+                </ul>
             </div>
             @if($cloudStorageRequest->keterangan_admin)
             <div class="mt-4">
