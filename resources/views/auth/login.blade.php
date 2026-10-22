@@ -9,10 +9,10 @@
         </div>
     @endif
 
-    {{-- SSO Login Button (jika dikonfigurasi) --}}
-    @if(config('services.keycloak.client_id'))
+    {{-- SSO Login Button: login dilakukan di Portal SSO Kaltara --}}
+    @if(config('sso.portal_login_url'))
     <div class="mb-6">
-        <a href="{{ route('auth.keycloak.redirect') }}"
+        <a href="{{ config('sso.portal_login_url') }}"
            class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white !bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
            style="background-color: #047857 !important;">
             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
