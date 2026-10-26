@@ -23,7 +23,7 @@
                 </div>
                 <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
                     <div><dt class="text-gray-500">Pemohon</dt><dd class="font-medium">{{ $item->nama }} ({{ $item->nip ?? '-' }})</dd></div>
-                    <div><dt class="text-gray-500">Instansi</dt><dd class="font-medium">{{ $item->unitKerja->nama ?? '-' }}</dd></div>
+                    <div><dt class="text-gray-500">Unit Kerja</dt><dd class="font-medium">{{ $item->unitKerja->nama ?? '-' }}</dd></div>
                     <div><dt class="text-gray-500">Masa Uji</dt><dd class="font-medium">{{ $item->masa_uji_hari }} hari</dd></div>
                     <div><dt class="text-gray-500">Email</dt><dd class="font-medium">{{ $item->email_pemohon }}</dd></div>
                     <div class="md:col-span-2"><dt class="text-gray-500">Spesifikasi Draf</dt><dd class="whitespace-pre-line">{{ $item->spesifikasi_draft }}</dd></div>

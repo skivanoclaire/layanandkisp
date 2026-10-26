@@ -24,7 +24,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <p class="mb-3"><strong class="text-gray-700">Instansi:</strong><br>{{ $vidconData->unitKerja->nama ?? '-' }}</p>
+                <p class="mb-3"><strong class="text-gray-700">Unit Kerja:</strong><br>{{ $vidconData->unitKerja->nama ?? '-' }}</p>
                 <p class="mb-3"><strong class="text-gray-700">Pemohon:</strong><br>{{ $vidconData->nama_pemohon }}</p>
                 <p class="mb-3"><strong class="text-gray-700">Kontak:</strong><br>{{ $vidconData->no_hp }}</p>
                 <p class="mb-3"><strong class="text-gray-700">Lokasi:</strong><br>{{ $vidconData->lokasi ?? '-' }}</p>

@@ -93,7 +93,7 @@
                 <th>Tanggal Diajukan</th>
                 <th>Nama</th>
                 <th>Subdomain</th>
-                <th>Instansi</th>
+                <th>Unit Kerja</th>
                 <th>Status</th>
             </tr>
         </thead>

@@ -20,7 +20,7 @@ class TtePassphraseResetExport extends BaseTteExport
             'Nama',
             'NIP',
             'Email Resmi',
-            'Instansi',
+            'Unit Kerja',
             'Status',
             'Diproses Oleh',
             'Keterangan Admin',
@@ -55,7 +55,7 @@ class TtePassphraseResetExport extends BaseTteExport
             'D' => 25,  // Nama
             'E' => 15,  // NIP
             'F' => 25,  // Email
-            'G' => 30,  // Instansi
+            'G' => 30,  // Unit Kerja
             'H' => 12,  // Status
             'I' => 20,  // Diproses Oleh
             'J' => 30,  // Keterangan

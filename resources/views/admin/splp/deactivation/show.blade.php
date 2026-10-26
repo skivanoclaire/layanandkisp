@@ -27,7 +27,7 @@
                 </div>
                 <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
                     <div><dt class="text-gray-500">Pemohon</dt><dd class="font-medium">{{ $item->nama }} ({{ $item->nip ?? '-' }})</dd></div>
-                    <div><dt class="text-gray-500">Instansi</dt><dd class="font-medium">{{ $item->unitKerja->nama ?? '-' }}</dd></div>
+                    <div><dt class="text-gray-500">Unit Kerja</dt><dd class="font-medium">{{ $item->unitKerja->nama ?? '-' }}</dd></div>
                     <div><dt class="text-gray-500">Objek Target</dt><dd class="font-medium">
                         @if ($item->target_type === 'service')
                             {{ $item->service->nama_layanan ?? '-' }} ({{ $item->service->kode_layanan ?? '-' }})

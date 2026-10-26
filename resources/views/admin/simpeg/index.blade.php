@@ -134,7 +134,7 @@
                         @endif
                         @if(!empty($result['instansi']))
                         <li>
-                            <span class="font-medium">Instansi (dari SIMPEG):</span>
+                            <span class="font-medium">Unit Kerja (dari SIMPEG):</span>
                             <span class="text-gray-800">{{ $result['instansi'] }}</span>
                             @if(!empty($result['matched_unit_kerja']))
                                 <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-green-800 bg-green-100 border border-green-200 text-xs font-semibold">
@@ -329,7 +329,7 @@
                                 <label class="flex items-start gap-2">
                                     <input type="checkbox" name="fields[]" value="unit_kerja" class="mt-1" id="unit_kerja_checkbox">
                                     <div class="flex-1">
-                                        <span class="font-medium text-gray-900">Unit Kerja / Instansi</span>
+                                        <span class="font-medium text-gray-900">Unit Kerja</span>
                                         @if(!empty($result['instansi']))
                                             <div class="text-sm text-gray-600 mt-1">
                                                 Dari SIMPEG: <strong>{{ $result['instansi'] }}</strong>

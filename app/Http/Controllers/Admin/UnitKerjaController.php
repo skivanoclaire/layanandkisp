@@ -56,7 +56,7 @@ class UnitKerjaController extends Controller
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $filename = 'Master-Data-Instansi-' . now()->format('Ymd-His') . '.pdf';
+        $filename = 'Master-Data-Unit-Kerja-' . now()->format('Ymd-His') . '.pdf';
 
         return $dompdf->stream($filename, ['Attachment' => false]);
     }
@@ -83,7 +83,7 @@ class UnitKerjaController extends Controller
         ]);
 
         return redirect()->route('admin.unit-kerja.index')
-            ->with('success', 'Instansi berhasil ditambahkan');
+            ->with('success', 'Unit Kerja berhasil ditambahkan');
     }
 
     public function edit(UnitKerja $unitKerja)
@@ -109,7 +109,7 @@ class UnitKerjaController extends Controller
         ]);
 
         return redirect()->route('admin.unit-kerja.index')
-            ->with('success', 'Instansi berhasil diperbarui');
+            ->with('success', 'Unit Kerja berhasil diperbarui');
     }
 
     public function destroy(UnitKerja $unitKerja)
@@ -117,6 +117,6 @@ class UnitKerjaController extends Controller
         $unitKerja->delete();
 
         return redirect()->route('admin.unit-kerja.index')
-            ->with('success', 'Instansi berhasil dihapus');
+            ->with('success', 'Unit Kerja berhasil dihapus');
     }
 }

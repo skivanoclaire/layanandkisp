@@ -71,7 +71,7 @@
                 <p class="font-semibold">{{ $starlinkRequest->nip }}</p>
             </div>
             <div>
-                <p class="text-sm text-gray-600">Instansi</p>
+                <p class="text-sm text-gray-600">Unit Kerja</p>
                 <p class="font-semibold">{{ $starlinkRequest->unitKerja->nama ?? '-' }}</p>
             </div>
             <div>

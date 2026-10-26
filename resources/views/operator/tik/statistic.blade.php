@@ -32,9 +32,9 @@
             <div class="text-xs mt-1 opacity-80">Platform berbeda</div>
         </div>
         <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow p-6 text-white">
-            <div class="text-sm font-medium mb-1">Total Instansi</div>
+            <div class="text-sm font-medium mb-1">Total Unit Kerja</div>
             <div class="text-3xl font-bold">{{ $instansiStats->count() }}</div>
-            <div class="text-xs mt-1 opacity-80">Top 10 instansi</div>
+            <div class="text-xs mt-1 opacity-80">Top 10 unit kerja</div>
         </div>
         <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-6 text-white">
             <div class="text-sm font-medium mb-1">Total Operator</div>
@@ -49,7 +49,7 @@
         <canvas id="monthlyChart" height="80"></canvas>
     </div>
 
-    {{-- Platform and Instansi Stats --}}
+    {{-- Platform and Unit Kerja Stats --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {{-- Platform Stats --}}
         <div class="bg-white rounded-lg shadow-md p-6">
@@ -57,9 +57,9 @@
             <canvas id="platformChart"></canvas>
         </div>
 
-        {{-- Instansi Stats --}}
+        {{-- Unit Kerja Stats --}}
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-semibold mb-4">Top 10 Instansi</h2>
+            <h2 class="text-xl font-semibold mb-4">Top 10 Unit Kerja</h2>
             <div class="space-y-3">
                 @foreach($instansiStats as $stat)
                 <div class="flex items-center justify-between">

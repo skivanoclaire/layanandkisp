@@ -33,9 +33,9 @@
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <form method="GET" action="{{ route('admin.vidcon-data.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Instansi</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Unit Kerja</label>
                 <select name="unit_kerja_id" class="w-full border-gray-300 rounded-md shadow-sm">
-                    <option value="">-- Semua Instansi --</option>
+                    <option value="">-- Semua Unit Kerja --</option>
                     @foreach($unitKerjas as $uk)
                         <option value="{{ $uk->id }}" {{ request('unit_kerja_id') == $uk->id ? 'selected' : '' }}>
                             {{ $uk->nama }}
@@ -70,7 +70,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Instansi</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Kerja</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Judul Kegiatan</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Platform</th>

@@ -10,7 +10,7 @@
       <ol class="list-decimal list-inside space-y-2 text-justify text-sm md:text-base">
         <li>Layanan Email Resmi Pemerintah Provinsi Kalimantan Utara adalah layanan email resmi tanpa biaya yang dikelola oleh Dinas Komunikasi Informatika Statistik dan Persandian (DKISP) Provinsi Kalimantan Utara dan dapat diakses melalui link <a href="https://webmail.kaltaraprov.go.id" class="text-blue-400 underline">https://webmail.kaltaraprov.go.id</a>.</li>
         <li>Layanan Email Resmi Pemerintah Provinsi Kalimantan Utara dapat digunakan oleh seluruh Aparatur Sipil Negara (ASN) di lingkungan Pemerintah Provinsi Kalimantan Utara.</li>
-        <li>Pendaftaran dilakukan sendiri oleh ASN yang bersangkutan dan segala data yang disampaikan pada surat permohonan merupakan tanggung jawab ASN yang bersangkutan dan Instansi Pemohon.</li>
+        <li>Pendaftaran dilakukan sendiri oleh ASN yang bersangkutan dan segala data yang disampaikan pada surat permohonan merupakan tanggung jawab ASN yang bersangkutan dan Unit Kerja Pemohon.</li>
         <li>Penggunaan akun dan kerahasiaan/keamanan akun menjadi tanggung jawab mutlak ASN yang bersangkutan. Segala tuntutan/kerugian/dampak yang timbul akibat penyalahgunaan keamanan, wewenang dan akses menjadi tanggung jawab mutlak ASN yang bersangkutan.</li>
         <li>Layanan Email Resmi tidak boleh digunakan untuk melakukan hal-hal yang bertentangan dengan hukum yang berlaku di wilayah Republik Indonesia dan setiap pelanggaran atas hal tersebut dapat berakibat pada tanggung-jawab pidana dan/atau perdata.</li>
         <li>Pengguna layanan setuju untuk memberikan data yang akurat dan lengkap ketika mendaftar dan menggunakan Layanan Email Resmi, serta melakukan pembaharuan agar data tetap akurat dan lengkap.</li>

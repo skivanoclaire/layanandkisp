@@ -161,7 +161,7 @@
                 @method('PUT')
 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Instansi</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Unit Kerja</label>
                     <input type="text"
                            value="{{ auth()->user()->unitKerja->nama ?? '-' }}"
                            readonly

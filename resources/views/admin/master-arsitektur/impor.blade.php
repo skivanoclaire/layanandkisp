@@ -82,7 +82,7 @@
                 @endphp
                 @if ($tanpaInstansi)
                     <div class="mt-4 bg-orange-50 border border-orange-200 rounded p-4">
-                        <h3 class="font-semibold text-orange-800">Nama perangkat daerah yang tidak ditemukan di Master Data Instansi</h3>
+                        <h3 class="font-semibold text-orange-800">Nama perangkat daerah yang tidak ditemukan di Master Data Unit Kerja</h3>
                         <p class="text-sm text-orange-700 mt-1">
                             Datanya tetap tersimpan dengan nama aslinya dan bertanda "belum terpetakan". Petakan lewat menu Edit,
                             atau daftarkan padanan namanya di <code>config/master_arsitektur.php</code> (alias_instansi) lalu impor ulang.

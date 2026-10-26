@@ -191,7 +191,7 @@
                                         <dd class="text-sm text-gray-900 font-mono">{{ $request->nik }}</dd>
                                     </div>
                                     <div class="flex justify-between">
-                                        <dt class="text-sm font-medium text-gray-500">Instansi:</dt>
+                                        <dt class="text-sm font-medium text-gray-500">Unit Kerja:</dt>
                                         <dd class="text-sm text-gray-900">{{ optional($request->unitKerja)->nama ?? $request->instansi }}</dd>
                                     </div>
                                 </dl>

@@ -67,12 +67,12 @@
                 <div class="mb-4">
                     <label class="block font-semibold mb-1">Pemilik Utama Proses Bisnis / Instansi Utama Pengusul <span class="text-red-500">*</span></label>
                     <select name="pemilik_proses_bisnis_id" class="w-full border rounded p-2" required>
-                        <option value="">-- Pilih Instansi --</option>
+                        <option value="">-- Pilih Unit Kerja --</option>
                         @foreach($unitKerjas as $unit)
                             <option value="{{ $unit->id }}">{{ $unit->nama }}</option>
                         @endforeach
                     </select>
-                    <p class="text-xs text-gray-500 mt-1 italic">💡 Unit kerja/instansi yang menjadi pemilik utama dari aplikasi ini</p>
+                    <p class="text-xs text-gray-500 mt-1 italic">💡 Unit kerja yang menjadi pemilik utama dari aplikasi ini</p>
                 </div>
 
                 {{-- Stakeholder Internal Lainnya --}}

@@ -67,12 +67,12 @@
                         <p class="text-gray-800">{{ $jipPdnsRequest->kabupaten_kota }}</p>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Instansi:</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Unit Kerja:</label>
                         <p class="text-gray-800">{{ $jipPdnsRequest->unit_kerja_manual }}</p>
                     </div>
                 @else
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Instansi:</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Unit Kerja:</label>
                         <p class="text-gray-800">{{ $jipPdnsRequest->unitKerja->nama ?? '-' }}</p>
                     </div>
                 @endif

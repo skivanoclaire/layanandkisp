@@ -87,9 +87,9 @@
             @endif
             <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Instansi</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Unit Kerja</label>
                     <select name="instansi_id" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">-- Semua Instansi --</option>
+                        <option value="">-- Semua Unit Kerja --</option>
                         @foreach($unitKerjas as $uk)
                             <option value="{{ $uk->id }}" {{ (string)($filters['instansi_id'] ?? '') === (string)$uk->id ? 'selected' : '' }}>
                                 {{ $uk->nama }}
@@ -233,7 +233,7 @@
                 <thead>
                     <tr class="bg-gray-100">
                         <th class="border border-gray-300 px-4 py-3 text-left">No</th>
-                        <th class="border border-gray-300 px-4 py-3 text-left">Instansi</th>
+                        <th class="border border-gray-300 px-4 py-3 text-left">Unit Kerja</th>
                         <th class="border border-gray-300 px-4 py-3 text-left">Nama Sistem</th>
                         <th class="border border-gray-300 px-4 py-3 text-left">Subdomain</th>
                         <th class="border border-gray-300 px-4 py-3 text-center">Status ESC</th>

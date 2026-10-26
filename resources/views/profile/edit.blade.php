@@ -90,21 +90,21 @@
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
             </div>
 
-            <!-- Instansi / Unit Kerja -->
+            <!-- Unit Kerja -->
             <div class="mb-4">
-                <label for="unit_kerja_id" class="block text-sm font-medium text-gray-700">Instansi / Unit Kerja</label>
+                <label for="unit_kerja_id" class="block text-sm font-medium text-gray-700">Unit Kerja</label>
                 @if(auth()->user()->is_verified && !auth()->user()->hasRole('Admin'))
                     <input type="text"
                         value="{{ auth()->user()->unitKerja->nama ?? '-' }}"
                         class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm cursor-not-allowed"
                         readonly disabled>
                     <p class="mt-1 text-xs text-gray-500">
-                        <span class="text-green-600 font-semibold">🔒 Terkunci</span> - Instansi tidak dapat diubah setelah akun terverifikasi. Hubungi admin jika ada kesalahan.
+                        <span class="text-green-600 font-semibold">🔒 Terkunci</span> - Unit Kerja tidak dapat diubah setelah akun terverifikasi. Hubungi admin jika ada kesalahan.
                     </p>
                 @else
                     <select id="unit_kerja_id" name="unit_kerja_id"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                        <option value="">-- Pilih Instansi --</option>
+                        <option value="">-- Pilih Unit Kerja --</option>
                         @foreach($unitKerjas as $uk)
                             <option value="{{ $uk->id }}"
                                 {{ old('unit_kerja_id', auth()->user()->unit_kerja_id) == $uk->id ? 'selected' : '' }}>
@@ -114,7 +114,7 @@
                     </select>
                     @if(auth()->user()->unitKerja)
                         <p class="mt-1 text-xs text-gray-500">
-                            Instansi saat ini: <span class="font-semibold">{{ auth()->user()->unitKerja->nama }}</span>
+                            Unit Kerja saat ini: <span class="font-semibold">{{ auth()->user()->unitKerja->nama }}</span>
                         </p>
                     @endif
                     <x-input-error :messages="$errors->get('unit_kerja_id')" class="mt-2" />

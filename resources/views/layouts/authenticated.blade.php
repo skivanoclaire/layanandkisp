@@ -1300,12 +1300,12 @@
                         </svg>
                     </button>
                     <div x-show="openMasterData" class="ml-4 space-y-1">
-                        {{-- Master Data Instansi --}}
+                        {{-- Master Data Unit Kerja --}}
                         @if (auth()->user()?->hasPermission('admin.unit-kerja'))
                             <a href="{{ route('admin.unit-kerja.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                        {{ $atMasterInstansi ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                Master Data Instansi
+                                Master Data Unit Kerja
                             </a>
                         @endif
 

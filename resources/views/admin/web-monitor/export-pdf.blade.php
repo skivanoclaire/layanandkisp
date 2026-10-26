@@ -37,7 +37,7 @@
         <thead>
             <tr>
                 <th style="width: 3%;">No</th>
-                <th style="width: 17%;">Instansi</th>
+                <th style="width: 17%;">Unit Kerja</th>
                 <th style="width: 16%;">Nama Sistem</th>
                 <th style="width: 20%;">Subdomain</th>
                 <th style="width: 15%;">Jenis</th>

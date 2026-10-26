@@ -36,7 +36,7 @@
                             <th class="px-4 py-3 text-left font-semibold text-gray-600 bg-gray-50 w-1/3">{{ $definisi['label'] }}</th>
                             <td class="px-4 py-3 text-gray-800 whitespace-pre-line">@if ($item->nilai($kunci) === null)<span class="text-gray-400">-</span>@else{{ $item->nilai($kunci) }}@endif
                                 @if ($kunci === 'unit_kerja' && $item->unit_kerja_id === null && $item->unit_kerja_teks !== null)
-                                    <span class="inline-block px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-semibold">belum terpetakan ke Master Data Instansi</span>
+                                    <span class="inline-block px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-semibold">belum terpetakan ke Master Data Unit Kerja</span>
                                 @endif
                             </td>
                         </tr>

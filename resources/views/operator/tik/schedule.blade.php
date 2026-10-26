@@ -65,7 +65,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Instansi</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Kerja</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Judul Kegiatan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Platform</th>
@@ -169,7 +169,7 @@
             </div>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
-            <div class="text-sm text-gray-600">Instansi Terbanyak</div>
+            <div class="text-sm text-gray-600">Unit Kerja Terbanyak</div>
             <div class="text-lg font-semibold text-gray-800">
                 {{ Str::limit($schedules->groupBy('nama_instansi')->sortByDesc(function($group) { return $group->count(); })->keys()->first() ?? 'N/A', 30) }}
             </div>

@@ -36,7 +36,7 @@ class LaporanGangguanController extends Controller
             'lampiran_foto' => 'nullable|array|max:5',
             'lampiran_foto.*' => 'image|mimes:jpeg,png,jpg|max:2048',
         ], [
-            'unit_kerja_id.required' => 'Instansi wajib dipilih.',
+            'unit_kerja_id.required' => 'Unit Kerja wajib dipilih.',
             'no_hp.required' => 'No. HP/WhatsApp wajib diisi.',
             'uraian_permasalahan.required' => 'Uraian permasalahan wajib diisi.',
             'lampiran_foto.max' => 'Maksimal 5 foto yang dapat diunggah.',

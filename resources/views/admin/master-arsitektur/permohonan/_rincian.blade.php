@@ -19,7 +19,7 @@
             </dd>
         </div>
         <div>
-            <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Instansi</dt>
+            <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Unit Kerja</dt>
             <dd class="text-gray-800 mt-0.5">{{ $permohonan->unitKerja?->nama ?? '-' }}</dd>
         </div>
         <div>

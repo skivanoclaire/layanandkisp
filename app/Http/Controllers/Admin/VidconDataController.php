@@ -403,7 +403,7 @@ class VidconDataController extends Controller
 
             // Header row
             fputcsv($file, [
-                'No', 'Instansi', 'Nomor Surat', 'Judul Kegiatan', 'Lokasi',
+                'No', 'Unit Kerja', 'Nomor Surat', 'Judul Kegiatan', 'Lokasi',
                 'Tanggal Mulai', 'Tanggal Selesai', 'Jam Mulai', 'Jam Selesai',
                 'Platform', 'Operator', 'Dokumentasi', 'Akun Zoom',
                 'Informasi Pimpinan', 'Keterangan'

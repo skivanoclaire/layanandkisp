@@ -1,14 +1,14 @@
 @extends('layouts.authenticated')
 
-@section('title', '- Master Data Instansi')
-@section('header-title', 'Master Data Instansi')
+@section('title', '- Master Data Unit Kerja')
+@section('header-title', 'Master Data Unit Kerja')
 
 @section('content')
 <div class="container mx-auto p-6">
     <div class="mb-6 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Master Data Instansi</h1>
-            <p class="text-gray-600 mt-1">Kelola data instansi / perangkat daerah</p>
+            <h1 class="text-3xl font-bold text-gray-800">Master Data Unit Kerja</h1>
+            <p class="text-gray-600 mt-1">Kelola data unit kerja / perangkat daerah</p>
         </div>
     </div>
 
@@ -46,7 +46,7 @@
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
-                    Tambah Instansi
+                    Tambah Unit Kerja
                 </a>
                 <a href="{{ route('admin.unit-kerja.export-pdf', request()->query()) }}"
                    target="_blank"
@@ -64,7 +64,7 @@
                 <thead>
                     <tr class="bg-gray-100">
                         <th class="border border-gray-300 px-4 py-3 text-left w-20">No</th>
-                        <th class="border border-gray-300 px-4 py-3 text-left">Nama Instansi</th>
+                        <th class="border border-gray-300 px-4 py-3 text-left">Nama Unit Kerja</th>
                         <th class="border border-gray-300 px-4 py-3 text-left w-64">Tipe</th>
                         <th class="border border-gray-300 px-4 py-3 text-center w-32">Aksi</th>
                     </tr>

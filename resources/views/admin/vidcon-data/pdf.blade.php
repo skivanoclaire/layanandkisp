@@ -39,7 +39,7 @@
         <thead>
             <tr>
                 <th class="text-center">No</th>
-                <th>Instansi</th>
+                <th>Unit Kerja</th>
                 <th>Judul Kegiatan</th>
                 <th>Tanggal</th>
                 <th>Waktu</th>

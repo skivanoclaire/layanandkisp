@@ -53,7 +53,7 @@ class StarlinkController extends Controller
             'jam_mulai' => 'required',
             'jam_selesai' => 'required',
         ], [
-            'unit_kerja_id.required' => 'Instansi wajib dipilih.',
+            'unit_kerja_id.required' => 'Unit Kerja wajib dipilih.',
             'no_hp.required' => 'No. HP/WhatsApp wajib diisi.',
             'uraian_kegiatan.required' => 'Uraian kegiatan wajib diisi.',
             'tanggal_mulai.required' => 'Tanggal mulai wajib diisi.',

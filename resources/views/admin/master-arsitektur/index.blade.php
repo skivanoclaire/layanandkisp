@@ -175,7 +175,7 @@
                                             <a href="{{ $urlKategori(['opd' => $opd['id']]) }}" class="text-gray-800 hover:text-green-700">{{ $opd['nama'] }}</a>
                                         @else
                                             <a href="{{ $urlKategori(['opd' => $belumTerpetakan]) }}" class="text-gray-800 hover:text-green-700">{{ $opd['nama'] }}</a>
-                                            <span class="ml-1 inline-block px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-semibold align-middle" title="Nama ini tidak ditemukan di Master Data Instansi">belum terpetakan</span>
+                                            <span class="ml-1 inline-block px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-semibold align-middle" title="Nama ini tidak ditemukan di Master Data Unit Kerja">belum terpetakan</span>
                                         @endif
                                     </td>
                                     <td class="px-3 py-1.5 text-right">{{ $opd['jumlah'] }}</td>

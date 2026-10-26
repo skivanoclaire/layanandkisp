@@ -192,7 +192,7 @@
                 <td>{{ $form->judul_aplikasi }}</td>
             </tr>
             <tr>
-                <td>Instansi</td>
+                <td>Unit Kerja</td>
                 <td>:</td>
                 <td>{{ $form->pemilikProsesBisnis ? $form->pemilikProsesBisnis->nama : '-' }}</td>
             </tr>

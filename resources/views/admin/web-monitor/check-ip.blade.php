@@ -91,7 +91,7 @@
             </div>
 
             <div class="mb-3">
-                <input type="text" id="searchUsed" placeholder="Cari IP atau Instansi..."
+                <input type="text" id="searchUsed" placeholder="Cari IP atau Unit Kerja..."
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
             </div>
 

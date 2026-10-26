@@ -57,7 +57,7 @@
 
                         @if ($kunci === 'unit_kerja')
                             <select name="unit_kerja_id" id="f-{{ $kunci }}" class="{{ $kelasInput }}">
-                                <option value="">— Pilih dari Master Data Instansi —</option>
+                                <option value="">— Pilih dari Master Data Unit Kerja —</option>
                                 @foreach ($instansi as $tipeInstansi => $daftar)
                                     <optgroup label="{{ $tipeInstansi ?: 'Lainnya' }}">
                                         @foreach ($daftar as $unit)
@@ -68,7 +68,7 @@
                             </select>
                             @if ($item->exists && $item->unit_kerja_id === null && $item->unit_kerja_teks !== null)
                                 <p class="text-xs text-orange-600 mt-1">
-                                    Tertulis pada sumber: <strong>{{ $item->unit_kerja_teks }}</strong> — belum terpetakan ke Master Data Instansi.
+                                    Tertulis pada sumber: <strong>{{ $item->unit_kerja_teks }}</strong> — belum terpetakan ke Master Data Unit Kerja.
                                 </p>
                             @endif
                         @elseif ($tipe === 'textarea')

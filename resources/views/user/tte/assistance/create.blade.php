@@ -29,7 +29,7 @@
                 </label>
                 <input type="text" name="nama" value="{{ $user->name }}" readonly
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600">
-                <p class="text-xs text-gray-500 mt-1">Nama Instansi/OPD</p>
+                <p class="text-xs text-gray-500 mt-1">Nama Unit Kerja/OPD</p>
             </div>
 
             <!-- NIP -->
@@ -51,10 +51,10 @@
                 <p class="text-xs text-gray-500 mt-1">Wajib isi dengan email @kaltaraprov.go.id kalau tidak ada silahkan download form nya di link .....</p>
             </div>
 
-            <!-- Instansi -->
+            <!-- Unit Kerja -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Instansi <span class="text-red-500">*</span>
+                    Unit Kerja <span class="text-red-500">*</span>
                 </label>
                 @if($user->unitKerja)
                     <input type="text" name="instansi" value="{{ $user->unitKerja->nama }}" readonly
@@ -63,7 +63,7 @@
                 @else
                     <select name="instansi" required
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <option value="">-- Pilih Instansi --</option>
+                        <option value="">-- Pilih Unit Kerja --</option>
                         @foreach($unitKerjas as $uk)
                             <option value="{{ $uk->nama }}" {{ old('instansi') == $uk->nama ? 'selected' : '' }}>{{ $uk->nama }}</option>
                         @endforeach

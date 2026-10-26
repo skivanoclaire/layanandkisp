@@ -45,7 +45,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No. Tiket</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Instansi</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Unit Kerja</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Uraian</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Aksi</th>

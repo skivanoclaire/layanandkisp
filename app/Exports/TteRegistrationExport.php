@@ -20,7 +20,7 @@ class TteRegistrationExport extends BaseTteExport
             'Nama',
             'NIP',
             'Email Resmi',
-            'Instansi',
+            'Unit Kerja',
             'Jabatan',
             'No. HP',
             'Status',
@@ -59,7 +59,7 @@ class TteRegistrationExport extends BaseTteExport
             'D' => 25,  // Nama
             'E' => 15,  // NIP
             'F' => 25,  // Email
-            'G' => 30,  // Instansi
+            'G' => 30,  // Unit Kerja
             'H' => 20,  // Jabatan
             'I' => 15,  // No HP
             'J' => 12,  // Status

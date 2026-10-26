@@ -54,11 +54,11 @@
                         @enderror
                     </div>
 
-                    {{-- Instansi --}}
+                    {{-- Unit Kerja --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Instansi <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Unit Kerja <span class="text-red-500">*</span></label>
                         <select name="unit_kerja_id" class="w-full border-gray-300 rounded-md shadow-sm @error('unit_kerja_id') border-red-500 @enderror" required>
-                            <option value="">-- Pilih Instansi --</option>
+                            <option value="">-- Pilih Unit Kerja --</option>
                             @foreach($unitKerjas as $uk)
                                 <option value="{{ $uk->id }}" {{ old('unit_kerja_id', $vidconData->unit_kerja_id) == $uk->id ? 'selected' : '' }}>
                                     {{ $uk->nama }}

@@ -40,9 +40,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-1">Instansi <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium mb-1">Unit Kerja <span class="text-red-500">*</span></label>
                     <select name="unit_kerja_id" required class="w-full border rounded p-2 @error('unit_kerja_id') border-red-500 @enderror">
-                        <option value="">- Pilih Instansi -</option>
+                        <option value="">- Pilih Unit Kerja -</option>
                         @foreach($unitKerjaList as $uk)
                             <option value="{{ $uk->id }}" {{ old('unit_kerja_id', $item->unit_kerja_id) == $uk->id ? 'selected' : '' }}>
                                 {{ $uk->nama }}

@@ -150,7 +150,7 @@ return [
         ],
 
         'Master Data' => [
-            'Instansi' => ['admin.unit-kerja'],
+            'Unit Kerja' => ['admin.unit-kerja'],
             'Subdomain' => ['admin.web-monitor'],
             'Email' => ['Kelola Master Data Email'],
             'IP' => ['admin.web-monitor.check-ip-publik'],

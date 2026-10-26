@@ -16,7 +16,7 @@
         <thead>
             <tr class="bg-gray-100">
                 <th class="text-left px-2 py-1">No</th>
-                <th class="text-left px-2 py-1">Nama Instansi</th>
+                <th class="text-left px-2 py-1">Nama Unit Kerja</th>
                 <th class="text-left px-2 py-1">Subdomain</th>
                 <th class="text-left px-2 py-1">Status</th>
                 <th class="text-left px-2 py-1">Keterangan</th>

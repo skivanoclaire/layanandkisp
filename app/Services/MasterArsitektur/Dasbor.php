@@ -116,7 +116,7 @@ class Dasbor
 
         $belum = $opd->where('id', null)->sum('jumlah');
         if ($belum > 0) {
-            $pilihan[self::BELUM_TERPETAKAN] = ['label' => '(Belum terpetakan ke Master Data Instansi)', 'jumlah' => $belum];
+            $pilihan[self::BELUM_TERPETAKAN] = ['label' => '(Belum terpetakan ke Master Data Unit Kerja)', 'jumlah' => $belum];
         }
 
         return $pilihan;

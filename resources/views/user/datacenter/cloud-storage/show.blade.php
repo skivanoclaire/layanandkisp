@@ -56,7 +56,7 @@
                     <p class="text-gray-800">{{ $cloudStorageRequest->nip }}</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Instansi:</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Unit Kerja:</label>
                     <p class="text-gray-800">{{ $cloudStorageRequest->unitKerja->nama ?? '-' }}</p>
                 </div>
             </div>

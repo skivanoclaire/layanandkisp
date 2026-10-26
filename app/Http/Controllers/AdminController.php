@@ -123,7 +123,7 @@ class AdminController extends Controller
             'unverified' => User::where(function ($q) {
                                 $q->where('is_verified', false)->orWhereNull('is_verified');
                             })->count(),
-            // Rincian akun terverifikasi berdasarkan tipe unit kerja (Master Data Instansi)
+            // Rincian akun terverifikasi berdasarkan tipe unit kerja (Master Data Unit Kerja)
             'verified_internal_nip' => User::where('is_verified', true)
                                 ->whereNotNull('nip')->where('nip', '!=', '')
                                 ->whereHas('unitKerja', fn ($q) => $q->forLayananDigital())

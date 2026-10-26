@@ -19,7 +19,7 @@ class EmailRequestExport extends BaseDigitalExport
             'Tanggal Diajukan',
             'Nama',
             'Username',
-            'Instansi',
+            'Unit Kerja',
             'Status',
         ];
     }
@@ -48,7 +48,7 @@ class EmailRequestExport extends BaseDigitalExport
             'C' => 18,  // Tanggal
             'D' => 25,  // Nama
             'E' => 20,  // Username
-            'F' => 30,  // Instansi
+            'F' => 30,  // Unit Kerja
             'G' => 12,  // Status
         ];
     }

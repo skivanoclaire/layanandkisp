@@ -19,12 +19,12 @@
             <input type="text" value="{{ $user->nip ?? '-' }}" disabled class="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Instansi <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Unit Kerja <span class="text-red-500">*</span></label>
             @php($selectedUnitKerjaId = old('unit_kerja_id', $item->unit_kerja_id ?? $user->unit_kerja_id))
             <input type="text" value="{{ optional($unitKerjaList->firstWhere('id', $selectedUnitKerjaId))->nama ?? ($user->unitKerja?->nama ?? '-') }}" disabled
                    class="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
             <input type="hidden" name="unit_kerja_id" value="{{ $selectedUnitKerjaId }}">
-            <p class="text-xs text-gray-500 mt-1">Instansi diambil dari data akun Anda</p>
+            <p class="text-xs text-gray-500 mt-1">Unit Kerja diambil dari data akun Anda</p>
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">No. HP <span class="text-red-500">*</span></label>

@@ -22,7 +22,7 @@ class VidconRequestController extends Controller
 
     public function create()
     {
-        // Hanya cek NIP (sudah jadi guard sebelumnya). Untuk Instansi & No HP
+        // Hanya cek NIP (sudah jadi guard sebelumnya). Untuk Unit Kerja & No HP
         // tidak redirect — view akan menampilkan banner peringatan saja.
         $user = auth()->user();
         if (empty($user->nip)) {
@@ -38,7 +38,7 @@ class VidconRequestController extends Controller
         $user = auth()->user();
         if (empty($user->nip) || empty($user->unit_kerja_id) || empty($user->phone)) {
             throw ValidationException::withMessages([
-                'profil' => 'Profil Anda belum lengkap (NIP/Instansi/No. HP). Silakan lengkapi profil terlebih dahulu.'
+                'profil' => 'Profil Anda belum lengkap (NIP/Unit Kerja/No. HP). Silakan lengkapi profil terlebih dahulu.'
             ]);
         }
 

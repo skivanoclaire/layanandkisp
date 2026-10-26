@@ -553,8 +553,8 @@ return [
     |--------------------------------------------------------------------------
     | Padanan nama perangkat daerah
     |--------------------------------------------------------------------------
-    | Nama pada Excel yang berbeda dengan nama di Master Data Instansi.
-    | Kiri: nama pada Excel, kanan: nama pada Master Data Instansi.
+    | Nama pada Excel yang berbeda dengan nama di Master Data Unit Kerja.
+    | Kiri: nama pada Excel, kanan: nama pada Master Data Unit Kerja.
     | Pencocokan mengabaikan huruf besar/kecil dan tanda kutip.
     */
     'alias_instansi' => [

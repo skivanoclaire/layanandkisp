@@ -47,7 +47,7 @@ class TtePassphraseResetController extends Controller
             'instansi' => 'required|string|max:255',
             'jabatan' => 'required|string|max:255',
         ], [
-            'instansi.required' => 'Instansi wajib dipilih.',
+            'instansi.required' => 'Unit Kerja wajib dipilih.',
             'jabatan.required' => 'Jabatan wajib diisi.',
         ]);
 

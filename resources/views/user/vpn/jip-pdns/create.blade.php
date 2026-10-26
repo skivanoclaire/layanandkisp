@@ -48,11 +48,11 @@
                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
             </div>
 
-            <!-- Instansi (terkunci, ambil dari profil) -->
+            <!-- Unit Kerja (terkunci, ambil dari profil) -->
             <input type="hidden" name="is_kabupaten_kota" value="0">
             <input type="hidden" name="unit_kerja_id" value="{{ Auth::user()->unit_kerja_id }}">
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Instansi</label>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Unit Kerja</label>
                 <input type="text" value="{{ Auth::user()->unitKerja->nama ?? '-' }}" readonly
                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
                 <p class="mt-1 text-xs text-gray-500">Diambil dari profil. Hubungi admin jika perlu perubahan.</p>

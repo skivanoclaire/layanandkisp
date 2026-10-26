@@ -21,9 +21,9 @@
         <input type="text" name="nama_konsumen" value="{{ old('nama_konsumen', $consumer->nama_konsumen ?? '') }}" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
     </div>
     <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Instansi Konsumen</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Kerja Konsumen</label>
         <select name="instansi_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-            <option value="">-- Pilih Instansi --</option>
+            <option value="">-- Pilih Unit Kerja --</option>
             @foreach ($unitKerjaList as $uk)
                 <option value="{{ $uk->id }}" @selected(old('instansi_id', $consumer->instansi_id ?? '') == $uk->id)>{{ $uk->nama }}</option>
             @endforeach

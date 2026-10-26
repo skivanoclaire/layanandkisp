@@ -41,7 +41,7 @@
                 <thead>
                     <tr class="bg-gray-100">
                         <th class="border border-gray-300 px-3 py-2 text-left">Tanggal</th>
-                        <th class="border border-gray-300 px-3 py-2 text-left">Instansi</th>
+                        <th class="border border-gray-300 px-3 py-2 text-left">Unit Kerja</th>
                         <th class="border border-gray-300 px-3 py-2 text-left">Pemohon</th>
                         <th class="border border-gray-300 px-3 py-2 text-left">Usulan</th>
                         <th class="border border-gray-300 px-3 py-2 text-left">Entri</th>

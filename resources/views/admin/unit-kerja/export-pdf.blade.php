@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Master Data Instansi</title>
+    <title>Master Data Unit Kerja</title>
     <style>
         @page { margin: 20px 20px 30px 20px; }
         body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
@@ -23,7 +23,7 @@
     </style>
 </head>
 <body>
-    <h1>MASTER DATA INSTANSI</h1>
+    <h1>MASTER DATA UNIT KERJA</h1>
     <div class="subtitle">Dokumen ini digenerate secara otomatis oleh Sistem E-Layanan DKISP</div>
 
     <div class="meta">
@@ -39,7 +39,7 @@
         <thead>
             <tr>
                 <th style="width: 5%;" class="text-center">No</th>
-                <th style="width: 65%;">Nama Instansi</th>
+                <th style="width: 65%;">Nama Unit Kerja</th>
                 <th style="width: 30%;">Tipe</th>
             </tr>
         </thead>

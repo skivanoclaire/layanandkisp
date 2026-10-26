@@ -171,7 +171,7 @@ class UnifiedSubdomainController extends Controller
                 'Subdomain',
                 'IP Address',
                 'Sumber',
-                'Nama Pemohon/Instansi',
+                'Nama Pemohon/Unit Kerja',
                 'Status Permohonan',
                 'Status Monitoring',
                 'Aktif',

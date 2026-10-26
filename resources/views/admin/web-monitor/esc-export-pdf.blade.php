@@ -56,7 +56,7 @@
             <tr>
                 <th style="width: 2.5%;">No</th>
                 <th class="left" style="width: 13%;">Nama Subdomain</th>
-                <th class="left" style="width: 13%;">Instansi</th>
+                <th class="left" style="width: 13%;">Unit Kerja</th>
                 @foreach($questions as $qId => $qText)
                     <th style="width: 5.5%;">{{ $qText }}</th>
                 @endforeach

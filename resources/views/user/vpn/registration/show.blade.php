@@ -50,7 +50,7 @@
                     <p class="text-gray-800">{{ $vpnRegistration->nip }}</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Instansi:</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Unit Kerja:</label>
                     @if($vpnRegistration->is_kabupaten_kota)
                         <p class="text-gray-800">{{ $vpnRegistration->unit_kerja_manual ?? '-' }}</p>
                         <p class="text-xs mt-1">

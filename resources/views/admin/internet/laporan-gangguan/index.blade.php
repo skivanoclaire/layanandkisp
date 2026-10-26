@@ -50,7 +50,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium uppercase">No. Tiket</th>
                         <th class="px-4 py-3 text-left text-xs font-medium uppercase">Tanggal</th>
                         <th class="px-4 py-3 text-left text-xs font-medium uppercase">Pelapor</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Instansi</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Unit Kerja</th>
                         <th class="px-4 py-3 text-left text-xs font-medium uppercase">Permasalahan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium uppercase">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium uppercase">Aksi</th>

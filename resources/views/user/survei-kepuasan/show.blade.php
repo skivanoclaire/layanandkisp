@@ -36,7 +36,7 @@
                 @endif
                 @if($survey->webMonitor->nama_instansi)
                 <div class="flex">
-                    <span class="text-sm font-medium text-gray-500 w-40">Instansi:</span>
+                    <span class="text-sm font-medium text-gray-500 w-40">Unit Kerja:</span>
                     <span class="text-sm text-gray-900">{{ $survey->webMonitor->nama_instansi }}</span>
                 </div>
                 @endif

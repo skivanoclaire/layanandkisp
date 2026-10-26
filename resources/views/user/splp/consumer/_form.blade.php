@@ -23,12 +23,12 @@
             <input type="text" value="{{ $user->nip ?? '-' }}" disabled class="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Instansi Pemohon <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Unit Kerja Pemohon <span class="text-red-500">*</span></label>
             @php($selectedUnitKerjaId = old('unit_kerja_id', $item->unit_kerja_id ?? $user->unit_kerja_id))
             <input type="text" value="{{ optional($unitKerjaList->firstWhere('id', $selectedUnitKerjaId))->nama ?? ($user->unitKerja?->nama ?? '-') }}" disabled
                    class="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
             <input type="hidden" name="unit_kerja_id" value="{{ $selectedUnitKerjaId }}">
-            <p class="text-xs text-gray-500 mt-1">Instansi diambil dari data akun Anda</p>
+            <p class="text-xs text-gray-500 mt-1">Unit Kerja diambil dari data akun Anda</p>
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">No. HP <span class="text-red-500">*</span></label>
@@ -72,14 +72,14 @@
     @endif
 </div>
 
-{{-- Instansi Konsumen --}}
+{{-- Unit Kerja Konsumen --}}
 <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
-    <h2 class="text-lg font-bold text-gray-800 mb-4">3. Instansi Konsumen</h2>
+    <h2 class="text-lg font-bold text-gray-800 mb-4">3. Unit Kerja Konsumen</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Instansi yang akan mengakses</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Unit Kerja yang akan mengakses</label>
             <select name="instansi_konsumen_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                <option value="">-- Sama dengan instansi pemohon --</option>
+                <option value="">-- Sama dengan unit kerja pemohon --</option>
                 @foreach ($unitKerjaList as $uk)
                     <option value="{{ $uk->id }}" @selected(old('instansi_konsumen_id', $item->instansi_konsumen_id ?? '') == $uk->id)>{{ $uk->nama }}</option>
                 @endforeach

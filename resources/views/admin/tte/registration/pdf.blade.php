@@ -93,7 +93,7 @@
                 <th>Tanggal</th>
                 <th>Nama</th>
                 <th>NIP</th>
-                <th>Instansi</th>
+                <th>Unit Kerja</th>
                 <th>Status</th>
             </tr>
         </thead>

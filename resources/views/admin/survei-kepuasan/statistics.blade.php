@@ -62,7 +62,7 @@
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ranking</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subdomain</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aplikasi/Instansi</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aplikasi/Unit Kerja</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah Survei</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rata-rata Rating</th>
                         </tr>

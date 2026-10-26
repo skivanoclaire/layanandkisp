@@ -211,7 +211,7 @@
                             <span class="text-sm font-mono text-gray-700">{{ $subdomain['ip_address'] ?? '-' }}</span>
                         </td>
 
-                        <!-- Instansi -->
+                        <!-- Unit Kerja -->
                         <td class="px-4 py-3">
                             <p class="text-sm text-gray-900">{{ $subdomain['nama_instansi'] ?? '-' }}</p>
                             @if($subdomain['nama_pemohon'])

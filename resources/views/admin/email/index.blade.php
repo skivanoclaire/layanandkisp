@@ -78,7 +78,7 @@
                     <th class="px-3 py-2 text-left">Tiket</th>
                     <th class="px-3 py-2 text-left">Nama</th>
                     <th class="px-3 py-2 text-left">Username</th>
-                    <th class="px-3 py-2 text-left">Instansi</th>
+                    <th class="px-3 py-2 text-left">Unit Kerja</th>
                     <th class="px-3 py-2 text-left">Status</th>
                     <th class="px-3 py-2 text-left">Diajukan</th>
                     <th class="px-3 py-2">Aksi</th>

@@ -37,13 +37,13 @@
 
             <div class="mb-4">
                 <label for="instansi_id" class="block text-sm font-semibold text-gray-700 mb-2">
-                    Instansi <span class="text-red-500">*</span>
+                    Unit Kerja <span class="text-red-500">*</span>
                 </label>
                 <select id="instansi_id"
                         name="instansi_id"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('instansi_id') border-red-500 @enderror"
                         required>
-                    <option value="">-- Pilih Instansi --</option>
+                    <option value="">-- Pilih Unit Kerja --</option>
                     @foreach($unitKerjas as $unit)
                         <option value="{{ $unit->id }}" {{ old('instansi_id', $webMonitor->instansi_id) == $unit->id ? 'selected' : '' }}>
                             {{ $unit->nama }} ({{ $unit->tipe }})

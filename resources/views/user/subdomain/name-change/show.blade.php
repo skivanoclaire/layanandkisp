@@ -60,7 +60,7 @@
                     </div>
                     @if($request->webMonitor)
                     <div>
-                        <label class="text-sm text-gray-600">Instansi:</label>
+                        <label class="text-sm text-gray-600">Unit Kerja:</label>
                         <p class="font-semibold text-gray-800">{{ $request->webMonitor->nama_instansi }}</p>
                     </div>
                     <div>

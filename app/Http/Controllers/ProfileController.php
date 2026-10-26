@@ -66,12 +66,12 @@ class ProfileController extends Controller
         $isVerified = $user->is_verified;
 
         if (!$isVerified || $isAdmin) {
-            // Boleh update NIP, NIK, dan Instansi
+            // Boleh update NIP, NIK, dan Unit Kerja
             $user->nip = $validated['nip'] ?? null;
             $user->nik = ($validated['nik'] ?? '') !== '' ? $validated['nik'] : null;
             $user->unit_kerja_id = $validated['unit_kerja_id'] ?? null;
         }
-        // Else: NIP, NIK, dan Instansi tidak diupdate (tetap menggunakan nilai lama)
+        // Else: NIP, NIK, dan Unit Kerja tidak diupdate (tetap menggunakan nilai lama)
 
         // Jika password diisi, update password
         if (!empty($validated['password'])) {

@@ -58,7 +58,7 @@
                             <p class="text-gray-900">{{ $tteRegistration->no_hp }}</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Instansi</label>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Unit Kerja</label>
                             <p class="text-gray-900">{{ $tteRegistration->instansi }}</p>
                         </div>
                         <div>

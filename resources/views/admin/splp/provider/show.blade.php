@@ -25,7 +25,7 @@
 
                 <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
                     <div><dt class="text-gray-500">Pemohon</dt><dd class="font-medium">{{ $item->nama }} ({{ $item->nip ?? '-' }})</dd></div>
-                    <div><dt class="text-gray-500">Instansi</dt><dd class="font-medium">{{ $item->unitKerja->nama ?? '-' }}</dd></div>
+                    <div><dt class="text-gray-500">Unit Kerja</dt><dd class="font-medium">{{ $item->unitKerja->nama ?? '-' }}</dd></div>
                     <div><dt class="text-gray-500">Email</dt><dd class="font-medium">{{ $item->email_pemohon }}</dd></div>
                     <div><dt class="text-gray-500">No. HP</dt><dd class="font-medium">{{ $item->no_hp }}</dd></div>
                     <div class="md:col-span-2"><dt class="text-gray-500">Backend URL</dt><dd class="font-mono break-all">{{ $item->backend_url }}</dd></div>

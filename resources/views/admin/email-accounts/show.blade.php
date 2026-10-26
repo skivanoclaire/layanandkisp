@@ -135,7 +135,7 @@
                             <p class="text-gray-900">{{ $requestingUser->nip ?? '-' }}</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Instansi</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Unit Kerja</label>
                             <p class="text-gray-900">{{ $requestingUser->instansi ?? '-' }}</p>
                         </div>
                         <div>
@@ -209,13 +209,13 @@
                         @enderror
                     </div>
 
-                    <!-- Instansi -->
+                    <!-- Unit Kerja -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Instansi</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Unit Kerja</label>
                         <select
                             name="requester_instansi"
                             class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">-- Pilih Instansi --</option>
+                            <option value="">-- Pilih Unit Kerja --</option>
                             @foreach($unitKerjaList as $unitKerja)
                                 <option value="{{ $unitKerja->nama }}"
                                     {{ old('requester_instansi', $requestingUser->instansi ?? '') == $unitKerja->nama ? 'selected' : '' }}>

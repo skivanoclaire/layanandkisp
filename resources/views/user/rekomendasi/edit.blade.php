@@ -64,14 +64,14 @@
                 <div class="mb-4">
                     <label class="block font-semibold mb-1">Pemilik Utama Proses Bisnis / Instansi Utama Pengusul</label>
                     <select name="pemilik_proses_bisnis_id" class="w-full border rounded px-3 py-2">
-                        <option value="">-- Pilih Instansi --</option>
+                        <option value="">-- Pilih Unit Kerja --</option>
                         @foreach($unitKerjas as $unit)
                             <option value="{{ $unit->id }}" {{ old('pemilik_proses_bisnis_id', $form->pemilik_proses_bisnis_id) == $unit->id ? 'selected' : '' }}>
                                 {{ $unit->nama }}
                             </option>
                         @endforeach
                     </select>
-                    <p class="text-xs text-gray-500 mt-1 italic">💡 Unit kerja/instansi yang menjadi pemilik utama dari aplikasi ini</p>
+                    <p class="text-xs text-gray-500 mt-1 italic">💡 Unit kerja yang menjadi pemilik utama dari aplikasi ini</p>
                 </div>
 
                 {{-- Stakeholder Internal Lainnya --}}

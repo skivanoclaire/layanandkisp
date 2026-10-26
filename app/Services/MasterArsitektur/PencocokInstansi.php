@@ -5,7 +5,7 @@ namespace App\Services\MasterArsitektur;
 use App\Models\UnitKerja;
 
 /**
- * Mencocokkan nama perangkat daerah pada Excel dengan Master Data Instansi.
+ * Mencocokkan nama perangkat daerah pada Excel dengan Master Data Unit Kerja.
  * Nama yang berbeda penulisannya didaftarkan di config master_arsitektur.alias_instansi.
  */
 class PencocokInstansi

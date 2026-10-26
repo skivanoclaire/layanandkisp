@@ -54,7 +54,7 @@
     @if (! $unit)
         <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded">
             Akun Anda belum terhubung ke instansi, sehingga data arsitektur belum dapat ditampilkan.
-            <a href="{{ route('profile.edit') }}" class="font-semibold underline">Lengkapi instansi pada profil</a> terlebih dahulu.
+            <a href="{{ route('profile.edit') }}" class="font-semibold underline">Lengkapi unit kerja pada profil</a> terlebih dahulu.
         </div>
     @else
         {{-- Tab kategori --}}

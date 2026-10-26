@@ -70,7 +70,7 @@ class TikScheduleController extends Controller
             ->map(function ($items) {
                 $unitKerja = $items->first()->unitKerja;
                 return (object) [
-                    'nama_instansi' => $unitKerja ? $unitKerja->nama : 'Instansi Tidak Diketahui',
+                    'nama_instansi' => $unitKerja ? $unitKerja->nama : 'Unit Kerja Tidak Diketahui',
                     'total' => $items->count()
                 ];
             })

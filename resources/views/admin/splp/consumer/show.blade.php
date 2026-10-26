@@ -24,8 +24,8 @@
 
                 <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
                     <div><dt class="text-gray-500">Pemohon</dt><dd class="font-medium">{{ $item->nama }} ({{ $item->nip ?? '-' }})</dd></div>
-                    <div><dt class="text-gray-500">Instansi Pemohon</dt><dd class="font-medium">{{ $item->unitKerja->nama ?? '-' }}</dd></div>
-                    <div><dt class="text-gray-500">Instansi Konsumen</dt><dd class="font-medium">{{ $item->instansiKonsumen->nama ?? $item->unitKerja->nama ?? '-' }} @if($item->is_eksternal)<span class="text-orange-600">(Eksternal)</span>@endif</dd></div>
+                    <div><dt class="text-gray-500">Unit Kerja Pemohon</dt><dd class="font-medium">{{ $item->unitKerja->nama ?? '-' }}</dd></div>
+                    <div><dt class="text-gray-500">Unit Kerja Konsumen</dt><dd class="font-medium">{{ $item->instansiKonsumen->nama ?? $item->unitKerja->nama ?? '-' }} @if($item->is_eksternal)<span class="text-orange-600">(Eksternal)</span>@endif</dd></div>
                     <div><dt class="text-gray-500">OPD Pemilik Layanan</dt><dd class="font-medium">{{ $item->service->opdPemilik->nama ?? '-' }}</dd></div>
                     <div><dt class="text-gray-500">Klasifikasi Layanan</dt><dd class="font-medium">{{ ucfirst($item->service->klasifikasi_data ?? '-') }}</dd></div>
                     <div><dt class="text-gray-500">Estimasi Volume</dt><dd class="font-medium">{{ $item->estimasi_volume ?? '-' }} {{ str_replace('_', ' ', $item->volume_satuan ?? '') }}</dd></div>

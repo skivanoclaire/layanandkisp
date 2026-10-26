@@ -1,14 +1,14 @@
 @extends('layouts.authenticated')
 
-@section('title', '- Tambah Instansi')
-@section('header-title', 'Tambah Instansi')
+@section('title', '- Tambah Unit Kerja')
+@section('header-title', 'Tambah Unit Kerja')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto">
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Tambah Instansi</h1>
-            <p class="text-gray-600 mt-2">Tambahkan instansi baru ke dalam sistem</p>
+            <h1 class="text-2xl font-bold text-gray-800">Tambah Unit Kerja</h1>
+            <p class="text-gray-600 mt-2">Tambahkan unit kerja baru ke dalam sistem</p>
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6">
@@ -17,7 +17,7 @@
 
                 <div class="mb-6">
                     <label for="nama" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Instansi <span class="text-red-500">*</span>
+                        Nama Unit Kerja <span class="text-red-500">*</span>
                     </label>
                     <input
                         type="text"

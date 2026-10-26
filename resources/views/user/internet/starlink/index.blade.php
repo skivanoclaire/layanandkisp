@@ -67,7 +67,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No. Tiket</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tanggal Pengajuan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Periode Kegiatan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Instansi</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Unit Kerja</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Aksi</th>
                     </tr>

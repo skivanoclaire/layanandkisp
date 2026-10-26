@@ -48,7 +48,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">Instansi</label>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Unit Kerja</label>
                     <p class="text-gray-900 font-medium">{{ $vidconData->unitKerja->nama ?? $vidconData->nama_instansi ?? '-' }}</p>
                 </div>
 

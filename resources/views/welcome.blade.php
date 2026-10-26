@@ -418,7 +418,7 @@
                                     <ol class="list-decimal list-inside text-gray-800 space-y-2 mb-6">
                                         <li>Nama Pemohon</li>
                                         <li>NIP Pemohon</li>
-                                        <li>Instansi Pemohon</li>
+                                        <li>Unit Kerja Pemohon</li>
                                         <li>Nama username email <span class="font-medium text-blue-600">@kaltaraprov.go.id</span>
                                             yang ingin dibuat</li>
                                         <li>Email alternatif yang dimiliki oleh pemohon (Gmail/Yahoo/dll)</li>

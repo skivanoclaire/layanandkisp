@@ -27,7 +27,7 @@ class ArsitekturPublikController extends Controller
         $konfig = Skema::kategori($kategori);
         $filter = $this->dasbor->filterDari($kategori, $request->query());
 
-        // Entri yang belum terpetakan ke Master Data Instansi adalah urusan internal admin
+        // Entri yang belum terpetakan ke Master Data Unit Kerja adalah urusan internal admin
         if (($filter['opd'] ?? null) === Dasbor::BELUM_TERPETAKAN) {
             unset($filter['opd']);
         }

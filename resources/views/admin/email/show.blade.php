@@ -19,7 +19,7 @@
                     <dd>{{ $item->nip ?? '-' }}</dd>
                 </div>
                 <div>
-                    <dt class="font-medium">Instansi</dt>
+                    <dt class="font-medium">Unit Kerja</dt>
                     <dd>{{ $item->instansi }}</dd>
                 </div>
                 <div>

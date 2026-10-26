@@ -9,7 +9,7 @@
 
     <form action="{{ route('admin.monitorweb.update', $formData->id) }}" method="POST" class="mb-4">
         @csrf
-        <input type="text" name="nama_instansi" placeholder="Nama Instansi" class="border p-2" value="{{ $formData->nama_instansi }}" required>
+        <input type="text" name="nama_instansi" placeholder="Nama Unit Kerja" class="border p-2" value="{{ $formData->nama_instansi }}" required>
         <input type="text" name="subdomain" placeholder="Subdomain" class="border p-2" value="{{ $formData->subdomain }}" required>
         <select name="status" class="border p-2" required>
             <option value="Aktif" {{ $formData->status == 'Aktif' ? 'selected' : '' }}>Aktif</option>

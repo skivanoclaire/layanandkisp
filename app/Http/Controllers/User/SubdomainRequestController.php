@@ -137,7 +137,7 @@ class SubdomainRequestController extends Controller
             // Consent
             'consent_true'               => ['accepted'],
         ], [
-            'unit_kerja_id.required'           => 'Instansi wajib diisi.',
+            'unit_kerja_id.required'           => 'Unit Kerja wajib diisi.',
             'subdomain_requested.unique'       => 'Subdomain sudah pernah diajukan atau sudah terdaftar.',
             'subdomain_requested.alpha_dash'   => 'Subdomain hanya boleh berisi huruf, angka, dan tanda hubung.',
             'ip_address.ip'                    => 'Format IP Address tidak valid.',

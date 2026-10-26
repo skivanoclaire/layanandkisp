@@ -59,15 +59,15 @@
                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed">
             </div>
 
-            <!-- Instansi -->
+            <!-- Unit Kerja -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">
-                    Instansi <span class="text-red-500">*</span>
+                    Unit Kerja <span class="text-red-500">*</span>
                 </label>
                 <input type="text" value="{{ Auth::user()->unitKerja?->nama ?? '-' }}" disabled
                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed">
                 <input type="hidden" name="unit_kerja_id" value="{{ Auth::user()->unit_kerja_id }}">
-                <p class="mt-1 text-xs text-gray-500">Instansi diambil dari data akun Anda</p>
+                <p class="mt-1 text-xs text-gray-500">Unit Kerja diambil dari data akun Anda</p>
             </div>
 
             <!-- Spesifikasi VPS -->

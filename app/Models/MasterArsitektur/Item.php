@@ -36,7 +36,7 @@ class Item extends Model
         return $this->belongsTo(UnitKerja::class);
     }
 
-    /** Nama perangkat daerah: dari Master Data Instansi bila sudah terpetakan. */
+    /** Nama perangkat daerah: dari Master Data Unit Kerja bila sudah terpetakan. */
     public function getNamaUnitKerjaAttribute(): ?string
     {
         return $this->unitKerja?->nama ?? $this->unit_kerja_teks;

@@ -9,7 +9,7 @@
 
     <form action="{{ route('admin.monitorweb.store') }}" method="POST" class="mb-4">
         @csrf
-        <input type="text" name="nama_instansi" placeholder="Nama Instansi" class="border p-2 w-full mb-2" required>
+        <input type="text" name="nama_instansi" placeholder="Nama Unit Kerja" class="border p-2 w-full mb-2" required>
         <input type="text" name="subdomain" placeholder="Subdomain" class="border p-2 w-full mb-2" required>
         <select name="status" class="border p-2 w-full mb-2" required>
             <option value="Aktif">Aktif</option>

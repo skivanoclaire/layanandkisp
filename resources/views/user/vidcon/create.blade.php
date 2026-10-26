@@ -8,7 +8,7 @@
 
     @php
         $profileMissing = [];
-        if (empty(auth()->user()->unit_kerja_id)) $profileMissing[] = 'Instansi';
+        if (empty(auth()->user()->unit_kerja_id)) $profileMissing[] = 'Unit Kerja';
         if (empty(auth()->user()->phone)) $profileMissing[] = 'No. HP/WhatsApp';
     @endphp
     @if(count($profileMissing) > 0)
@@ -77,7 +77,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Instansi</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Unit Kerja</label>
                     <input type="text"
                            value="{{ auth()->user()->unitKerja->nama ?? '-' }}"
                            readonly

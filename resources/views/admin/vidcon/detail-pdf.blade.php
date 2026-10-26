@@ -150,7 +150,7 @@
     <table class="data">
         <tr><th>Nama</th><td>{{ $dash($item->nama) }}</td></tr>
         <tr><th>NIP</th><td>{{ $dash($item->nip) }}</td></tr>
-        <tr><th>Instansi / Unit Kerja</th><td>{{ $item->unitKerja->nama ?? '-' }}</td></tr>
+        <tr><th>Unit Kerja</th><td>{{ $item->unitKerja->nama ?? '-' }}</td></tr>
         <tr><th>Email</th><td>{{ $dash($item->email_pemohon) }}</td></tr>
         <tr><th>No. HP</th><td>{{ $dash($item->no_hp) }}</td></tr>
         <tr><th>Akun Pengaju</th><td>{{ $item->user->name ?? '-' }}{{ $item->user?->email ? ' (' . $item->user->email . ')' : '' }}</td></tr>

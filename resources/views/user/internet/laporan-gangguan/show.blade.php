@@ -71,7 +71,7 @@
                 <p class="font-semibold">{{ $laporanGangguan->nip }}</p>
             </div>
             <div>
-                <p class="text-sm text-gray-600">Instansi</p>
+                <p class="text-sm text-gray-600">Unit Kerja</p>
                 <p class="font-semibold">{{ $laporanGangguan->unitKerja->nama ?? '-' }}</p>
             </div>
             <div>

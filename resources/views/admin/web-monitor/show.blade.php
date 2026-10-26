@@ -60,7 +60,7 @@
                         </h2>
                         <div class="space-y-2">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Instansi:</span>
+                                <span class="text-gray-600">Unit Kerja:</span>
                                 <span class="font-semibold">{{ $webMonitor->instansi->nama ?? '-' }}</span>
                             </div>
                             <div class="flex justify-between">

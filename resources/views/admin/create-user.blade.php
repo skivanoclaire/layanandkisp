@@ -117,7 +117,7 @@
 
                 <div class="mb-6">
                     <label for="unit_kerja_id" class="block text-sm font-medium text-gray-700 mb-2">
-                        Unit Kerja / Instansi
+                        Unit Kerja
                     </label>
                     <select
                         id="unit_kerja_id"
@@ -134,7 +134,7 @@
                     @error('unit_kerja_id')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-xs text-gray-500">Opsional - Pilih untuk user yang merupakan pegawai instansi</p>
+                    <p class="mt-1 text-xs text-gray-500">Opsional - Pilih untuk user yang merupakan pegawai unit kerja</p>
                 </div>
 
                 <div class="mb-6">

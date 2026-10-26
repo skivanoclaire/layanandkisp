@@ -54,7 +54,7 @@ class ImporMasterArsitekturCommand extends Command
 
         if ($tanpaInstansi) {
             arsort($tanpaInstansi);
-            $this->warn('Nama perangkat daerah yang tidak ditemukan di Master Data Instansi:');
+            $this->warn('Nama perangkat daerah yang tidak ditemukan di Master Data Unit Kerja:');
             foreach ($tanpaInstansi as $nama => $jumlah) {
                 $this->line("  - {$nama} ({$jumlah} baris)");
             }

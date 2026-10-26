@@ -47,7 +47,7 @@ class VidconDataExport implements FromCollection, WithHeadings, WithMapping, Wit
     {
         return [
             'No',
-            'Nama Instansi',
+            'Nama Unit Kerja',
             'Nomor Surat',
             'Judul Kegiatan',
             'Lokasi',

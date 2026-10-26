@@ -18,7 +18,7 @@
                 @enderror
             </div>
 
-            {{-- ====== LIST INSTANSI ====== --}}
+            {{-- ====== LIST UNIT KERJA ====== --}}
             @php
                 $instansiList = [
                     // Sekretariat Daerah
@@ -192,9 +192,9 @@
                         class="w-full border rounded p-2 bg-gray-100 text-gray-700 cursor-not-allowed">
                 </div>
                 <div>
-                    <label class="block text-sm mb-1">Instansi</label>
+                    <label class="block text-sm mb-1">Unit Kerja</label>
                     <select name="instansi" required class="w-full border rounded p-2">
-                        <option value="" disabled>-- Pilih Instansi --</option>
+                        <option value="" disabled>-- Pilih Unit Kerja --</option>
                         @foreach ($unitKerjaList as $unitKerja)
                             <option value="{{ $unitKerja->nama }}"
                                 {{ old('instansi', $item->instansi) === $unitKerja->nama ? 'selected' : '' }}>

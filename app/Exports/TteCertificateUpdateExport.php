@@ -20,7 +20,7 @@ class TteCertificateUpdateExport extends BaseTteExport
             'Nama',
             'NIP',
             'Email Resmi',
-            'Instansi',
+            'Unit Kerja',
             'Nomor Sertifikat Lama',
             'Status',
             'Diproses Oleh',
@@ -57,7 +57,7 @@ class TteCertificateUpdateExport extends BaseTteExport
             'D' => 25,  // Nama
             'E' => 15,  // NIP
             'F' => 25,  // Email
-            'G' => 30,  // Instansi
+            'G' => 30,  // Unit Kerja
             'H' => 20,  // Nomor Sertifikat Lama
             'I' => 12,  // Status
             'J' => 20,  // Diproses Oleh

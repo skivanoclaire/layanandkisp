@@ -42,7 +42,7 @@
                     <th class="px-4 py-3 text-left">No. Tiket</th>
                     <th class="px-4 py-3 text-left">Nama Layanan</th>
                     <th class="px-4 py-3 text-left">Pemohon</th>
-                    <th class="px-4 py-3 text-left">Instansi</th>
+                    <th class="px-4 py-3 text-left">Unit Kerja</th>
                     <th class="px-4 py-3 text-left">Tanggal</th>
                     <th class="px-4 py-3 text-left">Status</th>
                     <th class="px-4 py-3 text-center">Aksi</th>

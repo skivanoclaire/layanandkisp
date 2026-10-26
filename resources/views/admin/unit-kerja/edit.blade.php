@@ -1,14 +1,14 @@
 @extends('layouts.authenticated')
 
-@section('title', '- Edit Instansi')
-@section('header-title', 'Edit Instansi')
+@section('title', '- Edit Unit Kerja')
+@section('header-title', 'Edit Unit Kerja')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto">
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Edit Instansi</h1>
-            <p class="text-gray-600 mt-2">Perbarui informasi instansi</p>
+            <h1 class="text-2xl font-bold text-gray-800">Edit Unit Kerja</h1>
+            <p class="text-gray-600 mt-2">Perbarui informasi unit kerja</p>
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6">
@@ -18,7 +18,7 @@
 
                 <div class="mb-6">
                     <label for="nama" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Instansi <span class="text-red-500">*</span>
+                        Nama Unit Kerja <span class="text-red-500">*</span>
                     </label>
                     <input
                         type="text"
@@ -73,10 +73,10 @@
                             {{ old('is_active', $unitKerja->is_active) ? 'checked' : '' }}
                             class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         >
-                        <span class="ml-2 text-sm text-gray-700">Instansi Aktif</span>
+                        <span class="ml-2 text-sm text-gray-700">Unit Kerja Aktif</span>
                     </label>
                     <p class="mt-1 text-sm text-gray-500 ml-6">
-                        Instansi tidak aktif tidak akan muncul di pilihan form
+                        Unit Kerja tidak aktif tidak akan muncul di pilihan form
                     </p>
                 </div>
 
@@ -98,7 +98,7 @@
         </div>
 
         <div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <h3 class="text-sm font-medium text-red-800 mb-2">Hapus Instansi</h3>
+            <h3 class="text-sm font-medium text-red-800 mb-2">Hapus Unit Kerja</h3>
             <p class="text-sm text-red-600 mb-4">
                 Tindakan ini tidak dapat dibatalkan. Pastikan tidak ada data terkait sebelum menghapus.
             </p>
@@ -109,7 +109,7 @@
                     type="submit"
                     class="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
                 >
-                    Hapus Instansi
+                    Hapus Unit Kerja
                 </button>
             </form>
         </div>
