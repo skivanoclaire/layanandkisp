@@ -5,7 +5,7 @@ namespace Tests\Feature\TataKelolaKeamanan;
 use App\Models\Role;
 use App\Models\TataKelolaKeamanan\Aktivitas;
 use App\Models\TataKelolaKeamanan\Pemetaan;
-use App\Models\TataKelolaKeamanan\Penilaian;
+use App\Models\TataKelolaKeamanan\HasilFgd;
 use App\Models\TataKelolaKeamanan\Praktik;
 use App\Models\TataKelolaKeamanan\Evaluasi;
 use App\Models\TataKelolaKeamanan\LampiranJawaban;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
- * Modul Tesis: model integrasi COBIT 2019 dan ISO/IEC 27001:2022 (proposal v2).
+ * Modul Tesis: model integrasi COBIT 2019 dan ISO/IEC 27001:2022 (proposal v4: validasi dokumen + FGD).
  */
 class TataKelolaKeamananTest extends TestCase
 {
@@ -79,15 +79,17 @@ class TataKelolaKeamananTest extends TestCase
         $this->actingAs($responden)->get(route('tata-kelola-keamanan.responden.index'))->assertOk()->assertSee('Kuesioner aktivitas');
         $this->actingAs($responden)->get(route('tata-kelola-keamanan.responden.design-factors', $evaluasi))->assertOk()->assertSee('DF11');
         $this->actingAs($responden)->get(route('tata-kelola-keamanan.responden.aktivitas', $evaluasi))->assertOk()->assertSee('APO12');
-        $pakarSimulasi = User::where('email', 'pakar1.simulasi@example.test')->firstOrFail();
-        $this->actingAs($pakarSimulasi)->get(route('tata-kelola-keamanan.pakar.index'))->assertOk()->assertSee('[SIMULASI]', false);
-        $this->actingAs($pakarSimulasi)->get(route('tata-kelola-keamanan.pakar.show', $evaluasi))->assertOk()->assertSee('tidak ada putaran');
+        $this->actingAs($admin)->get(route('admin.tata-kelola-keamanan.validasi.lembar', [$evaluasi, 'sesi' => 2]))->assertOk()
+            ->assertSee('Lembar Validasi Model')->assertSee('DSS05.05');
+        $this->actingAs($admin)->get(route('admin.tata-kelola-keamanan.laporan', $evaluasi))->assertOk()
+            ->assertSee('Hasil validasi model')->assertSee('FGD sesi 2');
         $this->actingAs($admin)->get(route('admin.tata-kelola-keamanan.index'))->assertOk()->assertSee('[SIMULASI]', false);
         $this->actingAs($admin)->get(route('admin.tata-kelola-keamanan.export', $evaluasi))->assertOk()
             ->assertHeader('content-disposition');
 
-        // Seeder: semua butir disepakati setelah dua putaran
+        // Seeder: semua butir disepakati setelah dua sesi FGD
         $this->assertSame(0, $evaluasi->pemetaans()->where('status', Pemetaan::STATUS_DRAF)->count());
+        $this->assertSame(2, $evaluasi->sesiFgds()->count());
     }
 
     public function test_saran_pemilihan_objektif_memakai_skor_minimal_dan_batas_delapan(): void
@@ -120,98 +122,113 @@ class TataKelolaKeamananTest extends TestCase
         $this->assertSame(3, $evaluasi->objektifs()->where('kode', 'EDM03')->first()->target_level);
     }
 
-    public function test_alur_delphi_dari_penilaian_pakar_sampai_kesepakatan(): void
+    public function test_alur_validasi_model_dari_verifikasi_dokumen_sampai_kesepakatan_fgd(): void
     {
         [$evaluasi, $praktik, $pemetaan] = $this->evaluasiDenganPemetaan();
         $kedua = Pemetaan::create(['evaluasi_id' => $evaluasi->id, 'praktik_id' => $praktik->id, 'iso_items' => ['A.8.12'], 'status' => Pemetaan::STATUS_DRAF]);
+        $informan = $evaluasi->respondens()->create(['user_id' => $this->akunUser(RoleModul::RESPONDEN)->id, 'jabatan' => 'Kepala Bidang Persandian']);
         $admin = $this->admin();
-        $pakars = collect(range(1, 3))->map(fn ($i) => $this->pakar($evaluasi));
 
-        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.putaran.buka', $evaluasi))->assertRedirect();
-        $putaran = $evaluasi->putaranAktif();
-        $this->assertSame(1, $putaran->nomor);
+        // Sesi FGD tidak dapat dibuka sebelum ada butir yang lolos verifikasi dokumen
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.buka', $evaluasi), ['tanggal' => '2026-11-02', 'peserta' => [$informan->id]])
+            ->assertSessionHas('error');
 
-        // Pemetaan terkunci selama putaran dibuka
-        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.pemetaan.update', [$evaluasi, $pemetaan]), [
-            'praktik_id' => $praktik->id, 'iso_items' => ['K4.3'],
+        // Verifikasi: butir pertama didukung dua dokumen acuan, butir kedua belum ditemukan dukungannya
+        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.validasi.verifikasi', [$evaluasi, $pemetaan]), [
+            'dokumen' => ['COBIT-RG', 'ISO27002'], 'rujukan' => ['COBIT-RG' => 'hlm. 120', 'ISO27002' => 'Tabel B.1'],
         ])->assertRedirect();
-        $this->assertSame(['K4.3', 'A.5.1'], $pemetaan->fresh()->iso_items);
+        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.validasi.verifikasi', [$evaluasi, $kedua]), [])->assertRedirect();
+        $this->assertSame(Pemetaan::VERIFIKASI_DIDUKUNG, $pemetaan->fresh()->verifikasi);
+        $this->assertSame(['COBIT-RG' => 'hlm. 120', 'ISO27002' => 'Tabel B.1'], $pemetaan->fresh()->dokumen_acuan);
+        $this->assertSame(Pemetaan::VERIFIKASI_TIDAK_DIDUKUNG, $kedua->fresh()->verifikasi);
 
-        // Ketiga pakar setuju butir pertama; butir kedua hanya 1 dari 3
-        foreach ($pakars as $i => $pk) {
-            $this->actingAs($pk->user)->get(route('tata-kelola-keamanan.pakar.show', $evaluasi))->assertOk()
-                ->assertSee('APO13.01')->assertSee('Kebijakan keamanan informasi')   // terjemahan A.5.1
-                ->assertSee('Policies for information security')->assertSee('Pergub Kaltara 20/2024 Pasal 3');
-            $this->actingAs($pk->user)->post(route('tata-kelola-keamanan.pakar.simpan', $evaluasi), [
-                'setuju' => [$pemetaan->id => '1', $kedua->id => $i === 0 ? '1' : '0'],
-                'saran' => [$kedua->id => 'Kurang tepat'],
-            ])->assertRedirect(route('tata-kelola-keamanan.pakar.show', $evaluasi));
-        }
-        $this->assertSame(6, Penilaian::count());
+        // Sesi 1: hanya butir yang lolos verifikasi yang dibahas
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.buka', $evaluasi), [
+            'tanggal' => '2026-11-02', 'tempat' => 'Ruang rapat', 'peserta' => [$informan->id],
+        ])->assertRedirect();
+        $sesi = $evaluasi->sesiAktif();
+        $this->assertSame(1, $sesi->nomor);
+        $this->actingAs($admin)->get(route('admin.tata-kelola-keamanan.validasi.lembar', $evaluasi))->assertOk()
+            ->assertSee('APO13.01')->assertSee('hlm. 120')->assertDontSee('A.8.12');
 
-        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.putaran.tutup', [$evaluasi, $putaran]))->assertRedirect();
-        $this->assertSame(Pemetaan::STATUS_DISEPAKATI, $pemetaan->fresh()->status);
-        $this->assertSame(1, $pemetaan->fresh()->putaran_disepakati);
-        $this->assertSame(Pemetaan::STATUS_DRAF, $kedua->fresh()->status);
-
-        // Butir yang disepakati tidak dapat diubah lagi; butir draf boleh direvisi
+        // Pemetaan dan verifikasi terkunci selama sesi dibuka
         $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.pemetaan.update', [$evaluasi, $kedua]), [
-            'praktik_id' => $praktik->id, 'iso_items' => ['A.7.2'], 'catatan_revisi' => 'Revisi',
+            'praktik_id' => $praktik->id, 'iso_items' => ['A.7.2'],
         ])->assertRedirect();
-        $this->assertSame(['A.7.2'], $kedua->fresh()->iso_items);
+        $this->assertSame(['A.8.12'], $kedua->fresh()->iso_items);
 
-        // Putaran 2 dan 3 tetap tidak sepakat -> dikeluarkan setelah putaran ketiga
-        foreach ([2, 3] as $nomor) {
-            $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.putaran.buka', $evaluasi));
-            $pt = $evaluasi->putaranAktif();
-            $this->assertSame($nomor, $pt->nomor);
-            foreach ($pakars as $pk) {
-                $this->actingAs($pk->user)->post(route('tata-kelola-keamanan.pakar.simpan', $evaluasi), ['setuju' => [$kedua->id => '0']]);
-            }
-            $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.putaran.tutup', [$evaluasi, $pt]));
-        }
+        // Forum tidak setuju; butir tetap draf untuk diperbaiki
+        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.sesi-fgd.simpan', [$evaluasi, $sesi]), [
+            'tanggal' => '2026-11-02', 'peserta' => [$informan->id], 'catatan' => 'Mufakat',
+            'keputusan' => [$pemetaan->id => 'tidak_setuju', $kedua->id => 'setuju'],
+            'saran' => [$pemetaan->id => 'Tambahkan klausul 5.2'],
+        ])->assertRedirect();
+        $this->assertSame(1, HasilFgd::count()); // butir kedua bukan bagian sesi ini
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.tutup', [$evaluasi, $sesi]))->assertRedirect();
+        $this->assertSame(Pemetaan::STATUS_DRAF, $pemetaan->fresh()->status);
+
+        // Perbaikan butir membatalkan verifikasinya
+        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.pemetaan.update', [$evaluasi, $pemetaan]), [
+            'praktik_id' => $praktik->id, 'iso_items' => ['K4.3', 'K5.2', 'A.5.1'], 'catatan_revisi' => 'Saran FGD sesi 1',
+        ])->assertRedirect();
+        $this->assertNull($pemetaan->fresh()->verifikasi);
+        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.validasi.verifikasi', [$evaluasi, $pemetaan]), ['dokumen' => ['COBIT-RG']]);
+
+        // Butir kedua dipertahankan sebagai rancangan peneliti hanya bila dijelaskan
+        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.validasi.verifikasi', [$evaluasi, $kedua]), ['pertahankan' => 1])
+            ->assertSessionHas('error');
+        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.validasi.verifikasi', [$evaluasi, $kedua]), [
+            'pertahankan' => 1, 'catatan_verifikasi' => 'Keterkaitan dijelaskan dari tujuan praktik',
+        ]);
+        $this->assertSame(Pemetaan::VERIFIKASI_RANCANGAN_PENELITI, $kedua->fresh()->verifikasi);
+
+        // Sesi 2: keduanya dibahas; satu disepakati, satu tetap tidak disepakati lalu dikeluarkan
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.buka', $evaluasi), ['tanggal' => '2026-11-09', 'peserta_lain' => 'Staf Bidang Aplikasi']);
+        $sesi2 = $evaluasi->sesiAktif();
+        $this->assertSame(2, $sesi2->nomor);
+        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.sesi-fgd.simpan', [$evaluasi, $sesi2]), [
+            'tanggal' => '2026-11-09', 'peserta_lain' => 'Staf Bidang Aplikasi',
+            'keputusan' => [$pemetaan->id => 'setuju', $kedua->id => 'tidak_setuju'],
+        ]);
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.tutup', [$evaluasi, $sesi2]));
+        $this->assertSame(Pemetaan::STATUS_DISEPAKATI, $pemetaan->fresh()->status);
+        $this->assertSame(2, $pemetaan->fresh()->sesi_disepakati);
+
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.validasi.keluarkan', [$evaluasi, $kedua]), [])->assertSessionHasErrors('alasan_dikeluarkan');
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.validasi.keluarkan', [$evaluasi, $kedua]), ['alasan_dikeluarkan' => 'Tidak disepakati FGD sesi 2']);
         $this->assertSame(Pemetaan::STATUS_DIKELUARKAN, $kedua->fresh()->status);
 
-        // Putaran keempat tidak boleh dibuka
-        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.putaran.buka', $evaluasi))->assertSessionHas('error');
+        // Butir yang sudah dibahas dalam FGD tidak dapat dihapus
+        $this->actingAs($admin)->delete(route('admin.tata-kelola-keamanan.pemetaan.destroy', [$evaluasi, $kedua]))->assertRedirect();
+        $this->assertNotNull($kedua->fresh());
+
+        $this->actingAs($admin)->get(route('admin.tata-kelola-keamanan.laporan', $evaluasi))->assertOk()
+            ->assertSee('Tidak disepakati FGD sesi 2')->assertSee('Staf Bidang Aplikasi');
     }
 
-    public function test_pakar_harus_terdaftar_aktif_dan_menilai_saat_putaran_dibuka(): void
+    public function test_sesi_fgd_wajib_tanggal_dan_peserta_dari_evaluasi_yang_sama(): void
     {
         [$evaluasi, , $pemetaan] = $this->evaluasiDenganPemetaan();
-        $pakar = $this->pakar($evaluasi);
+        $pemetaan->update(['verifikasi' => Pemetaan::VERIFIKASI_DIDUKUNG, 'dokumen_acuan' => ['COBIT-RG' => null]]);
         $evaluasiLain = Evaluasi::create(['nama' => 'Lain']);
+        $orangLain = $evaluasiLain->respondens()->create(['user_id' => $this->akunUser(RoleModul::RESPONDEN)->id, 'jabatan' => 'X']);
+        $admin = $this->admin();
 
-        // Tanpa login dan tanpa role ditolak
-        $this->get(route('tata-kelola-keamanan.pakar.show', $evaluasi))->assertRedirect();
-        $this->actingAs($this->akunUser())->get(route('tata-kelola-keamanan.pakar.index'))->assertForbidden();
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.buka', $evaluasi), [])
+            ->assertSessionHasErrors(['tanggal', 'peserta']);
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.buka', $evaluasi), ['tanggal' => '2026-11-02', 'peserta' => [$orangLain->id]])
+            ->assertSessionHasErrors('peserta.0');
+        $this->assertSame(0, $evaluasi->sesiFgds()->count());
 
-        $this->actingAs($pakar->user)->get(route('tata-kelola-keamanan.pakar.show', $evaluasi))->assertOk()->assertSee('tidak ada putaran');
-        $this->actingAs($pakar->user)->post(route('tata-kelola-keamanan.pakar.simpan', $evaluasi), ['setuju' => [$pemetaan->id => '1']])->assertForbidden();
-        // Punya role pakar tetapi tidak terdaftar pada evaluasi lain
-        $this->actingAs($pakar->user)->get(route('tata-kelola-keamanan.pakar.show', $evaluasiLain))->assertForbidden();
-
-        $pakar->update(['aktif' => false]);
-        $this->actingAs($pakar->user)->get(route('tata-kelola-keamanan.pakar.show', $evaluasi))->assertForbidden();
+        // Sesi milik evaluasi lain tidak dapat diubah lewat evaluasi ini
+        $sesiLain = $evaluasiLain->sesiFgds()->create(['nomor' => 1, 'status' => 'dibuka']);
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.tutup', [$evaluasi, $sesiLain]))->assertNotFound();
     }
 
-    public function test_mendaftarkan_pakar_memasang_role_dan_menghapus_melepasnya(): void
+    public function test_migration_menghapus_role_dan_permission_pakar(): void
     {
-        [$evaluasi] = $this->evaluasiDenganPemetaan();
-        $admin = $this->admin();
-        $user = $this->akunUser();
-
-        $this->actingAs($admin)->get(route('admin.tata-kelola-keamanan.validasi', [$evaluasi, 'q' => mb_substr($user->email, 0, 6)]))
-            ->assertOk()->assertSee($user->email);
-        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.pakar.store', $evaluasi), [
-            'user_id' => $user->id, 'instansi' => 'Universitas', 'keahlian' => 'ISO 27001 Lead Auditor',
-        ])->assertRedirect();
-        $this->assertTrue($this->punyaRole($user, RoleModul::PAKAR));
-        $this->actingAs($user->fresh())->get(route('tata-kelola-keamanan.pakar.index'))->assertOk()->assertSee('Uji');
-
-        $pakar = $evaluasi->pakars()->firstOrFail();
-        $this->actingAs($admin)->delete(route('admin.tata-kelola-keamanan.pakar.destroy', [$evaluasi, $pakar]))->assertRedirect();
-        $this->assertFalse($this->punyaRole($user, RoleModul::PAKAR));
+        $this->assertFalse(DB::table('roles')->where('name', 'Pakar Tata Kelola Keamanan')->exists());
+        $this->assertFalse(DB::table('permissions')->where('name', 'Validasi Pakar Tata Kelola Keamanan')->exists());
     }
 
     public function test_asesmen_aktivitas_dan_impor(): void
@@ -275,11 +292,6 @@ class TataKelolaKeamananTest extends TestCase
         return $user->fresh();
     }
 
-    private function pakar(Evaluasi $evaluasi): \App\Models\TataKelolaKeamanan\Pakar
-    {
-        return $evaluasi->pakars()->create(['user_id' => $this->akunUser(RoleModul::PAKAR)->id, 'keahlian' => 'Uji']);
-    }
-
     private function punyaRole(User $user, string $role): bool
     {
         return DB::table('role_user')->join('roles', 'roles.id', '=', 'role_user.role_id')
@@ -291,7 +303,6 @@ class TataKelolaKeamananTest extends TestCase
         $harapan = [
             RoleModul::PENGELOLA => 'Kelola Tata Kelola Keamanan',
             RoleModul::RESPONDEN => 'Isi Kuesioner Tata Kelola Keamanan',
-            RoleModul::PAKAR => 'Validasi Pakar Tata Kelola Keamanan',
         ];
         foreach ($harapan as $role => $permission) {
             $this->assertTrue(
@@ -475,18 +486,23 @@ class TataKelolaKeamananTest extends TestCase
         $this->assertSame([], Storage::disk('local')->allFiles("tata-kelola-keamanan/{$evaluasi->id}"));
     }
 
-    public function test_validasi_dengan_satu_pakar(): void
+    public function test_menutup_sesi_tanpa_keputusan_membiarkan_butir_draf(): void
     {
         [$evaluasi, , $pemetaan] = $this->evaluasiDenganPemetaan();
-        $pakar = $this->pakar($evaluasi);
+        $pemetaan->update(['verifikasi' => Pemetaan::VERIFIKASI_DIDUKUNG, 'dokumen_acuan' => ['ISO27002' => null]]);
         $admin = $this->admin();
 
-        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.putaran.buka', $evaluasi))->assertSessionHasNoErrors();
-        $putaran = $evaluasi->putaranAktif();
-        $this->actingAs($pakar->user)->post(route('tata-kelola-keamanan.pakar.simpan', $evaluasi), ['setuju' => [$pemetaan->id => '1']]);
-        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.putaran.tutup', [$evaluasi, $putaran]));
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.buka', $evaluasi), ['tanggal' => '2026-11-02', 'peserta_lain' => 'Kepala Seksi'])
+            ->assertSessionHasNoErrors();
+        $sesi = $evaluasi->sesiAktif();
+        $this->actingAs($admin)->post(route('admin.tata-kelola-keamanan.sesi-fgd.tutup', [$evaluasi, $sesi]))->assertSessionHas('success');
 
-        $this->assertSame(Pemetaan::STATUS_DISEPAKATI, $pemetaan->fresh()->status);
+        $this->assertSame(Pemetaan::STATUS_DRAF, $pemetaan->fresh()->status);
+        $this->assertSame('ditutup', $sesi->fresh()->status);
+        // Sesi yang sudah ditutup tidak dapat diubah lagi
+        $this->actingAs($admin)->put(route('admin.tata-kelola-keamanan.sesi-fgd.simpan', [$evaluasi, $sesi]), [
+            'tanggal' => '2026-11-02', 'peserta_lain' => 'x', 'keputusan' => [$pemetaan->id => 'setuju'],
+        ])->assertForbidden();
     }
 
     public function test_panduan_dan_petunjuk_tampil(): void

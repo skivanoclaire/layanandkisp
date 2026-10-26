@@ -35,7 +35,7 @@
         'admin.tata-kelola-keamanan.design-factors' => '1. Design Factors',
         'admin.tata-kelola-keamanan.objektif' => '2. Prioritas Objektif',
         'admin.tata-kelola-keamanan.pemetaan' => '3. Pemetaan',
-        'admin.tata-kelola-keamanan.validasi' => '4. Validasi Pakar',
+        'admin.tata-kelola-keamanan.validasi' => '4. Validasi Model',
         'admin.tata-kelola-keamanan.asesmen' => '5a. Asesmen Kapabilitas',
         'admin.tata-kelola-keamanan.kontrol' => '5b. Status Kontrol',
         'admin.tata-kelola-keamanan.rekomendasi' => '6. Kesenjangan & Rekomendasi',

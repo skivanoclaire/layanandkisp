@@ -10,8 +10,8 @@
                 'judul' => 'Persiapan: role, evaluasi, dan responden',
                 'siapa' => 'Pengelola',
                 'isi' => [
-                    'Modul memakai tiga role khusus: <strong>Pengelola Tata Kelola Keamanan</strong> (mengelola seluruh tahapan; dapat diberikan di Kelola Pengguna), <strong>Responden Tata Kelola Keamanan</strong>, dan <strong>Pakar Tata Kelola Keamanan</strong>. Role responden dan pakar terpasang otomatis saat akun didaftarkan pada evaluasi.',
-                    'Buat evaluasi di halaman utama modul (mis. "Evaluasi Tata Kelola Keamanan Informasi 2026"). Isi keterangan singkat; keterangan ini ditampilkan kepada responden dan pakar. Evaluasi bertanda <em>SIMULASI</em> hanya untuk latihan.',
+                    'Modul memakai dua role khusus: <strong>Pengelola Tata Kelola Keamanan</strong> (mengelola seluruh tahapan; dapat diberikan di Kelola Pengguna) dan <strong>Responden Tata Kelola Keamanan</strong>. Role responden terpasang otomatis saat akun didaftarkan pada evaluasi.',
+                    'Buat evaluasi di halaman utama modul (mis. "Evaluasi Tata Kelola Keamanan Informasi 2026"). Isi keterangan singkat; keterangan ini ditampilkan kepada responden. Evaluasi bertanda <em>SIMULASI</em> hanya untuk latihan.',
                     'Tab <strong>Responden</strong>: cari akun pimpinan, lalu centang <em>isi design factors</em>. Informan RACI ditugaskan setelah objektif dipilih (Tahap 2), karena penugasannya per objektif. Akun yang belum ada dapat dibuat terlebih dahulu lalu diverifikasi.',
                 ],
             ],
@@ -42,12 +42,13 @@
                 ],
             ],
             [
-                'judul' => 'Tahap 4 — Validasi pakar',
-                'siapa' => 'Pakar menilai dari akunnya; pengelola merevisi',
+                'judul' => 'Tahap 4 — Validasi model (verifikasi dokumen dan FGD)',
+                'siapa' => 'Pengelola memverifikasi; praktisi DKISP memutuskan dalam FGD',
                 'isi' => [
-                    'Di tab <strong>4. Validasi Pakar</strong>, cari akun pakar dan daftarkan. Jumlah pakar ditentukan pengelola (satu pakar pun bisa; bila lebih dari satu, berlaku prinsip Delphi). Pakar menilai melalui menu <em>Layanan Digital → Validasi Pakar Tata Kelola Keamanan</em>.',
-                    'Klik <em>Buka putaran baru</em>. Setelah pakar selesai menilai (pantau kolom "Menilai di putaran ini"), klik <em>Tutup putaran</em>. Butir dengan minimal 2/3 pakar setuju otomatis disepakati.',
-                    'Butir yang belum disepakati diperbaiki di Tahap 3 berdasarkan saran pakar, lalu buka putaran berikutnya (maksimal 3 putaran).',
+                    'Di tab <strong>4. Validasi Model</strong> bagian A, verifikasi setiap butir terhadap dokumen acuan: related guidance COBIT 2019, tabel padanan ISO/IEC 27002:2022, teks pasal Peraturan BSSN 4/2021 dan Pergub Kaltara 20/2024, serta pemetaan Parera, dkk (2026). Centang dokumen yang mencantumkan keterkaitan butir dan tulis rujukannya.',
+                    'Butir tanpa dukungan dokumen hanya dipertahankan bila keterkaitannya dijelaskan pada catatan (rancangan peneliti); selebihnya perbaiki di Tahap 3 atau keluarkan dari model beserta alasannya.',
+                    'Bagian B: buka sesi FGD, catat tanggal dan informan yang hadir, lalu cetak <em>Lembar validasi model</em>. Catat keputusan forum per butir (setuju/tidak setuju secara mufakat) dan sarannya, kemudian tutup sesi. Butir yang disetujui otomatis disepakati.',
+                    'Butir yang tidak disetujui diperbaiki di Tahap 3 berdasarkan saran peserta, diverifikasi ulang, lalu dibahas pada sesi lanjutan. Butir yang tetap tidak disepakati dikeluarkan dari model dan dicatat alasannya.',
                 ],
             ],
             [
@@ -74,7 +75,7 @@
         @include('user.kuesioner-portal._flash')
         <a href="{{ route('admin.tata-kelola-keamanan.index') }}" class="text-sm text-green-700 hover:underline">&larr; Semua evaluasi</a>
         <h1 class="text-2xl font-semibold text-gray-900 mt-1">Panduan penggunaan modul</h1>
-        <p class="text-sm text-gray-600 mt-1 mb-6">Semua perhitungan (target, rating N/P/L/F, tingkat kapabilitas, kesepakatan pakar, kesenjangan) dilakukan otomatis oleh aplikasi;
+        <p class="text-sm text-gray-600 mt-1 mb-6">Semua perhitungan (target, rating N/P/L/F, tingkat kapabilitas, kesenjangan) dilakukan otomatis oleh aplikasi;
             Anda cukup mengisi dan memeriksa.</p>
 
         <div class="space-y-4">

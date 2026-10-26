@@ -37,15 +37,6 @@ class AturanKapabilitasTest extends TestCase
         $this->assertSame('F', Aturan::rating(100));
     }
 
-    public function test_kesepakatan_minimal_dua_pertiga(): void
-    {
-        $this->assertTrue(Aturan::disepakati(4, 6));   // tepat 2/3
-        $this->assertTrue(Aturan::disepakati(5, 7));
-        $this->assertFalse(Aturan::disepakati(3, 5));  // 60%
-        $this->assertTrue(Aturan::disepakati(4, 5));
-        $this->assertFalse(Aturan::disepakati(0, 0));  // belum ada penilai
-    }
-
     private function aktivitas(array $spec)
     {
         // $spec: [[level, terpenuhi], ...]

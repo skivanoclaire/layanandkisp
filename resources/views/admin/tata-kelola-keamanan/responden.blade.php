@@ -14,7 +14,7 @@
                 'Siapa didaftarkan' => '<strong>Pimpinan</strong> (Kepala Dinas, Sekretaris, Kepala Bidang) → centang <em>isi design factors</em>. <strong>Informan RACI</strong> (pejabat dan pelaksana yang menjalankan proses keamanan) → pilih objektif yang mereka kuasai. Satu orang boleh mendapat keduanya.',
                 'Contoh peran' => 'Kepala Bidang yang membidangi persandian dan keamanan informasi → CISO → APO12, APO13, DSS05. Pengelola pusat data/jaringan → Head of IT Operations → DSS04, DSS05. Kepala Dinas → Board/Executive → design factors, EDM03.',
                 'Syarat akun' => 'Akun harus sudah terverifikasi di portal. Cari dengan nama, email, atau NIP (minimal 3 huruf). Bila belum punya akun, minta responden mendaftar dan diverifikasi terlebih dahulu, atau isikan jawabannya secara manual.',
-                'Pakar' => 'Pakar didaftarkan terpisah di tab <em>4. Validasi Pakar</em> dan menilai dari akunnya sendiri.',
+                'Peserta FGD' => 'Informan yang menangani keamanan informasi, aplikasi, dan infrastruktur TIK juga menjadi peserta FGD validasi model di tab <em>4. Validasi Model</em>. Kehadirannya dicatat pengelola; peserta tidak perlu mengisi apa pun dari akunnya.',
                 'Berikutnya' => 'Beri tahu responden untuk membuka menu <em>Layanan Digital → Kuesioner Tata Kelola Keamanan</em>. Pantau kemajuannya di tabel di bawah. Kuesioner aktivitas baru muncul untuk informan setelah Anda memasukkan aktivitas di tab 5a.',
             ],
         ])

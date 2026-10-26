@@ -1182,11 +1182,12 @@ Route::middleware(['auth', 'permission:Kelola Tata Kelola Keamanan'])
 
             Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\ValidasiController::class)->group(function () {
                 Route::get('/validasi', 'index')->name('validasi');
-                Route::post('/pakar', 'pakarStore')->name('pakar.store');
-                Route::put('/pakar/{pakar}', 'pakarUpdate')->name('pakar.update');
-                Route::delete('/pakar/{pakar}', 'pakarDestroy')->name('pakar.destroy');
-                Route::post('/putaran', 'bukaPutaran')->name('putaran.buka');
-                Route::post('/putaran/{putaran}/tutup', 'tutupPutaran')->name('putaran.tutup');
+                Route::get('/validasi/lembar', 'lembar')->name('validasi.lembar');
+                Route::put('/validasi/{pemetaan}/verifikasi', 'verifikasi')->name('validasi.verifikasi');
+                Route::post('/validasi/{pemetaan}/keluarkan', 'keluarkan')->name('validasi.keluarkan');
+                Route::post('/sesi-fgd', 'bukaSesi')->name('sesi-fgd.buka');
+                Route::put('/sesi-fgd/{sesi}', 'simpanSesi')->name('sesi-fgd.simpan');
+                Route::post('/sesi-fgd/{sesi}/tutup', 'tutupSesi')->name('sesi-fgd.tutup');
             });
 
             Route::controller(\App\Http\Controllers\Admin\TataKelolaKeamanan\AsesmenController::class)->group(function () {
@@ -1223,17 +1224,6 @@ Route::middleware(['auth', 'verified.user', 'permission:Isi Kuesioner Tata Kelol
         Route::post('/{evaluasi}/aktivitas', 'simpanAktivitas')->name('aktivitas.simpan');
         Route::get('/{evaluasi}/lampiran/{lampiran}', 'unduhLampiran')->name('lampiran.unduh');
         Route::delete('/{evaluasi}/lampiran/{lampiran}', 'hapusLampiran')->name('lampiran.hapus');
-    });
-
-// Penilaian pakar (akun yang didaftarkan pengelola sebagai pakar pada evaluasi)
-Route::middleware(['auth', 'verified.user', 'permission:Validasi Pakar Tata Kelola Keamanan'])
-    ->prefix('digital/tata-kelola-keamanan/pakar')
-    ->name('tata-kelola-keamanan.pakar.')
-    ->controller(\App\Http\Controllers\User\TataKelolaKeamananPakarController::class)
-    ->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('/{evaluasi}', 'show')->name('show');
-        Route::post('/{evaluasi}', 'store')->name('simpan');
     });
 
 // ===== INTERNET SERVICES =====

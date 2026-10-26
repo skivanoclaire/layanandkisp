@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
  */
 class Laporan
 {
-    public function __construct(private Kapabilitas $kapabilitas, private Delphi $delphi)
+    public function __construct(private Kapabilitas $kapabilitas, private ValidasiModel $validasi)
     {
     }
 
@@ -24,7 +24,8 @@ class Laporan
         $skorTerisi = $evaluasi->objektifs()->whereNotNull('skor_kepentingan')->count();
         $dipilih = $evaluasi->objektifs()->where('dipilih', true)->count();
         $pemetaan = $evaluasi->pemetaans()->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status');
-        $putarans = $evaluasi->putarans()->orderBy('nomor')->get();
+        $sesiFgd = $evaluasi->sesiFgds()->count();
+        $verifikasi = $this->validasi->ringkasanVerifikasi($evaluasi);
         $ringkasan = $this->kapabilitas->ringkasanEvaluasi($evaluasi);
         $aktivitasTotal = $ringkasan->sum(fn ($r) => $r['hasil']['jumlah_aktivitas']);
         $cakupan = $this->cakupanKontrol($evaluasi);
@@ -53,10 +54,11 @@ class Laporan
                     .($pemetaan[Pemetaan::STATUS_DIKELUARKAN] ?? 0).' dikeluarkan',
             ],
             [
-                'judul' => 'Validasi pakar (Delphi)',
+                'judul' => 'Validasi model (verifikasi dokumen dan FGD)',
                 'route' => 'admin.tata-kelola-keamanan.validasi',
-                'selesai' => $pemetaan->sum() > 0 && ($pemetaan[Pemetaan::STATUS_DRAF] ?? 0) === 0 && $putarans->isNotEmpty(),
-                'keterangan' => $putarans->count().' putaran; '.$evaluasi->pakars()->where('aktif', true)->count().' pakar aktif',
+                'selesai' => $pemetaan->sum() > 0 && ($pemetaan[Pemetaan::STATUS_DRAF] ?? 0) === 0 && $sesiFgd > 0,
+                'keterangan' => ($verifikasi['didukung'] + $verifikasi['rancangan_peneliti']).' butir lolos verifikasi, '
+                    .$verifikasi['belum'].' belum diverifikasi; '.$sesiFgd.' sesi FGD',
             ],
             [
                 'judul' => 'Asesmen kapabilitas dan kontrol',
@@ -74,7 +76,7 @@ class Laporan
     }
 
     /**
-     * Kontrol Annex A yang tercakup dalam pemetaan (kecuali yang dikeluarkan pakar),
+     * Kontrol Annex A yang tercakup dalam pemetaan (kecuali butir yang dikeluarkan dari model),
      * beserta objektif asal dan status kesepakatannya.
      *
      * @return array<string, array{objektif: array, praktik: array, disepakati: bool, baru: bool}>
@@ -148,8 +150,8 @@ class Laporan
         $objektifs = $evaluasi->objektifs()->orderByDesc('skor_kepentingan')->orderBy('kode')->get();
         $pemetaans = $evaluasi->pemetaans()->with('praktik')->get()
             ->sortBy(fn ($p) => $p->praktik->kode.'-'.str_pad($p->id, 6, '0', STR_PAD_LEFT))->values();
-        $putarans = $evaluasi->putarans()->orderBy('nomor')->get();
-        $rekapDelphi = $putarans->mapWithKeys(fn ($p) => [$p->nomor => $this->delphi->rekap($p)]);
+        $sesiFgds = $evaluasi->sesiFgds()->orderBy('nomor')->get();
+        $rekapFgd = $sesiFgds->mapWithKeys(fn ($s) => [$s->nomor => $this->validasi->rekap($s)]);
         $kapabilitas = $this->kapabilitas->ringkasanEvaluasi($evaluasi);
         $cakupan = $this->cakupanKontrol($evaluasi);
         $statusKontrol = $evaluasi->kontrols()->get()->keyBy('iso_kode');
@@ -158,9 +160,9 @@ class Laporan
             'designFactors' => $evaluasi->designFactors()->where('responden', DesignFactor::NILAI_AKHIR)->get()->keyBy('df_kode'),
             'objektifs' => $objektifs,
             'pemetaans' => $pemetaans,
-            'putarans' => $putarans,
-            'rekapDelphi' => $rekapDelphi,
-            'pakarCount' => $evaluasi->pakars()->count(),
+            'sesiFgds' => $sesiFgds,
+            'rekapFgd' => $rekapFgd,
+            'ringkasanVerifikasi' => $this->validasi->ringkasanVerifikasi($evaluasi),
             'kapabilitas' => $kapabilitas,
             'kesenjangan' => $this->urutkanKesenjangan($kapabilitas),
             'cakupan' => $cakupan,

@@ -20,7 +20,7 @@
 
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
             <h2 class="text-lg font-semibold text-gray-900">Tahap 5b — Status penerapan kontrol Annex A</h2>
-            <p class="text-sm text-gray-600 mt-1">Daftar kontrol diambil otomatis dari butir pemetaan (kecuali yang dikeluarkan pakar). Kategori status mengikuti
+            <p class="text-sm text-gray-600 mt-1">Daftar kontrol diambil otomatis dari butir pemetaan (kecuali butir yang dikeluarkan dari model). Kategori status mengikuti
                 Nurani dan Legowo (2026, hlm. 17): diterapkan, sebagian, belum diterapkan, atau tidak berlaku. ★ = kontrol baru versi 2022.</p>
         </div>
 
@@ -35,7 +35,7 @@
                             <tr class="text-left text-xs text-gray-500 border-b">
                                 <th class="py-2 pr-3">Kontrol</th>
                                 <th class="py-2 px-3">Objektif / praktik</th>
-                                <th class="py-2 px-3 text-center">Disepakati pakar</th>
+                                <th class="py-2 px-3 text-center">Disepakati FGD</th>
                                 <th class="py-2 px-3">Status</th>
                                 <th class="py-2 px-3">Bukti / catatan</th>
                             </tr>

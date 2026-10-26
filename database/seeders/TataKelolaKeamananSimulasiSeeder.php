@@ -6,14 +6,14 @@ use App\Models\TataKelolaKeamanan\Aktivitas;
 use App\Models\TataKelolaKeamanan\DesignFactor;
 use App\Models\TataKelolaKeamanan\Kontrol;
 use App\Models\TataKelolaKeamanan\Pemetaan;
-use App\Models\TataKelolaKeamanan\Penilaian;
 use App\Models\TataKelolaKeamanan\Praktik;
-use App\Models\TataKelolaKeamanan\Putaran;
+use App\Models\TataKelolaKeamanan\HasilFgd;
 use App\Models\TataKelolaKeamanan\JawabanAktivitas;
 use App\Models\TataKelolaKeamanan\Responden;
 use App\Models\TataKelolaKeamanan\Evaluasi;
 use App\Models\User;
 use App\Services\TataKelolaKeamanan\RoleModul;
+use App\Services\TataKelolaKeamanan\ValidasiModel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +22,7 @@ use Illuminate\Support\Str;
 /**
  * Data SIMULASI untuk mencoba modul Tata Kelola Keamanan Informasi (bukan data evaluasi nyata).
  * Evaluasi ditandai is_simulasi agar tidak tertukar dengan data yang sebenarnya.
- * Akun simulasi (responden dan pakar) memakai domain example.test dan kata sandi acak.
+ * Akun simulasi responden memakai domain example.test dan kata sandi acak.
  * Uraian aktivitas sengaja ditulis sebagai contoh ringkas, bukan kutipan buku COBIT 2019.
  *
  * Jalankan: php artisan db:seed --class=TataKelolaKeamananSimulasiSeeder
@@ -45,7 +45,7 @@ class TataKelolaKeamananSimulasiSeeder extends Seeder
             $this->designFactors($evaluasi, $respondens);
             $this->objektif($evaluasi);
             $pemetaans = $this->pemetaan($evaluasi);
-            $this->delphi($evaluasi, $pemetaans);
+            $this->validasiModel($evaluasi, $pemetaans, $respondens);
             $this->asesmen($evaluasi);
             $this->jawabanInforman($evaluasi, $respondens);
             $this->kontrol($evaluasi);
@@ -172,7 +172,7 @@ class TataKelolaKeamananSimulasiSeeder extends Seeder
             ['DSS05.04', ['A.5.15', 'A.5.16', 'A.5.17', 'A.5.18', 'A.8.2', 'A.8.5'], ['PG20-15.2g'], 'Prosedur hak akses, tinjauan akun'],
             ['DSS05.07', ['A.8.8', 'A.8.15', 'A.8.16'], ['BSSN4-8.3b'], 'Laporan pemindaian kerentanan, log pemantauan'],
             ['MEA03.01', ['A.5.31', 'A.5.34'], ['PP95-41.1', 'PG20-15.2m'], 'Daftar kewajiban regulasi'],
-            ['DSS05.05', ['A.8.12'], ['PG20-15.2c'], 'Contoh butir yang kurang tepat (untuk uji Delphi)'],
+            ['DSS05.05', ['A.8.12'], ['PG20-15.2c'], 'Contoh butir yang kurang tepat (untuk uji verifikasi dokumen)'],
         ];
         $hasil = [];
         foreach ($data as [$kode, $iso, $reg, $bukti]) {
@@ -185,47 +185,51 @@ class TataKelolaKeamananSimulasiSeeder extends Seeder
         return $hasil;
     }
 
-    private function delphi(Evaluasi $evaluasi, array $pemetaans): void
+    /**
+     * Validasi model: verifikasi dokumen, FGD sesi 1, perbaikan butir, lalu FGD sesi 2.
+     * Rujukan halaman/pasal adalah contoh, bukan kutipan dokumen acuan.
+     */
+    private function validasiModel(Evaluasi $evaluasi, array $pemetaans, array $respondens): void
     {
-        $pakars = collect([
-            ['Pakar A (contoh)', 'Perguruan tinggi', 'Tata kelola TI'],
-            ['Pakar B (contoh)', 'Konsultan', 'Lead Auditor ISO/IEC 27001'],
-            ['Pakar C (contoh)', 'Instansi pemerintah', 'Keamanan SPBE'],
-            ['Pakar D (contoh)', 'Perguruan tinggi', 'Keamanan informasi'],
-            ['Pakar E (contoh)', 'Instansi pemerintah', 'COBIT 2019 Foundation'],
-        ])->map(function ($x, $i) use ($evaluasi) {
-            $user = $this->akunSimulasi('pakar'.($i + 1).'.simulasi@example.test', '[SIMULASI] '.$x[0], RoleModul::PAKAR);
+        $validasi = app(ValidasiModel::class);
+        $dokumen = fn (Pemetaan $p) => array_filter([
+            'COBIT-RG' => '[contoh] related guidance '.$p->praktik->objektif_kode,
+            'ISO27002' => '[contoh] tabel padanan kontrol',
+            'PG20' => collect($p->regulasi_items)->contains(fn ($k) => str_starts_with($k, 'PG20')) ? '[contoh] pasal terkait' : null,
+            'BSSN4' => collect($p->regulasi_items)->contains(fn ($k) => str_starts_with($k, 'BSSN4')) ? '[contoh] pasal terkait' : null,
+        ], fn ($v) => $v !== null);
 
-            return $evaluasi->pakars()->create(['user_id' => $user->id, 'instansi' => $x[1], 'keahlian' => $x[2]]);
-        });
-
-        // Putaran 1: semua disepakati kecuali DSS05.05 (2 dari 5 setuju) dan DSS04.07 (3 dari 5)
-        $p1 = Putaran::create(['evaluasi_id' => $evaluasi->id, 'nomor' => 1, 'status' => Putaran::STATUS_DITUTUP, 'dibuka_at' => now()->subDays(14), 'ditutup_at' => now()->subDays(7)]);
+        // Verifikasi dokumen: DSS05.05 tidak didukung, MEA03.01 dipertahankan sebagai rancangan peneliti
         foreach ($pemetaans as $kode => $pm) {
-            $setuju = ['DSS05.05' => 2, 'DSS04.07' => 3][$kode] ?? 5;
-            foreach ($pakars as $i => $pk) {
-                Penilaian::create([
-                    'putaran_id' => $p1->id, 'pakar_id' => $pk->id, 'pemetaan_id' => $pm->id, 'setuju' => $i < $setuju,
-                    'saran' => $i >= $setuju ? ($kode === 'DSS05.05' ? 'Data leakage prevention kurang tepat untuk akses fisik; gunakan kontrol fisik 7.x.' : 'Tambahkan klausul atau kontrol pendukung.') : null,
-                ]);
-            }
-            if ($setuju === 5) {
-                $pm->update(['status' => Pemetaan::STATUS_DISEPAKATI, 'putaran_disepakati' => 1]);
-            }
+            match ($kode) {
+                'DSS05.05' => $validasi->verifikasi($pm, [], null, false),
+                'MEA03.01' => $validasi->verifikasi($pm, [], '[contoh] Keterkaitan kepatuhan regulasi dengan A.5.31 dijelaskan dari tujuan praktik.', true),
+                default => $validasi->verifikasi($pm, $dokumen($pm), null, false),
+            };
         }
 
-        // Revisi setelah putaran 1
-        $pemetaans['DSS05.05']->update(['iso_items' => ['A.7.1', 'A.7.2', 'A.7.4'], 'catatan_revisi' => 'Diganti ke kontrol fisik sesuai saran pakar.', 'bukti_diharapkan' => 'Log akses ruang server, CCTV']);
-        $pemetaans['DSS04.07']->update(['iso_items' => ['A.8.13', 'A.8.14', 'A.5.30'], 'catatan_revisi' => 'Ditambah 5.30 ICT readiness.']);
+        // FGD sesi 1: semua butir yang lolos verifikasi disetujui kecuali DSS04.07
+        $peserta = collect($respondens)->pluck('id')->all();
+        $sesi1 = $validasi->bukaSesi($evaluasi, ['tanggal' => now()->subDays(14), 'tempat' => 'Ruang rapat (contoh)', 'peserta' => $peserta]);
+        $keputusan = $saran = [];
+        foreach ($validasi->butir($sesi1) as $pm) {
+            $keputusan[$pm->id] = $pm->praktik->kode === 'DSS04.07' ? HasilFgd::TIDAK_SETUJU : HasilFgd::SETUJU;
+        }
+        $saran[$pemetaans['DSS04.07']->id] = '[contoh] Tambahkan 5.30 ICT readiness for business continuity.';
+        $validasi->simpanHasil($sesi1, $keputusan, $saran);
+        $validasi->tutupSesi($sesi1);
 
-        // Putaran 2 (ditutup): keduanya disepakati
-        $p2 = Putaran::create(['evaluasi_id' => $evaluasi->id, 'nomor' => 2, 'status' => Putaran::STATUS_DITUTUP, 'dibuka_at' => now()->subDays(6), 'ditutup_at' => now()->subDay()]);
+        // Perbaikan sesudah verifikasi dan sesi 1, lalu verifikasi ulang
+        $pemetaans['DSS05.05']->update(['iso_items' => ['A.7.1', 'A.7.2', 'A.7.4'], 'catatan_revisi' => 'Diganti ke kontrol fisik karena A.8.12 tidak didukung dokumen acuan.', 'bukti_diharapkan' => 'Log akses ruang server, CCTV']);
+        $pemetaans['DSS04.07']->update(['iso_items' => ['A.8.13', 'A.8.14', 'A.5.30'], 'catatan_revisi' => 'Ditambah 5.30 ICT readiness sesuai saran FGD sesi 1.']);
         foreach (['DSS05.05', 'DSS04.07'] as $kode) {
-            foreach ($pakars as $i => $pk) {
-                Penilaian::create(['putaran_id' => $p2->id, 'pakar_id' => $pk->id, 'pemetaan_id' => $pemetaans[$kode]->id, 'setuju' => $i < 4]);
-            }
-            $pemetaans[$kode]->update(['status' => Pemetaan::STATUS_DISEPAKATI, 'putaran_disepakati' => 2]);
+            $validasi->verifikasi($pemetaans[$kode]->fresh(), $dokumen($pemetaans[$kode]), null, false);
         }
+
+        // FGD sesi 2: kedua butir disetujui
+        $sesi2 = $validasi->bukaSesi($evaluasi, ['tanggal' => now()->subDays(7), 'tempat' => 'Ruang rapat (contoh)', 'peserta' => $peserta]);
+        $validasi->simpanHasil($sesi2, $validasi->butir($sesi2)->mapWithKeys(fn ($pm) => [$pm->id => HasilFgd::SETUJU])->all(), []);
+        $validasi->tutupSesi($sesi2);
     }
 
     private function asesmen(Evaluasi $evaluasi): void

@@ -711,7 +711,7 @@
                         'Akses Update Data PSE',
                         'Akses Konsultasi SPBE AI',
                         'Akses Survei Kepuasan',
-                        'Akses Kuesioner Portal', 'Isi Kuesioner Tata Kelola Keamanan', 'Validasi Pakar Tata Kelola Keamanan',
+                        'Akses Kuesioner Portal', 'Isi Kuesioner Tata Kelola Keamanan',
                         'Akses Pembaruan Data Arsitektur',
                         'Akses Bantuan TTE', 'Akses Registrasi TTE', 'Akses Reset Passphrase TTE', 'Akses Pembaruan Sertifikat TTE',
                         'Akses Video Conference',
@@ -738,7 +738,7 @@
                     $atSurveiKepuasan = request()->routeIs('survei-kepuasan.*');
                     $atKuesionerPortal = request()->routeIs('kuesioner-portal.*');
                     $atArsitekturInstansi = request()->routeIs('user.arsitektur.*');
-                    $atTataKelolaKeamananResponden = request()->routeIs('tata-kelola-keamanan.responden.*', 'tata-kelola-keamanan.pakar.*');
+                    $atTataKelolaKeamananResponden = request()->routeIs('tata-kelola-keamanan.responden.*');
                     $atSplpUser = request()->routeIs('user.splp.*');
                     $atDtsenUser = request()->routeIs('user.dtsen.*');
                     $openUserPermohonan =
@@ -910,21 +910,13 @@
                             </a>
                         @endif
 
-                        {{-- Tata Kelola Keamanan Informasi: hanya untuk akun yang didaftarkan sebagai responden/pakar --}}
+                        {{-- Tata Kelola Keamanan Informasi: hanya untuk akun yang didaftarkan sebagai responden --}}
                         @if (auth()->user()?->hasPermission('Isi Kuesioner Tata Kelola Keamanan')
                             && \App\Models\TataKelolaKeamanan\Responden::where('user_id', auth()->id())->exists())
                             <a href="{{ route('tata-kelola-keamanan.responden.index') }}"
                                 class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
                               {{ request()->routeIs('tata-kelola-keamanan.responden.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
                                 Kuesioner Tata Kelola Keamanan
-                            </a>
-                        @endif
-                        @if (auth()->user()?->hasPermission('Validasi Pakar Tata Kelola Keamanan')
-                            && \App\Models\TataKelolaKeamanan\Pakar::where('user_id', auth()->id())->where('aktif', true)->exists())
-                            <a href="{{ route('tata-kelola-keamanan.pakar.index') }}"
-                                class="block py-2.5 px-4 rounded transition duration-200 hover:bg-green-100 hover:text-green-700
-                              {{ request()->routeIs('tata-kelola-keamanan.pakar.*') ? 'bg-green-100 text-green-700 font-semibold' : '' }}">
-                                Validasi Pakar Tata Kelola Keamanan
                             </a>
                         @endif
 

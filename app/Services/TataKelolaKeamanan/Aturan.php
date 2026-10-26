@@ -33,19 +33,6 @@ class Aturan
         return 'F';
     }
 
-    /** Butir disepakati bila minimal 2/3 pakar yang menilai menyatakan setuju. */
-    public static function disepakati(int $setuju, int $jumlahPenilai): bool
-    {
-        if ($jumlahPenilai === 0) {
-            return false;
-        }
-        $p = config('tata_kelola_keamanan.aturan.kesepakatan_pembilang');
-        $q = config('tata_kelola_keamanan.aturan.kesepakatan_penyebut');
-
-        // setuju / penilai >= p / q, dihitung tanpa pecahan desimal
-        return $setuju * $q >= $p * $jumlahPenilai;
-    }
-
     public static function labelRating(string $rating): string
     {
         return [

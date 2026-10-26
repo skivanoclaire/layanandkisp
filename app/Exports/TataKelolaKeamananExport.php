@@ -26,7 +26,8 @@ class TataKelolaKeamananExport implements WithMultipleSheets
             new KuesionerPortalSheet('design_factors', $this->designFactors($d)),
             new KuesionerPortalSheet('objektif', $this->objektif($d)),
             new KuesionerPortalSheet('pemetaan', $this->pemetaan($d)),
-            new KuesionerPortalSheet('delphi', $this->delphi($d)),
+            new KuesionerPortalSheet('validasi_model', $this->validasiModel($d)),
+            new KuesionerPortalSheet('fgd', $this->fgd($d)),
             new KuesionerPortalSheet('kapabilitas', $this->kapabilitas($d)),
             new KuesionerPortalSheet('kontrol', $this->kontrol($d)),
             new KuesionerPortalSheet('rekomendasi', $this->rekomendasi($d)),
@@ -63,29 +64,42 @@ class TataKelolaKeamananExport implements WithMultipleSheets
 
     private function pemetaan(array $d): array
     {
-        $rows = [['Objektif', 'Praktik', 'Nama praktik', 'Klausul/kontrol ISO 27001:2022', 'Ketentuan regulasi', 'Bukti diharapkan', 'Status', 'Putaran disepakati']];
+        $rows = [['Objektif', 'Praktik', 'Nama praktik', 'Klausul/kontrol ISO 27001:2022', 'Ketentuan regulasi', 'Bukti diharapkan', 'Status', 'Sesi FGD disepakati', 'Alasan dikeluarkan']];
         foreach ($d['pemetaans'] as $p) {
             $rows[] = [
                 $p->praktik->objektif_kode, $p->praktik->kode, $p->praktik->nama,
                 implode('; ', array_map([Pemetaan::class, 'labelIso'], $p->iso_items ?? [])),
                 implode('; ', array_map(fn ($k) => Istilah::regulasi($k), $p->regulasi_items ?? [])),
-                $p->bukti_diharapkan, $p->status, $p->putaran_disepakati,
+                $p->bukti_diharapkan, $p->status, $p->sesi_disepakati, $p->alasan_dikeluarkan,
             ];
         }
 
         return $rows;
     }
 
-    private function delphi(array $d): array
+    private function validasiModel(array $d): array
     {
-        $rows = [['Putaran', 'Praktik', 'Klausul/kontrol', 'Setuju', 'Tidak setuju', 'Jumlah penilai', 'Keputusan', 'Saran pakar']];
-        foreach ($d['rekapDelphi'] as $nomor => $rekap) {
-            foreach ($rekap as $r) {
+        $dokumenAcuan = config('tata_kelola_keamanan.dokumen_acuan');
+        $rows = [['Praktik', 'Klausul/kontrol', 'Verifikasi', 'Dokumen pendukung', 'Catatan verifikasi', 'Status']];
+        foreach ($d['pemetaans'] as $p) {
+            $rows[] = [
+                $p->praktik->kode, implode(', ', $p->iso_items ?? []), Pemetaan::labelVerifikasi($p->verifikasi),
+                collect($p->dokumen_acuan ?? [])->map(fn ($rujukan, $k) => ($dokumenAcuan[$k] ?? $k).($rujukan ? " ($rujukan)" : ''))->implode(' | '),
+                $p->catatan_verifikasi, $p->status,
+            ];
+        }
+
+        return $rows;
+    }
+
+    private function fgd(array $d): array
+    {
+        $rows = [['Sesi', 'Tanggal', 'Praktik', 'Klausul/kontrol', 'Keputusan', 'Saran']];
+        foreach ($d['sesiFgds'] as $s) {
+            foreach ($d['rekapFgd'][$s->nomor] as $r) {
                 $rows[] = [
-                    $nomor, $r['pemetaan']->praktik->kode, implode(', ', $r['pemetaan']->iso_items ?? []),
-                    $r['setuju'], $r['tidak_setuju'], $r['jumlah_penilai'],
-                    $r['disepakati'] ? 'disepakati' : 'belum disepakati',
-                    $r['saran']->pluck('saran')->implode(' | '),
+                    $s->nomor, $s->tanggal?->format('Y-m-d'), $r['pemetaan']->praktik->kode,
+                    implode(', ', $r['pemetaan']->iso_items ?? []), $r['keputusan'] ?? 'belum dibahas', $r['saran'],
                 ];
             }
         }
@@ -118,7 +132,7 @@ class TataKelolaKeamananExport implements WithMultipleSheets
 
     private function kontrol(array $d): array
     {
-        $rows = [['Kontrol', 'Judul', 'Baru 2022', 'Objektif', 'Praktik', 'Disepakati pakar', 'Status', 'Bukti']];
+        $rows = [['Kontrol', 'Judul', 'Baru 2022', 'Objektif', 'Praktik', 'Disepakati FGD', 'Status', 'Bukti']];
         foreach ($d['cakupan'] as $kode => $c) {
             $s = $d['statusKontrol'][$kode] ?? null;
             $rows[] = [

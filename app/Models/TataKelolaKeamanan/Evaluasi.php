@@ -57,14 +57,9 @@ class Evaluasi extends Model
         return $this->hasMany(Pemetaan::class, 'evaluasi_id');
     }
 
-    public function pakars(): HasMany
+    public function sesiFgds(): HasMany
     {
-        return $this->hasMany(Pakar::class, 'evaluasi_id');
-    }
-
-    public function putarans(): HasMany
-    {
-        return $this->hasMany(Putaran::class, 'evaluasi_id');
+        return $this->hasMany(SesiFgd::class, 'evaluasi_id');
     }
 
     public function kontrols(): HasMany
@@ -82,8 +77,8 @@ class Evaluasi extends Model
         return $this->objektifs()->where('dipilih', true)->orderBy('kode');
     }
 
-    public function putaranAktif(): ?Putaran
+    public function sesiAktif(): ?SesiFgd
     {
-        return $this->putarans()->where('status', Putaran::STATUS_DIBUKA)->latest('nomor')->first();
+        return $this->sesiFgds()->where('status', SesiFgd::STATUS_DIBUKA)->latest('nomor')->first();
     }
 }

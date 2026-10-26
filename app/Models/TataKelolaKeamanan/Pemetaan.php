@@ -16,17 +16,23 @@ class Pemetaan extends Model
     public const STATUS_DISEPAKATI = 'disepakati';
     public const STATUS_DIKELUARKAN = 'dikeluarkan';
 
+    public const VERIFIKASI_DIDUKUNG = 'didukung';
+    public const VERIFIKASI_RANCANGAN_PENELITI = 'rancangan_peneliti';
+    public const VERIFIKASI_TIDAK_DIDUKUNG = 'tidak_didukung';
+
     protected $table = 'tata_kelola_keamanan_pemetaans';
 
     protected $fillable = [
         'evaluasi_id', 'praktik_id', 'iso_items', 'regulasi_items', 'bukti_diharapkan',
-        'status', 'putaran_disepakati', 'catatan_revisi',
+        'status', 'verifikasi', 'dokumen_acuan', 'catatan_verifikasi', 'sesi_disepakati',
+        'catatan_revisi', 'alasan_dikeluarkan',
     ];
 
     protected $casts = [
         'iso_items' => 'array',
         'regulasi_items' => 'array',
-        'putaran_disepakati' => 'integer',
+        'dokumen_acuan' => 'array',
+        'sesi_disepakati' => 'integer',
     ];
 
     public function evaluasi(): BelongsTo
@@ -39,9 +45,21 @@ class Pemetaan extends Model
         return $this->belongsTo(Praktik::class, 'praktik_id');
     }
 
-    public function penilaians(): HasMany
+    public function hasilFgds(): HasMany
     {
-        return $this->hasMany(Penilaian::class, 'pemetaan_id');
+        return $this->hasMany(HasilFgd::class, 'pemetaan_id');
+    }
+
+    /** Lolos verifikasi dokumen sehingga boleh dibahas dalam FGD. */
+    public function siapFgd(): bool
+    {
+        return $this->status === self::STATUS_DRAF
+            && in_array($this->verifikasi, [self::VERIFIKASI_DIDUKUNG, self::VERIFIKASI_RANCANGAN_PENELITI], true);
+    }
+
+    public static function labelVerifikasi(?string $verifikasi): string
+    {
+        return $verifikasi ? config("tata_kelola_keamanan.verifikasi.$verifikasi", $verifikasi) : 'Belum diverifikasi';
     }
 
     /** Kode kontrol Annex A saja (tanpa klausul). */

@@ -7,7 +7,7 @@
 |
 | Pendamping config/tata_kelola_keamanan.php. Istilah resmi COBIT 2019 dan
 | ISO/IEC 27001:2022 tetap ditampilkan dalam bahasa Inggris, lalu disertai
-| terjemahan dan penjelasan singkat agar mudah dipahami responden dan pakar.
+| terjemahan dan penjelasan singkat agar mudah dipahami responden dan peserta FGD.
 | Terjemahan dan penjelasan adalah ringkasan pengelola, bukan teks resmi;
 | rujuk dokumen ISACA/ISO (atau SNI ISO/IEC 27001) untuk definisi resmi.
 |

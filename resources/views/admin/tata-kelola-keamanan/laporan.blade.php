@@ -85,7 +85,7 @@
                             <td>{{ implode('; ', array_map([\App\Models\TataKelolaKeamanan\Pemetaan::class, 'labelIso'], $p->iso_items ?? [])) }}</td>
                             <td>{{ implode('; ', array_map(fn ($k) => \App\Services\TataKelolaKeamanan\Istilah::regulasi($k), $p->regulasi_items ?? [])) }}</td>
                             <td>{{ $p->bukti_diharapkan }}</td>
-                            <td>{{ \App\Http\Controllers\Admin\TataKelolaKeamanan\EvaluasiController::labelStatusPemetaan($p->status) }}{{ $p->putaran_disepakati ? ' (putaran '.$p->putaran_disepakati.')' : '' }}</td>
+                            <td>{{ \App\Http\Controllers\Admin\TataKelolaKeamanan\EvaluasiController::labelStatusPemetaan($p->status) }}{{ $p->sesi_disepakati ? ' (FGD sesi '.$p->sesi_disepakati.')' : '' }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="5" class="text-gray-400">Belum ada pemetaan.</td></tr>
@@ -93,18 +93,44 @@
                 </tbody>
             </table>
 
-            {{-- D. Delphi --}}
-            <h2 class="mt-6 text-lg font-semibold">D. Hasil validasi pakar ({{ $pakarCount }} pakar, {{ $putarans->count() }} putaran)</h2>
-            @foreach ($rekapDelphi as $nomor => $rekap)
-                <p class="mt-2 font-medium">Putaran {{ $nomor }}: {{ $rekap->where('disepakati', true)->count() }} dari {{ $rekap->count() }} butir disepakati</p>
+            {{-- D. Validasi model --}}
+            @php $dokumenAcuan = config('tata_kelola_keamanan.dokumen_acuan'); @endphp
+            <h2 class="mt-6 text-lg font-semibold">D. Hasil validasi model (verifikasi dokumen dan FGD)</h2>
+            <p class="mt-1">Verifikasi dokumen: {{ $ringkasanVerifikasi['didukung'] }} butir didukung dokumen acuan, {{ $ringkasanVerifikasi['rancangan_peneliti'] }} rancangan peneliti,
+                {{ $ringkasanVerifikasi['tidak_didukung'] }} tidak didukung, {{ $ringkasanVerifikasi['belum'] }} belum diverifikasi (butir yang dikeluarkan tidak dihitung).</p>
+            <table class="lap w-full mt-2">
+                <thead><tr><th>Praktik</th><th>Klausul/kontrol</th><th>Verifikasi</th><th>Dokumen pendukung / catatan</th><th>Status akhir</th></tr></thead>
+                <tbody>
+                    @foreach ($pemetaans as $p)
+                        <tr>
+                            <td>{{ $p->praktik->kode }}</td><td>{{ implode(', ', $p->iso_items ?? []) }}</td>
+                            <td>{{ \App\Models\TataKelolaKeamanan\Pemetaan::labelVerifikasi($p->verifikasi) }}</td>
+                            <td>
+                                @foreach ($p->dokumen_acuan ?? [] as $k => $rujukan)
+                                    <p>{{ $dokumenAcuan[$k] ?? $k }}{{ $rujukan ? ' ('.$rujukan.')' : '' }}</p>
+                                @endforeach
+                                @if ($p->catatan_verifikasi)
+                                    <p class="text-gray-600">{{ $p->catatan_verifikasi }}</p>
+                                @endif
+                            </td>
+                            <td>{{ \App\Http\Controllers\Admin\TataKelolaKeamanan\EvaluasiController::labelStatusPemetaan($p->status) }}{{ $p->alasan_dikeluarkan ? ': '.$p->alasan_dikeluarkan : '' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @foreach ($sesiFgds as $s)
+                @php $rekap = $rekapFgd[$s->nomor]; @endphp
+                <p class="mt-3 font-medium">FGD sesi {{ $s->nomor }}{{ $s->tanggal ? ' ('.$s->tanggal->translatedFormat('d F Y').')' : '' }}:
+                    {{ $rekap->where('keputusan', 'setuju')->count() }} dari {{ $rekap->count() }} butir disetujui forum</p>
+                <p class="text-xs text-gray-600">Peserta: {{ $s->daftarPeserta() }}</p>
                 <table class="lap w-full mt-1">
-                    <thead><tr><th>Praktik</th><th>Klausul/kontrol</th><th>Setuju</th><th>Tidak</th><th>Keputusan</th></tr></thead>
+                    <thead><tr><th>Praktik</th><th>Klausul/kontrol</th><th>Keputusan</th><th>Saran</th></tr></thead>
                     <tbody>
                         @foreach ($rekap as $r)
                             <tr>
                                 <td>{{ $r['pemetaan']->praktik->kode }}</td><td>{{ implode(', ', $r['pemetaan']->iso_items ?? []) }}</td>
-                                <td class="text-center">{{ $r['setuju'] }}</td><td class="text-center">{{ $r['tidak_setuju'] }}</td>
-                                <td>{{ $r['jumlah_penilai'] ? ($r['disepakati'] ? 'disepakati' : 'belum disepakati') : 'belum dinilai' }}</td>
+                                <td>{{ ['setuju' => 'setuju', 'tidak_setuju' => 'tidak setuju'][$r['keputusan']] ?? 'belum dibahas' }}</td>
+                                <td>{{ $r['saran'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>

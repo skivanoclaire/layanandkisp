@@ -10,7 +10,7 @@
         <div class="mb-6">
             <h1 class="text-2xl font-semibold text-gray-900">Tata Kelola Keamanan Informasi</h1>
             <p class="text-sm text-gray-600 mt-1">Evaluasi tata kelola keamanan informasi berbasis COBIT 2019 dan ISO/IEC 27001:2022: design factors, pemetaan COBIT–ISO–regulasi,
-                validasi pakar (Delphi), asesmen kapabilitas, status kontrol, kesenjangan, dan peta jalan.</p>
+                validasi model (verifikasi dokumen dan FGD), asesmen kapabilitas, status kontrol, kesenjangan, dan peta jalan.</p>
             <a href="{{ route('admin.tata-kelola-keamanan.panduan') }}" class="inline-block mt-3 px-4 py-2 text-sm font-medium rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50">Baca panduan penggunaan</a>
         </div>
 
@@ -27,7 +27,7 @@
                                 <th class="py-2 px-4">Instansi</th>
                                 <th class="py-2 px-4 text-right">Objektif dipilih</th>
                                 <th class="py-2 px-4 text-right">Butir pemetaan</th>
-                                <th class="py-2 px-4 text-right">Pakar</th>
+                                <th class="py-2 px-4 text-right">Sesi FGD</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
@@ -42,7 +42,7 @@
                                     <td class="py-2 px-4">{{ $s->instansi }}</td>
                                     <td class="py-2 px-4 text-right">{{ $s->jumlah_dipilih }}</td>
                                     <td class="py-2 px-4 text-right">{{ $s->pemetaans_count }}</td>
-                                    <td class="py-2 px-4 text-right">{{ $s->pakars_count }}</td>
+                                    <td class="py-2 px-4 text-right">{{ $s->sesi_fgds_count }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -63,7 +63,7 @@
                         <input name="instansi" value="{{ old('instansi') }}" placeholder="mis. DKISP Provinsi Kalimantan Utara" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
                     </div>
                     <div>
-                        <label class="block text-sm text-gray-700">Keterangan <span class="text-xs text-gray-500">(ditampilkan kepada responden dan pakar)</span></label>
+                        <label class="block text-sm text-gray-700">Keterangan <span class="text-xs text-gray-500">(ditampilkan kepada responden)</span></label>
                         <textarea name="keterangan" rows="3" class="mt-1 w-full rounded-lg border-gray-300 text-sm">{{ old('keterangan') }}</textarea>
                     </div>
                     <button class="px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white hover:bg-green-700">Simpan</button>

@@ -28,12 +28,24 @@ return [
         'maksimal_objektif' => 8,
         // Batas atas (persen) untuk rating N, P, L; di atasnya F
         'rating' => ['N' => 15, 'P' => 50, 'L' => 85],
-        // Kesepakatan pakar (aturan modul): minimal 2/3 setuju
-        'kesepakatan_pembilang' => 2,
-        'kesepakatan_penyebut' => 3,
-        'maksimal_putaran' => 3,
         // Tingkat kapabilitas yang dinilai
         'level_dinilai' => [2, 3, 4, 5],
+    ],
+
+    // Dokumen acuan verifikasi silang butir pemetaan (proposal subbab 2.3.7 dan 3.3.3)
+    'dokumen_acuan' => [
+        'COBIT-RG' => 'COBIT 2019 Governance and Management Objectives — bagian related guidance (ISACA, 2018b)',
+        'ISO27002' => 'ISO/IEC 27002:2022 — tabel padanan kontrol (ISO & IEC, 2022a)',
+        'BSSN4' => 'Teks pasal Peraturan BSSN Nomor 4 Tahun 2021',
+        'PG20' => 'Teks pasal Pergub Kalimantan Utara Nomor 20 Tahun 2024',
+        'PARERA2026' => 'Pemetaan 93 kontrol ISO/IEC 27001:2022 ke objektif COBIT 2019 (Parera, dkk, 2026, hlm. 536)',
+    ],
+
+    // Hasil verifikasi dokumen per butir pemetaan
+    'verifikasi' => [
+        'didukung' => 'Didukung dokumen acuan',
+        'rancangan_peneliti' => 'Tidak didukung, dipertahankan sebagai rancangan peneliti',
+        'tidak_didukung' => 'Tidak didukung',
     ],
 
     'domain' => [

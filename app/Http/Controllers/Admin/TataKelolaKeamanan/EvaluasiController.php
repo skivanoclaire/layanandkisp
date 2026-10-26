@@ -17,7 +17,7 @@ class EvaluasiController extends Controller
 {
     public function index()
     {
-        $evaluasis = Evaluasi::withCount(['objektifs as jumlah_dipilih' => fn ($q) => $q->where('dipilih', true), 'pemetaans', 'pakars'])
+        $evaluasis = Evaluasi::withCount(['objektifs as jumlah_dipilih' => fn ($q) => $q->where('dipilih', true), 'pemetaans', 'sesiFgds'])
             ->latest('id')->get();
 
         return view('admin.tata-kelola-keamanan.index', compact('evaluasis'));

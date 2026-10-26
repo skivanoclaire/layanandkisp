@@ -11,13 +11,13 @@
         @include('admin.tata-kelola-keamanan._petunjuk', [
             'judul' => 'Tahap 3 — Membuat butir pemetaan',
             'poin' => [
-                'Satu butir' => 'Satu butir = satu praktik COBIT yang dihubungkan dengan beberapa klausul/kontrol ISO/IEC 27001:2022 dan ketentuan regulasi. Butir inilah yang nanti dinilai pakar.',
+                'Satu butir' => 'Satu butir = satu praktik COBIT yang dihubungkan dengan beberapa klausul/kontrol ISO/IEC 27001:2022 dan ketentuan regulasi. Butir inilah yang nanti diverifikasi terhadap dokumen acuan dan dibahas dalam FGD.',
                 'Cara memilih kontrol' => 'Pilih kontrol yang memenuhi tiga kriteria (Parera dkk, 2026): (1) tujuan kontrol sejalan dengan tujuan praktik; (2) sama-sama berada di tingkat tata kelola atau manajemen yang sesuai; (3) menangani jenis risiko yang sama.',
                 'Contoh butir' => '<em>DSS05.04 Manage user identity and logical access</em> → A.5.15 Access control, A.5.16 Identity management, A.5.18 Access rights, A.8.2 Privileged access rights, A.8.5 Secure authentication → Pergub Kaltara 20/2024 Pasal 15 ayat 2 huruf g (pengelolaan akses kontrol). Contoh bukti: prosedur hak akses, rekap tinjauan akun.',
-                'Saran' => 'Pilih 1–6 kontrol yang paling relevan per butir; terlalu banyak kontrol membuat pakar sulit menilai. Klausul 4–10 dipakai untuk praktik yang bersifat sistem manajemen (kebijakan, risiko, evaluasi).',
+                'Saran' => 'Pilih 1–6 kontrol yang paling relevan per butir; terlalu banyak kontrol membuat butir sulit diverifikasi dan dibahas. Klausul 4–10 dipakai untuk praktik yang bersifat sistem manajemen (kebijakan, risiko, evaluasi).',
                 'Kontrol baru ★' => 'Perhatikan 11 kontrol baru versi 2022 (mis. 5.7 threat intelligence, 8.16 monitoring activities) karena sering belum diterapkan.',
-                'Kunci' => 'Butir tidak bisa diubah ketika putaran pakar sedang dibuka, dan butir yang sudah disepakati tidak bisa diubah lagi.',
-                'Berikutnya' => 'Setelah semua praktik punya butir, lanjut ke tab 4. Validasi Pakar.',
+                'Kunci' => 'Butir tidak bisa diubah ketika sesi FGD sedang dibuka, dan butir yang sudah disepakati tidak bisa diubah lagi. Mengubah praktik, klausul/kontrol, atau regulasi membatalkan hasil verifikasi dokumen butir tersebut.',
+                'Berikutnya' => 'Setelah semua praktik punya butir, lanjut ke tab 4. Validasi Model.',
             ],
         ])
 
@@ -25,16 +25,16 @@
             <h2 class="text-lg font-semibold text-gray-900">Tahap 3 — Perancangan pemetaan</h2>
             <p class="text-sm text-gray-600 mt-1">Untuk setiap praktik objektif terpilih, pilih klausul/kontrol ISO/IEC 27001:2022 yang bersesuaian
                 (kriteria: keselarasan kontrol dengan tujuan praktik, keselarasan fungsi tata kelola/manajemen, konsistensi domain risiko),
-                lalu kaitkan dengan ketentuan regulasi. Cocokkan dengan buku COBIT 2019 dan standar ISO sebelum diajukan ke pakar.</p>
-            @if ($putaranAktif)
-                <p class="mt-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-sm text-yellow-800">Putaran {{ $putaranAktif->nomor }} penilaian pakar sedang dibuka. Pemetaan dikunci sampai putaran ditutup.</p>
+                lalu kaitkan dengan ketentuan regulasi. Setiap butir kemudian diverifikasi silang terhadap dokumen acuan di tab 4 sebelum dibahas dalam FGD.</p>
+            @if ($sesiAktif)
+                <p class="mt-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-sm text-yellow-800">Sesi FGD {{ $sesiAktif->nomor }} validasi model sedang dibuka. Pemetaan dikunci sampai sesi ditutup.</p>
             @endif
         </div>
 
         @if ($objektifs->isEmpty())
             <div class="bg-white rounded-lg shadow-sm p-6 text-sm text-gray-600">Belum ada objektif yang dipilih. Selesaikan tahap 2 terlebih dahulu.</div>
         @else
-            @if (! $putaranAktif && $praktikList->isNotEmpty())
+            @if (! $sesiAktif && $praktikList->isNotEmpty())
                 <details class="bg-white rounded-lg shadow-sm p-6 mb-6" @if ($errors->any()) open @endif>
                     <summary class="cursor-pointer font-semibold text-green-700">+ Tambah butir pemetaan</summary>
                     <form method="POST" action="{{ route('admin.tata-kelola-keamanan.pemetaan.store', $evaluasi) }}" class="mt-4">
@@ -65,8 +65,11 @@
                             @forelse ($pr->pemetaans as $p)
                                 <div class="mt-2 ml-4 p-3 rounded-lg border text-sm">
                                     <div class="flex flex-wrap items-center justify-between gap-2">
-                                        @include('admin.tata-kelola-keamanan._status-pemetaan', ['status' => $p->status, 'putaran' => $p->putaran_disepakati])
-                                        @if ($p->status === 'draf' && ! $putaranAktif)
+                                        <div class="flex flex-wrap gap-1 items-center">
+                                            @include('admin.tata-kelola-keamanan._status-pemetaan', ['status' => $p->status, 'sesi' => $p->sesi_disepakati])
+                                            <span class="text-xs text-gray-500">{{ \App\Models\TataKelolaKeamanan\Pemetaan::labelVerifikasi($p->verifikasi) }}</span>
+                                        </div>
+                                        @if ($p->status === 'draf' && ! $sesiAktif)
                                             <form method="POST" action="{{ route('admin.tata-kelola-keamanan.pemetaan.destroy', [$evaluasi, $p]) }}" onsubmit="return confirm('Hapus butir ini?')">
                                                 @csrf @method('DELETE')
                                                 <button class="text-xs text-red-600 hover:underline">hapus</button>
@@ -86,7 +89,7 @@
                                         <p class="mt-1 text-yellow-800"><span class="text-gray-500">Catatan revisi:</span> {{ $p->catatan_revisi }}</p>
                                     @endif
 
-                                    @if ($p->status === 'draf' && ! $putaranAktif)
+                                    @if ($p->status === 'draf' && ! $sesiAktif)
                                         <details class="mt-2">
                                             <summary class="cursor-pointer text-xs text-green-700">ubah</summary>
                                             <form method="POST" action="{{ route('admin.tata-kelola-keamanan.pemetaan.update', [$evaluasi, $p]) }}" class="mt-2">

@@ -11,8 +11,8 @@ use Illuminate\Validation\Rule;
 
 /**
  * Tahap 3: pemetaan praktik COBIT 2019 ke klausul/kontrol ISO/IEC 27001:2022 dan ketentuan
- * regulasi. Butir hanya dapat diubah selama berstatus draf dan tidak ada
- * putaran penilaian pakar yang sedang dibuka.
+ * regulasi. Butir hanya dapat diubah selama berstatus draf dan tidak ada sesi FGD
+ * validasi model yang sedang dibuka. Mengubah isi butir membatalkan hasil verifikasi dokumennya.
  */
 class PemetaanController extends Controller
 {
@@ -25,9 +25,9 @@ class PemetaanController extends Controller
             ->orderBy('objektif_kode')->orderBy('urutan')->orderBy('kode')
             ->get()
             ->groupBy('objektif_kode');
-        $putaranAktif = $evaluasi->putaranAktif();
+        $sesiAktif = $evaluasi->sesiAktif();
 
-        return view('admin.tata-kelola-keamanan.pemetaan', compact('evaluasi', 'objektifs', 'praktiks', 'putaranAktif'));
+        return view('admin.tata-kelola-keamanan.pemetaan', compact('evaluasi', 'objektifs', 'praktiks', 'sesiAktif'));
     }
 
     public function store(Request $request, Evaluasi $evaluasi)
@@ -47,7 +47,11 @@ class PemetaanController extends Controller
         $data = $this->validasi($request, $evaluasi);
         $data['catatan_revisi'] = $request->input('catatan_revisi');
 
-        $pemetaan->update($data);
+        $pemetaan->fill($data);
+        if ($pemetaan->isDirty(['praktik_id', 'iso_items', 'regulasi_items'])) {
+            $pemetaan->fill(['verifikasi' => null, 'dokumen_acuan' => null, 'catatan_verifikasi' => null]);
+        }
+        $pemetaan->save();
 
         return back()->with('success', 'Butir pemetaan diperbarui.');
     }
@@ -56,8 +60,8 @@ class PemetaanController extends Controller
     {
         abort_unless($pemetaan->evaluasi_id === $evaluasi->id, 404);
         $this->pastikanBolehUbah($evaluasi, $pemetaan);
-        if ($pemetaan->penilaians()->exists()) {
-            return back()->with('error', 'Butir yang sudah dinilai pakar tidak dapat dihapus. Biarkan dikeluarkan melalui proses Delphi.');
+        if ($pemetaan->hasilFgds()->exists()) {
+            return back()->with('error', 'Butir yang sudah dibahas dalam FGD tidak dapat dihapus. Keluarkan dari model di tab 4 beserta alasannya.');
         }
         $pemetaan->delete();
 
@@ -110,8 +114,8 @@ class PemetaanController extends Controller
 
     private function pastikanBolehUbah(Evaluasi $evaluasi, ?Pemetaan $pemetaan = null): void
     {
-        if ($evaluasi->putaranAktif()) {
-            abort(back()->with('error', 'Putaran penilaian pakar sedang dibuka. Tutup putaran sebelum mengubah pemetaan.'));
+        if ($evaluasi->sesiAktif()) {
+            abort(back()->with('error', 'Sesi FGD validasi model sedang dibuka. Tutup sesi sebelum mengubah pemetaan.'));
         }
         if ($pemetaan && $pemetaan->status !== Pemetaan::STATUS_DRAF) {
             abort(back()->with('error', 'Hanya butir berstatus draf yang dapat diubah.'));

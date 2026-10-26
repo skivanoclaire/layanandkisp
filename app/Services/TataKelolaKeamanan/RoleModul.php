@@ -6,14 +6,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Memasang role khusus modul ke akun saat akun didaftarkan sebagai responden atau pakar,
+ * Memasang role khusus modul ke akun saat akun didaftarkan sebagai responden,
  * supaya pengelola tidak perlu mengatur role secara terpisah di Kelola Pengguna.
  */
 class RoleModul
 {
     public const PENGELOLA = 'Pengelola Tata Kelola Keamanan';
     public const RESPONDEN = 'Responden Tata Kelola Keamanan';
-    public const PAKAR = 'Pakar Tata Kelola Keamanan';
 
     public function pasang(User $user, string $role): void
     {

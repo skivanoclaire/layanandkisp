@@ -53,7 +53,7 @@
 
     @if ($pemetaan)
         <div>
-            <label class="block text-sm font-medium text-gray-700">Catatan revisi (berdasarkan saran pakar)</label>
+            <label class="block text-sm font-medium text-gray-700">Catatan revisi (berdasarkan hasil verifikasi atau saran FGD)</label>
             <textarea name="catatan_revisi" rows="2" class="mt-1 w-full rounded-lg border-gray-300 text-sm">{{ old('catatan_revisi', $pemetaan->catatan_revisi) }}</textarea>
         </div>
     @endif

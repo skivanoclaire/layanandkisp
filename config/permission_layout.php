@@ -123,7 +123,7 @@ return [
             'Konsultasi SPBE AI' => ['Akses Konsultasi SPBE AI'],
             'Survei Kepuasan' => ['Akses Survei Kepuasan'],
             'Kuesioner Portal' => ['Akses Kuesioner Portal'],
-            'Tata Kelola Keamanan (Responden & Pakar)' => ['Isi Kuesioner Tata Kelola Keamanan', 'Validasi Pakar Tata Kelola Keamanan'],
+            'Tata Kelola Keamanan (Responden)' => ['Isi Kuesioner Tata Kelola Keamanan'],
             'Pembaruan Data Arsitektur' => ['Akses Pembaruan Data Arsitektur'],
             'Tanda Tangan Elektronik' => [
                 'Akses Bantuan TTE',
