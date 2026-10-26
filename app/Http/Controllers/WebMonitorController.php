@@ -111,7 +111,7 @@ class WebMonitorController extends Controller
         if ($request->filled('instansi_id')) {
             $instansi = UnitKerja::find($request->get('instansi_id'));
             if ($instansi) {
-                $filterLabels['Instansi'] = $instansi->nama;
+                $filterLabels['Unit Kerja'] = $instansi->nama;
             }
         }
         if ($request->filled('jenis')) {
@@ -165,7 +165,7 @@ class WebMonitorController extends Controller
         if ($request->filled('instansi_id')) {
             $instansi = UnitKerja::find($request->get('instansi_id'));
             if ($instansi) {
-                $filterLabels['Instansi'] = $instansi->nama;
+                $filterLabels['Unit Kerja'] = $instansi->nama;
             }
         }
         if ($request->filled('jenis')) {
@@ -232,16 +232,7 @@ class WebMonitorController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        // Check if IP is already used
-        $existingIp = WebMonitor::where('ip_address', $request->ip_address)->first();
-        if ($existingIp) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'ip_address' => "IP Address {$request->ip_address} sudah digunakan oleh {$existingIp->nama_sistem}. Silakan gunakan IP lain atau cek IP yang tersedia."
-                ]);
-        }
-
+        // IP yang sama boleh dipakai beberapa sistem (virtualisasi/Docker)
         $data = $request->all();
         $data['is_proxied'] = $request->has('is_proxied');
         $data['status'] = 'inactive'; // Will be updated after creation

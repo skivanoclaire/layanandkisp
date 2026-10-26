@@ -30,12 +30,8 @@
                             <dd class="mt-1 font-mono">{{ $item->nip ?? '-' }}</dd>
                         </div>
                         <div>
-                            <dt class="font-medium text-gray-700">Instansi</dt>
-                            <dd class="mt-1">{{ $item->unitKerja->nama ?? '-' }}</dd>
-                        </div>
-                        <div>
-                            <dt class="font-medium text-gray-700">Instansi</dt>
-                            <dd class="mt-1">{{ $item->instansi }}</dd>
+                            <dt class="font-medium text-gray-700">Unit Kerja</dt>
+                            <dd class="mt-1">{{ $item->unitKerja->nama ?? $item->instansi ?? '-' }}</dd>
                         </div>
                         <div>
                             <dt class="font-medium text-gray-700">Email Pemohon</dt>
@@ -71,14 +67,14 @@
                                     <div class="flex-1">
                                         <input type="text" name="ip_address" value="{{ old('ip_address', $item->ip_address) }}"
                                             class="font-mono border border-gray-300 rounded px-3 py-1 w-full focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                            pattern="^103\.156\.110\.\d{1,3}$"
-                                            placeholder="103.156.110.x"
+                                            pattern="^(103\.156\.110|10\.11\.12)\.\d{1,3}$"
+                                            placeholder="103.156.110.x / 10.11.12.x"
                                             required>
                                         @error('ip_address')
                                             <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
                                         @enderror
                                         <p class="text-xs text-gray-500 mt-1">
-                                            ⓘ IP range: 103.156.110.0/24 | Duplicate IPs allowed (virtualization)
+                                            ⓘ IP range: 103.156.110.0/24 (publik) atau 10.11.12.0/24 (lokal) | IP duplikat diperbolehkan (virtualisasi/Docker)
                                         </p>
                                     </div>
                                     <button type="submit" class="px-4 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded font-semibold transition">

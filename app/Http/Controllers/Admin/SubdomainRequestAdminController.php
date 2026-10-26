@@ -327,12 +327,12 @@ class SubdomainRequestAdminController extends Controller
             'ip_address' => [
                 'required',
                 'ip',
-                'regex:/^103\.156\.110\.\d{1,3}$/',
+                'regex:/^(103\.156\.110|10\.11\.12)\.\d{1,3}$/',
             ],
         ], [
             'ip_address.required' => 'IP Address wajib diisi.',
             'ip_address.ip' => 'Format IP Address tidak valid.',
-            'ip_address.regex' => 'IP Address harus dalam range 103.156.110.0/24',
+            'ip_address.regex' => 'IP Address harus dalam range 103.156.110.0/24 atau 10.11.12.0/24',
         ]);
 
         $item = SubdomainRequest::findOrFail($id);
@@ -451,7 +451,7 @@ class SubdomainRequestAdminController extends Controller
                 'IP Address',
                 'Nama Pemohon',
                 'NIP',
-                'Instansi',
+                'Unit Kerja',
                 'Nama Aplikasi',
                 'Bahasa Pemrograman',
                 'Framework',

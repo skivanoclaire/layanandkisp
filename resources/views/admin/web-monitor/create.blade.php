@@ -16,7 +16,7 @@
 
             <div class="mb-4">
                 <label for="nama_sistem" class="block text-sm font-semibold text-gray-700 mb-2">
-                    Nama Instansi / Sistem
+                    Nama Unit Kerja / Sistem
                 </label>
                 <input type="text"
                        id="nama_sistem"
@@ -24,7 +24,7 @@
                        value="{{ old('nama_sistem') }}"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_sistem') border-red-500 @enderror"
                        list="unit-kerja-list"
-                       placeholder="Ketik atau pilih nama instansi/sistem">
+                       placeholder="Ketik atau pilih nama unit kerja/sistem">
                 <datalist id="unit-kerja-list">
                     @foreach($unitKerjas as $unit)
                         <option value="{{ $unit->nama }}">{{ $unit->tipe }}</option>
@@ -63,7 +63,7 @@
                            value="{{ old('ip_address') }}"
                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('ip_address') border-red-500 @enderror"
                            required
-                           placeholder="Contoh: 103.156.110.1">
+                           placeholder="Contoh: 103.156.110.1 atau 10.11.12.5">
                     <a href="{{ route('admin.web-monitor.check-ip-publik') }}"
                        target="_blank"
                        class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold inline-flex items-center whitespace-nowrap"
@@ -77,18 +77,19 @@
                 @error('ip_address')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
-                <div id="ip-warning" class="hidden mt-2 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <div id="ip-warning" class="hidden mt-2 p-3 bg-yellow-50 border border-yellow-400 text-yellow-800 rounded-lg">
                     <div class="flex items-start">
                         <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                         </svg>
                         <div>
-                            <p class="font-semibold">IP Address Sudah Digunakan!</p>
+                            <p class="font-semibold">IP Address sudah dipakai sistem lain</p>
                             <p id="ip-warning-text" class="text-sm mt-1"></p>
+                            <p class="text-xs mt-1">Tetap bisa disimpan (IP duplikat diperbolehkan untuk virtualisasi/Docker).</p>
                         </div>
                     </div>
                 </div>
-                <p class="text-gray-500 text-xs mt-1">Gunakan IP dari range 103.156.110.0/24</p>
+                <p class="text-gray-500 text-xs mt-1">Gunakan IP dari range 103.156.110.0/24 (publik) atau 10.11.12.0/24 (lokal)</p>
             </div>
 
             <div class="mb-4">
@@ -235,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 console.log('Response data:', data);
                 if (data.used) {
-                    showWarning(`IP ini sudah digunakan oleh <strong>${data.instance}</strong>`);
+                    showWarning(`IP ini sudah digunakan oleh <strong>${data.instance ?? '-'}</strong>`);
                 } else {
                     hideWarning();
                 }
@@ -249,12 +250,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function showWarning(message) {
         ipWarningText.innerHTML = message;
         ipWarning.classList.remove('hidden');
-        ipInput.classList.add('border-red-500');
+        ipInput.classList.add('border-yellow-500');
     }
 
     function hideWarning() {
         ipWarning.classList.add('hidden');
-        ipInput.classList.remove('border-red-500');
+        ipInput.classList.remove('border-yellow-500');
     }
 });
 </script>
