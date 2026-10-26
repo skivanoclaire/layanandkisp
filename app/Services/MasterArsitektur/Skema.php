@@ -67,6 +67,33 @@ class Skema
         return self::jenis($jenis)['kunci'] ?? ['kode', 'nama'];
     }
 
+    /** Opsi baku kolom bertipe "pilihan"; [] untuk kolom isian bebas. */
+    public static function opsi(array $kolom): array
+    {
+        return ($kolom['tipe'] ?? 'text') === 'pilihan' ? ($kolom['opsi'] ?? []) : [];
+    }
+
+    /**
+     * Samakan penulisan nilai dengan opsi baku ("as-is " => "As-is").
+     * Nilai yang tidak cocok dengan opsi mana pun dikembalikan apa adanya.
+     */
+    public static function bakukan(array $kolom, ?string $nilai): ?string
+    {
+        if ($nilai === null) {
+            return null;
+        }
+
+        $normal = fn (string $v) => mb_strtolower(preg_replace('/\s+/u', ' ', trim($v)));
+
+        foreach (self::opsi($kolom) as $opsi) {
+            if ($normal($opsi) === $normal($nilai)) {
+                return $opsi;
+            }
+        }
+
+        return $nilai;
+    }
+
     /** Judul kolom pada Excel (dipakai saat ekspor). */
     public static function judulExcel(array $kolom): string
     {

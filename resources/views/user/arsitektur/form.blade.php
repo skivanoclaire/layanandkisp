@@ -63,6 +63,8 @@
                             <input type="text" id="f-{{ $kunci }}" value="{{ $unit->nama }}" disabled
                                    class="{{ $kelasInput }} bg-gray-100 text-gray-600">
                             <p class="text-xs text-gray-500 mt-1">Mengikuti unit kerja akun Anda dan tidak dapat diubah.</p>
+                        @elseif ($tipe === 'pilihan')
+                            @include('admin.master-arsitektur._pilihan')
                         @elseif ($tipe === 'textarea')
                             <textarea name="{{ $name }}" id="f-{{ $kunci }}" rows="3" class="{{ $kelasInput }}">{{ $nilai }}</textarea>
                         @else

@@ -144,7 +144,10 @@ class Importer
 
             $nilai = [];
             foreach ($kolom as $huruf => $kunci) {
-                $nilai[$kunci] = $this->bersihkan($sel[$huruf] ?? null, $definisi[$kunci]['tipe'] ?? 'text');
+                $nilai[$kunci] = Skema::bakukan(
+                    $definisi[$kunci],
+                    $this->bersihkan($sel[$huruf] ?? null, $definisi[$kunci]['tipe'] ?? 'text')
+                );
             }
 
             if (($nilai['nama'] ?? null) === null) {

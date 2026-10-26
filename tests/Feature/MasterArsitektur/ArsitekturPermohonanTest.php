@@ -45,7 +45,7 @@ class ArsitekturPermohonanTest extends TestCase
             'jenis' => 'layanan',
             'kode' => 'LYN-01',
             'nama' => 'Layanan Email Dinas',
-            'status' => 'Aktif',
+            'status' => 'As-is',
             'unit_kerja_id' => $unit->id,
             'unit_kerja_teks' => $unit->nama,
             'atribut' => ['tujuan' => 'Surat menyurat elektronik', 'metode_layanan' => 'Elektronik'],
@@ -102,7 +102,7 @@ class ArsitekturPermohonanTest extends TestCase
         $this->actingAs($user)->post(route('user.arsitektur.ubah.simpan', $item), [
             'kode' => 'LYN-01',
             'nama' => 'Layanan Email Pemerintah',
-            'status' => 'Aktif',
+            'status' => 'As-is',
             'atribut' => ['tujuan' => "Surat menyurat elektronik\r\n", 'metode_layanan' => 'Elektronik'],
             'catatan_pemohon' => 'Nama layanan berubah',
             // Upaya memindahkan entri ke instansi lain diabaikan
@@ -142,7 +142,7 @@ class ArsitekturPermohonanTest extends TestCase
             ->post(route('user.arsitektur.ubah.simpan', $item), [
                 'kode' => 'LYN-01',
                 'nama' => 'Layanan Email Dinas',
-                'status' => 'Aktif',
+                'status' => 'As-is',
                 'atribut' => ['tujuan' => 'Surat menyurat elektronik', 'metode_layanan' => 'Elektronik'],
             ])->assertSessionHas('error');
 
@@ -181,13 +181,13 @@ class ArsitekturPermohonanTest extends TestCase
         $this->actingAs($user)->post(route('user.arsitektur.ubah.simpan', $item), [
             'kode' => 'LYN-01',
             'nama' => 'Layanan Email Pemerintah',
-            'status' => 'Aktif',
+            'status' => 'As-is',
             'atribut' => ['tujuan' => 'Surat menyurat elektronik', 'metode_layanan' => 'Elektronik'],
         ]);
         $permohonan = Permohonan::sole();
 
         // Admin sempat mengubah kolom lain sebelum usulan diproses
-        $item->update(['status' => 'Nonaktif']);
+        $item->update(['status' => 'Metadata Upgrade (to-be)']);
 
         $this->assertSame(1, app(AdminPendingCountsService::class)->countsFor($admin)['arsitektur_permohonan']);
 
@@ -207,7 +207,7 @@ class ArsitekturPermohonanTest extends TestCase
 
         $item->refresh();
         $this->assertSame('Layanan Email Pemerintah', $item->nama);
-        $this->assertSame('Nonaktif', $item->status);
+        $this->assertSame('Metadata Upgrade (to-be)', $item->status);
         $this->assertSame('Elektronik', $item->atribut['metode_layanan']);
         $this->assertSame($this->dkisp->id, $item->unit_kerja_id);
 

@@ -71,6 +71,8 @@
                                     Tertulis pada sumber: <strong>{{ $item->unit_kerja_teks }}</strong> — belum terpetakan ke Master Data Unit Kerja.
                                 </p>
                             @endif
+                        @elseif ($tipe === 'pilihan')
+                            @include('admin.master-arsitektur._pilihan')
                         @elseif ($tipe === 'textarea')
                             <textarea name="{{ $name }}" id="f-{{ $kunci }}" rows="3" class="{{ $kelasInput }}">{{ $nilai }}</textarea>
                         @else

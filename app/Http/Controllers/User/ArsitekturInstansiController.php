@@ -212,7 +212,7 @@ class ArsitekturInstansiController extends Controller
     private function instansi(Request $request)
     {
         $unit = $request->user()->unitKerja;
-        abort_unless($unit, 403, 'Akun Anda belum terhubung ke instansi. Lengkapi instansi pada profil terlebih dahulu.');
+        abort_unless($unit, 403, 'Akun Anda belum terhubung ke unit kerja. Lengkapi unit kerja pada profil terlebih dahulu.');
 
         return $unit;
     }

@@ -15,7 +15,12 @@
 |     * header : judul kolom pada Excel (boleh array untuk beberapa variasi).
 |                Pencocokan mengabaikan huruf besar/kecil, tanda panah, dan
 |                keterangan dalam kurung, mis. "→ RAB Level 2 (Dependency)".
-|     * tipe   : text (default), textarea, tanggal.
+|     * tipe   : text (default), textarea, tanggal, pilihan.
+|     * opsi   : daftar nilai baku untuk tipe "pilihan" (dropdown). Saat impor,
+|                penulisan yang hanya beda huruf besar/kecil atau spasi
+|                disamakan ke opsi; nilai di luar opsi tetap disimpan apa adanya.
+|     * otomatis: untuk "pilihan", isi otomatis dari kolom lain di form:
+|                ['dari' => kolom, 'terisi' => opsi, 'kosong' => opsi].
 |   Kunci kolom berikut disimpan sebagai kolom tabel (bisa difilter):
 |     kode, nama, status, unit_kerja, ref_1, ref_2, ref_3, tahun.
 |   Kolom lain disimpan pada kolom JSON "atribut".
@@ -41,6 +46,10 @@ $rak = [
     'ref_1' => ['label' => 'RAK Level 1'],
     'ref_2' => ['label' => 'RAK Level 2'],
 ];
+
+// Status metadata arsitektur (As-is / to-be) pada Proses Bisnis, Layanan, Data, Aplikasi
+$statusMetadata = ['tipe' => 'pilihan', 'opsi' => ['As-is', 'Metadata Baru (to-be)', 'Metadata Upgrade (to-be)']];
+$statusReviu = ['tipe' => 'pilihan', 'opsi' => ['Eksisting', 'New', 'Update']];
 
 $kinerja = [
     'visi' => ['label' => 'Visi', 'tipe' => 'textarea'],
@@ -143,7 +152,7 @@ return [
             'kolom' => [
                 'kode' => ['label' => 'ID Proses Bisnis'],
                 'nama' => ['label' => 'Nama Bisnis/Urusan'],
-                'status' => ['label' => 'Status'],
+                'status' => ['label' => 'Status'] + $statusMetadata,
                 'unit_kerja' => ['label' => 'Unit Kerja'],
                 'kode_proses_bisnis' => ['label' => 'Kode Proses Bisnis'],
                 'sumber' => ['label' => 'Sumber Proses Bisnis'],
@@ -163,16 +172,20 @@ return [
             'kolom' => [
                 'kode' => ['label' => 'ID Layanan'],
                 'nama' => ['label' => 'Nama Layanan'],
-                'status' => ['label' => 'Status Layanan'],
+                'status' => ['label' => 'Status Layanan'] + $statusMetadata,
                 'unit_kerja' => ['label' => 'Unit Kerja'],
                 'kode_layanan' => ['label' => 'Kode Layanan'],
-                'status_reviu' => ['label' => 'Status Reviu Arsitektur'],
+                'status_reviu' => ['label' => 'Status Reviu Arsitektur'] + $statusReviu,
                 'tujuan' => ['label' => 'Tujuan', 'tipe' => 'textarea'],
                 'fungsi' => ['label' => 'Fungsi', 'tipe' => 'textarea'],
                 'penanggung_jawab' => ['label' => 'Penanggung Jawab Pelayanan'],
                 'kl_terkait' => ['label' => 'Kementerian/Lembaga Terkait'],
-                'target_layanan' => ['label' => 'Target Layanan'],
-                'metode_layanan' => ['label' => 'Metode Layanan'],
+                'target_layanan' => ['label' => 'Target Layanan', 'tipe' => 'pilihan', 'opsi' => ['Masyarakat', 'Bisnis', 'Pemerintah', 'ASN/Pegawai']],
+                'metode_layanan' => [
+                    'label' => 'Metode Layanan', 'tipe' => 'pilihan', 'opsi' => ['Elektronik', 'Non Elektronik'],
+                    // Seperti rumus di Excel: Elektronik bila URL layanan terisi (tetap bisa diubah)
+                    'otomatis' => ['dari' => 'url', 'terisi' => 'Elektronik', 'kosong' => 'Non Elektronik'],
+                ],
                 'potensi_manfaat' => ['label' => 'Potensi Manfaat', 'tipe' => 'textarea'],
                 'potensi_ekonomi' => ['label' => 'Potensi Ekonomi', 'tipe' => 'textarea'],
                 'potensi_resiko' => ['label' => 'Potensi Resiko', 'tipe' => 'textarea'],
@@ -190,7 +203,7 @@ return [
                 'penyedia_layanan' => ['label' => 'Penyedia Layanan'],
                 'pengelola_layanan' => ['label' => 'Pengelola Layanan'],
                 'cara_akses' => ['label' => 'Cara Akses Layanan'],
-                'klasifikasi_sistem' => ['label' => 'Klasifikasi Sistem'],
+                'klasifikasi_sistem' => ['label' => 'Klasifikasi Sistem', 'tipe' => 'pilihan', 'opsi' => ['Kritis', 'Esensial', 'Normal']],
                 'kontak_bantuan' => ['label' => 'Kontak Permintaan Bantuan', 'tipe' => 'textarea'],
                 'waktu_bantuan' => ['label' => 'Waktu Pelayanan Bantuan'],
                 'target_pemenuhan' => ['label' => 'Target Pemenuhan Layanan'],
@@ -208,10 +221,10 @@ return [
             'kolom' => [
                 'kode' => ['label' => 'ID Data'],
                 'nama' => ['label' => 'Nama Data'],
-                'status' => ['label' => 'Status Data'],
+                'status' => ['label' => 'Status Data'] + $statusMetadata,
                 'unit_kerja' => ['label' => 'Penanggung Jawab Data/Wali Data', 'header' => ['Penanggung Jawab Data/ Wali Data', 'Wali Data']],
                 'kode_data' => ['label' => 'Kode Data'],
-                'status_reviu' => ['label' => 'Status Reviu Data'],
+                'status_reviu' => ['label' => 'Status Reviu Data'] + $statusReviu,
                 'uraian' => ['label' => 'Uraian Data', 'tipe' => 'textarea'],
                 'tujuan' => ['label' => 'Tujuan Data', 'header' => ['Tujuan dari', 'Tujuan']],
                 'aplikasi' => ['label' => 'Aplikasi'],
@@ -240,11 +253,11 @@ return [
             'kolom' => [
                 'kode' => ['label' => 'ID Aplikasi'],
                 'nama' => ['label' => 'Nama Aplikasi'],
-                'status' => ['label' => 'Status'],
+                'status' => ['label' => 'Status'] + $statusMetadata,
                 'unit_kerja' => ['label' => 'Unit Operasional Teknologi'],
                 'tahun' => ['label' => 'Tahun Pengembangan'],
                 'kode_aplikasi' => ['label' => 'Kode Aplikasi'],
-                'status_reviu' => ['label' => 'Status Reviu Aplikasi'],
+                'status_reviu' => ['label' => 'Status Reviu Aplikasi', 'tipe' => 'pilihan', 'opsi' => ['Eksisting', 'New', 'Update', 'Usulan']],
                 'kebutuhan_fitur' => ['label' => 'Kebutuhan Fitur', 'tipe' => 'textarea'],
                 'uraian' => ['label' => 'Uraian Aplikasi', 'tipe' => 'textarea'],
                 'fungsi' => ['label' => 'Fungsi Aplikasi', 'tipe' => 'textarea'],
@@ -544,7 +557,7 @@ return [
                 'sub_kegiatan' => ['label' => 'Sub Kegiatan (Renstra)'],
                 'catatan' => ['label' => 'Catatan/Capaian', 'tipe' => 'textarea'],
             ] + $kinerja + $rab + [
-                'status' => ['label' => 'Status'],
+                'status' => ['label' => 'Status', 'tipe' => 'pilihan', 'opsi' => ['Belum', 'Dalam Proses', 'Sudah']],
             ],
         ],
     ],

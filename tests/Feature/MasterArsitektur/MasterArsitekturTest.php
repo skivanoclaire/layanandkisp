@@ -339,6 +339,52 @@ class MasterArsitekturTest extends TestCase
         $this->assertSame(0, Item::count());
     }
 
+    public function test_kolom_pilihan_berupa_dropdown_dan_hanya_menerima_opsi_baku(): void
+    {
+        $admin = $this->pengguna('Admin');
+
+        $this->actingAs($admin)->get(route('admin.master-arsitektur.create', 'layanan'))
+            ->assertOk()
+            ->assertSee('<select name="atribut[metode_layanan]"', false)
+            ->assertSee('<select name="atribut[target_layanan]"', false)
+            ->assertSee('<select name="atribut[status_reviu]"', false)
+            ->assertSee('<option value="ASN/Pegawai"', false)
+            ->assertSee('data-otomatis-dari="f-url"', false);
+
+        // Nilai lama di luar opsi tetap tampil agar tidak hilang diam-diam
+        $item = Item::create(['jenis' => 'layanan', 'nama' => 'Layanan Lama', 'atribut' => ['target_layanan' => 'Umum']]);
+        $this->actingAs($admin)->get(route('admin.master-arsitektur.edit', $item))
+            ->assertOk()
+            ->assertSee('Umum (nilai lama)');
+
+        $this->actingAs($admin)->post(route('admin.master-arsitektur.store', 'layanan'), [
+            'jenis' => 'layanan',
+            'nama' => 'Layanan Uji',
+            'status' => 'Aktif',
+            'atribut' => ['metode_layanan' => 'Online', 'target_layanan' => 'Masyarakat'],
+        ])->assertSessionHasErrors(['status', 'atribut.metode_layanan']);
+        $this->assertSame(1, Item::count());
+    }
+
+    public function test_impor_menyeragamkan_penulisan_kolom_pilihan(): void
+    {
+        $path = $this->workbook(['Layanan' => [
+            ['Domain Layanan'],
+            ['ID Layanan', 'Nama Layanan', 'Status Layanan', 'Status Reviu Arsitektur', 'Target Layanan', 'Metode Layanan'],
+            ['LYN-1', 'Layanan A', 'as-is', ' eksisting ', 'asn/pegawai', 'non  elektronik'],
+            ['LYN-2', 'Layanan B', 'As-is', 'New', 'Umum', 'Elektronik'],
+        ]]);
+
+        app(Importer::class)->impor($path, 'xlsx');
+
+        $a = Item::where('kode', 'LYN-1')->sole();
+        $this->assertSame('As-is', $a->status);
+        $this->assertEquals(['status_reviu' => 'Eksisting', 'target_layanan' => 'ASN/Pegawai', 'metode_layanan' => 'Non Elektronik'], $a->atribut);
+
+        // Nilai di luar opsi tetap disimpan apa adanya
+        $this->assertSame('Umum', Item::where('kode', 'LYN-2')->sole()->atribut['target_layanan']);
+    }
+
     public function test_hasil_ekspor_dapat_diimpor_kembali(): void
     {
         $admin = $this->pengguna('Admin');

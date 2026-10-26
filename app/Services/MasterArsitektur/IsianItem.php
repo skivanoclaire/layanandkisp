@@ -3,6 +3,7 @@
 namespace App\Services\MasterArsitektur;
 
 use App\Models\MasterArsitektur\Item;
+use Illuminate\Validation\Rule;
 
 /**
  * Isian form satu entri Master Data Arsitektur: aturan validasi dan
@@ -36,6 +37,11 @@ class IsianItem
             } else {
                 $rules["atribut.$kunci"] = ['nullable', 'string', 'max:20000'];
                 $nama["atribut.$kunci"] = $definisi['label'];
+            }
+
+            // Kolom pilihan hanya menerima opsi baku
+            if ($opsi = Skema::opsi($definisi)) {
+                $rules[isset(self::BATAS[$kunci]) ? $kunci : "atribut.$kunci"][] = Rule::in($opsi);
             }
         }
 
