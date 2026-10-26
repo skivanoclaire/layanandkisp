@@ -19,6 +19,27 @@ class SimpegClient
      */
     public function byNik(string $nik): array
     {
+        return $this->get('/pegawai/by-nik', ['nik' => $nik], 'invalid_nik');
+    }
+
+    /**
+     * Fetch pegawai data by NIP from SIMPEG API
+     *
+     * @param string $nip NIP (18 digits)
+     * @return array ['ok' => bool, 'valid' => bool, 'data' => array|null]
+     * @throws SimpegException on API errors
+     */
+    public function byNip(string $nip): array
+    {
+        return $this->get('/pegawai/by-nip', ['nip' => $nip], 'invalid_nip');
+    }
+
+    /**
+     * Shared GET to the SIMPEG gateway: auth header, retry on transient failure,
+     * and normalization through handleResponse().
+     */
+    protected function get(string $path, array $query, string $invalidReason): array
+    {
         $apiUrl = rtrim(config('services.simpeg.api_url'), '/');
         $apiKey = config('services.simpeg.api_key');
 
@@ -26,17 +47,17 @@ class SimpegClient
             throw new SimpegException('SIMPEG API key not configured', 500, 'Missing SIMPEG_API_KEY in .env');
         }
 
-        $url = "{$apiUrl}/pegawai/by-nik";
+        $url = $apiUrl . $path;
 
         Log::info('SIMPEG: Fetching pegawai data', [
-            'nik' => $nik,
-            'url' => $url
+            'url' => $url,
+            'query' => $query,
         ]);
 
         try {
             $resp = Http::timeout(10)
                 // Retry only transient failures (connection errors / 5xx). Crucially, do NOT let
-                // retry() throw on 4xx — a 404 (NIK not found) / 422 (NIK invalid) must reach
+                // retry() throw on 4xx — a 404 (not found) / 422 (invalid param) must reach
                 // handleResponse() so it can be classified, not bubble up as a RequestException.
                 ->retry(2, 500, function ($exception) {
                     return $exception instanceof ConnectionException
@@ -47,10 +68,10 @@ class SimpegClient
                     'apikey' => $apiKey,
                     'Accept' => 'application/json',
                 ])
-                ->get($url, ['nik' => $nik]);
+                ->get($url, $query);
         } catch (ConnectionException $e) {
             Log::error('SIMPEG: Connection error', [
-                'nik' => $nik,
+                'query' => $query,
                 'error' => $e->getMessage()
             ]);
             throw new SimpegException('Timeout/connection error to SIMPEG API', 0, $e->getMessage());
@@ -59,12 +80,12 @@ class SimpegClient
             // final response through handleResponse() so 4xx is classified rather than treated as
             // an unexpected error.
             if ($e->response) {
-                return $this->handleResponse($e->response);
+                return $this->handleResponse($e->response, $invalidReason);
             }
             throw new SimpegException('SIMPEG request failed', 0, $e->getMessage());
         }
 
-        return $this->handleResponse($resp);
+        return $this->handleResponse($resp, $invalidReason);
     }
 
     /**
@@ -77,7 +98,7 @@ class SimpegClient
      * @return array Normalized response
      * @throws SimpegException on API errors
      */
-    protected function handleResponse($resp): array
+    protected function handleResponse($resp, string $invalidReason = 'invalid_nik'): array
     {
         $status = $resp->status();
         $json = $resp->json();
@@ -88,13 +109,13 @@ class SimpegClient
             'body_preview' => is_array($json) ? array_keys($json) : substr($body, 0, 200)
         ]);
 
-        // === Invalid NIK format (422, e.g. {"ok":false,"error":"Parameter nik wajib 16 digit"}) ===
+        // === Invalid NIK/NIP format (422, e.g. {"ok":false,"error":"Parameter nik wajib 16 digit"}) ===
         if ($status === 422) {
             return [
                 'ok' => false,
                 'valid' => false,
                 'data' => null,
-                'reason' => 'invalid_nik',
+                'reason' => $invalidReason,
                 'message' => is_array($json) ? ($json['error'] ?? null) : null,
             ];
         }

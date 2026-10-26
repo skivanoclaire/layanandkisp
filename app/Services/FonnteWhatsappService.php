@@ -180,6 +180,35 @@ class FonnteWhatsappService
     }
 
     /**
+     * Minta pengguna (umumnya registrasi manual) memperbaiki NIK di profilnya
+     * agar sama dengan NIK yang terdaftar pada SIMPEG Kaltara.
+     */
+    public function sendNikTidakSesuaiNotification(
+        string $phoneNumber,
+        string $nama,
+        string $email
+    ): bool {
+        if (empty($phoneNumber)) {
+            Log::warning('FonnteWhatsapp: sendNikTidakSesuaiNotification — phone kosong', compact('email'));
+            return false;
+        }
+
+        $message = "*{$this->header}*\n\n"
+            . "Yth. Bapak/Ibu *{$nama}*,\n\n"
+            . "NIK pada akun Anda di *Portal Layanan TIK DKISP Provinsi Kaltara* "
+            . "*tidak sesuai / tidak ditemukan* pada aplikasi *SIMPEG Kaltara*.\n\n"
+            . "Email akun: {$email}\n\n"
+            . "Mohon perbarui NIK Anda menggunakan *NIK yang terdaftar pada SIMPEG Kaltara* melalui menu Profil:\n"
+            . "https://layanan.diskominfo.kaltaraprov.go.id/profile\n\n"
+            . "Jika kolom NIK tidak dapat diubah, silakan balas pesan ini dengan NIK yang benar "
+            . "agar dibantu perbaikannya oleh admin.\n\n"
+            . "Terima kasih.\n"
+            . "Helpdesk DKISP Kaltara";
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
+    /**
      * Beri tahu pemohon vidcon bahwa permohonannya telah disetujui beserta
      * link meeting yang dapat digunakan.
      */

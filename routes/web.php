@@ -290,6 +290,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::middleware('role:Admin')->group(function () {
         Route::post('/users/{user}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
         Route::post('/users/{user}/unverify', [AdminController::class, 'unverifyUser'])->name('users.unverify');
+        Route::post('/users/{user}/notify-nik', [AdminController::class, 'notifyNikTidakSesuai'])
+            ->middleware('throttle:20,1')
+            ->name('users.notify-nik');
     });
 
     // Rekomendasi V2 - Verification
@@ -372,6 +375,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // AJAX endpoints untuk modal "Cek Data" di /admin/users
     Route::middleware('role:Admin')->group(function () {
         Route::post('/simpeg-check/api/{user}/check', [SimpegCheckController::class, 'apiCheckUser'])->name('simpeg.api.check');
+        Route::post('/simpeg-check/api/{user}/check-nip', [SimpegCheckController::class, 'apiCheckUserByNip'])
+            ->middleware('throttle:30,1')
+            ->name('simpeg.api.check-nip');
         Route::post('/simpeg-check/api/{user}/apply', [SimpegCheckController::class, 'apiApplyUser'])->name('simpeg.api.apply');
     });
 

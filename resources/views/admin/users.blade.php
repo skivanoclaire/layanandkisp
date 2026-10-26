@@ -19,6 +19,12 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="mb-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            {{ session('error') }}
+        </div>
+    @endif
+
     {{-- Statistik Pengguna --}}
     <div class="mb-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -230,6 +236,29 @@
                                     </button>
                                 @endif
 
+                                @if($user->is_sso_user && !empty($user->nip))
+                                    <button type="button"
+                                        class="bg-cyan-600 hover:bg-cyan-700 text-white px-2 py-1 rounded text-xs font-medium js-cek-data"
+                                        data-user-id="{{ $user->id }}"
+                                        data-user-name="{{ $user->name }}"
+                                        data-mode="nip"
+                                        title="Cek & sinkron data SIMPEG berdasarkan NIP (pengguna SSO)">
+                                        Cek Data NIP
+                                    </button>
+                                @endif
+
+                                @if(!$user->is_sso_user && !empty($user->phone))
+                                    <form method="POST" action="{{ route('admin.users.notify-nik', $user) }}"
+                                        onsubmit="return confirm(@js('Kirim notifikasi WA ke ' . $user->name . ' agar memperbarui NIK sesuai SIMPEG Kaltara?'));">
+                                        @csrf
+                                        <button type="submit"
+                                            class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded text-xs font-medium"
+                                            title="Kirim WA (token Aptika): minta user memakai NIK yang terdaftar di SIMPEG Kaltara">
+                                            WA NIK
+                                        </button>
+                                    </form>
+                                @endif
+
                                 <a href="{{ route('admin.users.edit', $user->id) }}"
                                     class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
                                     Edit
@@ -310,9 +339,9 @@
     let currentUserId = null;
     let lastSimpeg    = null;
 
-    function openModal(userId, userName) {
+    function openModal(userId, userName, mode) {
         currentUserId = userId;
-        usernameLabel.textContent = userName ? '— ' + userName : '';
+        usernameLabel.textContent = (userName ? '— ' + userName : '') + (mode === 'nip' ? ' (via NIP)' : '');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         loading.classList.remove('hidden');
@@ -366,6 +395,7 @@
 
     function renderResult(simpeg, current, roles) {
         const rows = [
+            { key:'nik',        label:'NIK',        simpegVal:simpeg.nik,      currentVal:current.nik },
             { key:'name',       label:'Nama',       simpegVal:simpeg.nama,     currentVal:current.name },
             { key:'nip',        label:'NIP',        simpegVal:simpeg.nip,      currentVal:current.nip },
             { key:'email',      label:'Email',      simpegVal:simpeg.email,    currentVal:current.email },
@@ -417,9 +447,10 @@
         const btn = e.target.closest('.js-cek-data');
         if (!btn) return;
         e.preventDefault();
-        openModal(btn.dataset.userId, btn.dataset.userName);
+        const mode = btn.dataset.mode === 'nip' ? 'nip' : 'nik';
+        openModal(btn.dataset.userId, btn.dataset.userName, mode);
         try {
-            const res  = await fetch(`${checkUrl}/${btn.dataset.userId}/check`, {
+            const res  = await fetch(`${checkUrl}/${btn.dataset.userId}/${mode === 'nip' ? 'check-nip' : 'check'}`, {
                 method:'POST',
                 headers:{'Content-Type':'application/json','X-CSRF-TOKEN':csrfToken,'Accept':'application/json','X-Requested-With':'XMLHttpRequest'},
             });
@@ -458,6 +489,7 @@
             }
             const payload = { fields:checked, role_ids:roleIds, name:lastSimpeg.nama, nip:lastSimpeg.nip, phone:lastSimpeg.telepon, jabatan:lastSimpeg.jabatan, instansi:lastSimpeg.instansi, unit_kerja_id:lastSimpeg.matched_unit_kerja_id };
             if (checked.includes('email')) payload.email = lastSimpeg.email;
+            if (checked.includes('nik')) payload.nik = lastSimpeg.nik;
             const res  = await fetch(`${applyUrl}/${currentUserId}/apply`, {
                 method:'POST',
                 headers:{'Content-Type':'application/json','X-CSRF-TOKEN':csrfToken,'Accept':'application/json','X-Requested-With':'XMLHttpRequest'},

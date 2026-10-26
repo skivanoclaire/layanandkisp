@@ -414,6 +414,72 @@ class SimpegCheckController extends Controller
             ], 404);
         }
 
+        return $this->simpegResultResponse($request, $user, $api, $nik);
+    }
+
+    /**
+     * AJAX endpoint dari modal "Cek Data NIP" di /admin/users — untuk user SSO
+     * yang datanya dikenali lewat NIP (NIK sering kosong/tidak sesuai).
+     */
+    public function apiCheckUserByNip(Request $request, User $user, SimpegClient $client): JsonResponse
+    {
+        $user->load('jabatan.unitKerja', 'unitKerja');
+
+        $nip = preg_replace('/\D+/', '', (string) $user->nip);
+
+        if (strlen($nip) !== 18) {
+            return response()->json([
+                'success' => false,
+                'message' => 'NIP user tidak valid — NIP harus 18 digit angka. Perbaiki NIP lewat Edit User.',
+            ], 422);
+        }
+
+        try {
+            $api = $client->byNip($nip);
+        } catch (\App\Exceptions\SimpegException $e) {
+            Log::warning('SIMPEG check by NIP (admin modal) failed', [
+                'admin_id' => $request->user()->id, 'target_user_id' => $user->id,
+                'status' => $e->status, 'msg' => $e->getMessage(),
+            ]);
+            $msg = match ($e->status) {
+                404 => 'NIP user tidak ditemukan di SIMPEG.',
+                429 => 'Terlalu banyak permintaan ke SIMPEG. Coba lagi sebentar.',
+                401, 403 => 'Layanan SIMPEG menolak akses saat ini.',
+                default => 'Layanan SIMPEG sedang bermasalah. Coba lagi nanti.',
+            };
+            return response()->json(['success' => false, 'message' => $msg], 502);
+        } catch (Throwable $e) {
+            Log::error('SIMPEG check by NIP (admin modal) unexpected error', [
+                'target_user_id' => $user->id, 'e' => $e->getMessage(),
+            ]);
+            return response()->json(['success' => false, 'message' => 'Gangguan tidak terduga ke SIMPEG.'], 502);
+        }
+
+        if (empty($api['valid'])) {
+            if (($api['reason'] ?? null) === 'invalid_nip') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Format NIP ditolak SIMPEG. Periksa & perbaiki NIP user lewat Edit User.',
+                ], 422);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'NIP tidak ditemukan di SIMPEG. Verifikasi ke admin SIMPEG / Kepegawaian apakah NIP ini seharusnya ada di sana.',
+            ], 404);
+        }
+
+        $data = is_array($api['data'] ?? null) ? $api['data'] : [];
+        $nik  = preg_replace('/\D+/', '', (string) ($data['nik'] ?? $user->nik ?? ''));
+
+        return $this->simpegResultResponse($request, $user, $api, $nik);
+    }
+
+    /**
+     * Petakan hasil SIMPEG (by NIK / by NIP) ke JSON modal "Cek Data" dan catat log.
+     */
+    protected function simpegResultResponse(Request $request, User $user, array $api, string $nik): JsonResponse
+    {
         $data = is_array($api['data'] ?? null) ? $api['data'] : [];
 
         $instansiText = $data['instansi'] ?? $data['unit_kerja'] ?? $data['unitKerja']
@@ -487,6 +553,7 @@ class SimpegCheckController extends Controller
                 'display_name' => $r->display_name ?: $r->name,
             ])->values(),
             'simpeg' => [
+                'nik'      => preg_replace('/\D+/', '', (string) ($data['nik'] ?? '')) ?: null,
                 'nip'      => $data['nip'] ?? null,
                 'nama'     => $data['nama'] ?? null,
                 'telepon'  => $data['telepon'] ?? null,
@@ -517,7 +584,8 @@ class SimpegCheckController extends Controller
     {
         $validated = $request->validate([
             'fields'   => ['required', 'array', 'min:1'],
-            'fields.*' => ['in:nip,name,phone,email,jabatan,unit_kerja,roles'],
+            'fields.*' => ['in:nik,nip,name,phone,email,jabatan,unit_kerja,roles'],
+            'nik'      => ['nullable', new NikIndonesia()],
             'nip'      => ['nullable', 'string', 'max:20'],
             'name'     => ['nullable', 'string', 'max:255'],
             'phone'    => ['nullable', 'string', 'max:20'],
@@ -542,6 +610,27 @@ class SimpegCheckController extends Controller
 
         foreach ($validated['fields'] as $field) {
             switch ($field) {
+                case 'nik':
+                    if (!empty($validated['nik'])) {
+                        $nikHash = User::hashNik($validated['nik']);
+                        if ($nikHash === User::hashNik($user->nik)) {
+                            break;
+                        }
+                        // NIK dari SIMPEG (cek via NIP) tidak boleh menimpa NIK milik user lain.
+                        $nikConflict = User::where('nik_hash', $nikHash)
+                            ->where('id', '!=', $user->id)
+                            ->exists();
+                        if ($nikConflict) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'NIK ' . $validated['nik'] . ' sudah terdaftar pada user lain. '
+                                    . 'Kemungkinan ada user duplikat — periksa lewat /admin/users.',
+                            ], 409);
+                        }
+                        $user->nik = $validated['nik'];
+                        $updated[] = 'NIK';
+                    }
+                    break;
                 case 'nip':
                     if (!empty($validated['nip'])) {
                         $user->nip = $validated['nip'];

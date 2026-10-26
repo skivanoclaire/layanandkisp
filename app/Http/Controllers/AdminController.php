@@ -502,6 +502,26 @@ public function verifyUser(User $user)
     return back()->with('status', "User {$user->name} berhasil diverifikasi.");
 }
 
+public function notifyNikTidakSesuai(User $user)
+{
+    if (empty($user->phone)) {
+        return back()->with('error', "Notifikasi WA tidak dikirim — {$user->name} tidak punya nomor HP.");
+    }
+
+    $sent = (new FonnteWhatsappService('aptika'))
+        ->sendNikTidakSesuaiNotification($user->phone, $user->name, $user->email);
+
+    Log::info('notifyNikTidakSesuai', [
+        'admin'   => auth()->user()->email ?? null,
+        'user_id' => $user->id,
+        'sent'    => $sent,
+    ]);
+
+    return $sent
+        ? back()->with('status', "Notifikasi WA perbaikan NIK berhasil dikirim ke {$user->name}.")
+        : back()->with('error', "Notifikasi WA ke {$user->name} gagal dikirim. Periksa nomor HP atau token Fonnte Aptika.");
+}
+
 public function unverifyUser(User $user)
 {
     // opsi: cegah membatalkan verifikasi admin, kalau mau:
