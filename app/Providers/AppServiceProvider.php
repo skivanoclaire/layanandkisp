@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Menu sidebar dipakai sidebar, navbar, dan dashboard dalam satu request.
+        $this->app->scoped(\App\Services\SidebarMenuService::class);
+
         // Bind anhskohbo/no-captcha under a dedicated key because mews/captcha
         // also binds the default 'captcha' key and overwrites it at boot.
         // Baca lewat config (bukan env()) supaya tetap jalan setelah `php artisan config:cache`.
@@ -68,9 +71,10 @@ class AppServiceProvider extends ServiceProvider
     });
 
         View::composer('layouts.authenticated', function ($view) {
-            $user = auth()->user();
-            $counts = app(\App\Services\AdminPendingCountsService::class)->countsFor($user);
-            $view->with('pendingCounts', $counts);
+            $menu = app(\App\Services\SidebarMenuService::class);
+            $view->with('pendingCounts', $menu->pendingCounts());
+            $view->with('menuSections', $menu->sections());
+            $view->with('menuPendingItems', $menu->pendingItems());
         });
     }
 

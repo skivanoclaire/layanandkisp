@@ -56,7 +56,9 @@ a.border {
 /* Exclude sidebar navigation and hamburger menu button from border styles */
 aside nav button,
 aside nav a,
-header button.text-2xl {
+header button.text-2xl,
+.app-shell-ui button,
+.app-shell-ui a {
     border: none !important;
 }
 

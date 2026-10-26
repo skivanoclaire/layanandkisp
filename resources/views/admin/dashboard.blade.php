@@ -2,488 +2,327 @@
 @section('title', '- Dashboard Admin')
 @section('header-title', 'Dashboard Admin')
 
+@php
+    $admin = auth()->user();
+    $menu = app(\App\Services\SidebarMenuService::class);
+    $canSeePending = !empty($menu->pendingCounts());
+    $pendingItems = $menu->pendingItems();
+    $pendingTotal = $menu->pendingCounts()['total'] ?? 0;
+    $canManageSubdomain = $admin->hasPermission('Manajemen Subdomain Terpadu');
 
+    $subdomainService = app(\App\Services\SubdomainAggregatorService::class);
+    $subdomainStats = $subdomainService->getStats();
+    $problematicWebsites = $subdomainStats['down_websites'] > 0 ? $subdomainService->getProblematicWebsites() : collect();
+    $chartData = $subdomainService->getChartData(6);
 
+    $jam = (int) now()->format('G');
+    $sapaan = match (true) {
+        $jam < 11 => 'Selamat pagi',
+        $jam < 15 => 'Selamat siang',
+        $jam < 18 => 'Selamat sore',
+        default => 'Selamat malam',
+    };
+    $namaDepan = \Illuminate\Support\Str::of($admin->name)->before(' ')->value() ?: $admin->name;
+
+    $persen = fn ($n) => $total > 0 ? round($n / $total * 100) : 0;
+    $statusCards = [
+        ['label' => 'Total Permohonan', 'value' => $total, 'icon' => 'inbox', 'tone' => 'bg-slate-100 text-slate-700', 'note' => 'seluruh formulir digital'],
+        ['label' => 'Menunggu', 'value' => $waiting, 'icon' => 'clock', 'tone' => 'bg-amber-100 text-amber-700', 'note' => $persen($waiting) . '% dari total'],
+        ['label' => 'Dalam Proses', 'value' => $processing, 'icon' => 'arrow-path', 'tone' => 'bg-sky-100 text-sky-700', 'note' => $persen($processing) . '% dari total'],
+        ['label' => 'Ditolak', 'value' => $rejected, 'icon' => 'x-circle', 'tone' => 'bg-red-100 text-red-700', 'note' => $persen($rejected) . '% dari total'],
+        ['label' => 'Selesai', 'value' => $finished, 'icon' => 'check-circle', 'tone' => 'bg-emerald-100 text-emerald-700', 'note' => $persen($finished) . '% dari total'],
+    ];
+@endphp
 
 @section('content')
-    <div class="max-w-full overflow-hidden">
-        <h1 class="text-3xl font-bold mb-8">Dashboard Admin - Permohonan Layanan</h1>
+    <div class="max-w-full overflow-hidden space-y-6">
 
-        <!-- Ringkasan Permohonan & Akun Pengguna -->
-        <div class="max-w-full grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white border-l-4 border-green-500 p-4 rounded-lg shadow">
-                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Jumlah Permohonan</p>
-                <p class="text-3xl font-bold text-gray-800">{{ number_format($total) }}</p>
-                <p class="text-xs text-gray-500 mt-1">{{ number_format($waiting) }} menunggu tindak lanjut</p>
+        <!-- Sapaan -->
+        <div class="rounded-xl bg-gradient-to-r from-emerald-700 to-green-600 p-5 text-white md:p-6">
+            <p class="text-sm text-emerald-100">{{ now()->translatedFormat('l, d F Y') }}</p>
+            <h2 class="mt-1 text-xl font-bold md:text-2xl">{{ $sapaan }}, {{ $namaDepan }}!</h2>
+            <p class="mt-1 text-sm text-emerald-50/90">
+                @if (!$canSeePending)
+                    Ringkasan permohonan layanan E-Layanan DKISP.
+                @elseif ($pendingTotal > 0)
+                    Ada <strong class="font-semibold text-white">{{ number_format($pendingTotal) }} permohonan</strong> yang menunggu tindak lanjut Anda.
+                @else
+                    Semua permohonan di layanan yang Anda kelola sudah ditindaklanjuti.
+                @endif
+            </p>
+        </div>
+
+        @if (session('success'))
+            <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show"
+                class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="alert">
+                <strong class="font-semibold">Sukses!</strong> {{ session('success') }}
             </div>
-            <div class="bg-white border-l-4 border-blue-500 p-4 rounded-lg shadow">
-                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Akun Pengguna Terverifikasi</p>
-                <p class="text-3xl font-bold text-gray-800">{{ number_format($userStats['verified']) }}</p>
-                <p class="text-xs text-gray-500 mt-1">dari {{ number_format($userStats['total']) }} akun terdaftar</p>
-                <div class="mt-3 pt-3 border-t border-gray-100 space-y-1 text-sm">
+        @endif
+
+        <!-- Perlu tindakan -->
+        @if ($canSeePending)
+            <section>
+                <div class="mb-3">
+                    <h2 class="text-base font-semibold text-gray-900">Perlu Tindakan</h2>
+                    <p class="text-xs text-gray-500">Permohonan berstatus menunggu pada layanan yang Anda kelola.</p>
+                </div>
+                @if ($pendingItems)
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        @foreach ($pendingItems as $pending)
+                            <a href="{{ $pending['url'] }}"
+                                class="group flex items-center gap-3 rounded-xl border border-gray-200 p-4 transition hover:border-amber-300 hover:bg-amber-50/40">
+                                <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                                    <x-nav-icon :name="$pending['icon']" class="w-5 h-5" />
+                                </span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate text-sm font-medium text-gray-900">{{ $pending['label'] }}</span>
+                                    <span class="block truncate text-xs text-gray-500">{{ $pending['group'] ?? 'Tinjau permohonan' }}</span>
+                                </span>
+                                <span class="text-2xl font-bold text-amber-600">{{ $pending['badge'] }}</span>
+                                <x-nav-icon name="chevron-right" class="w-4 h-4 flex-shrink-0 text-gray-300 group-hover:text-amber-600" />
+                            </a>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                        <x-nav-icon name="check-circle" class="w-6 h-6 flex-shrink-0 text-emerald-600" />
+                        Tidak ada permohonan yang menunggu. Kerja bagus!
+                    </div>
+                @endif
+            </section>
+        @endif
+
+        <!-- Ringkasan status permohonan -->
+        <section>
+            <h2 class="mb-3 text-base font-semibold text-gray-900">Ringkasan Permohonan</h2>
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+                @foreach ($statusCards as $card)
+                    <div class="rounded-xl border border-gray-200 p-4 {{ $loop->first ? 'col-span-2 md:col-span-1' : '' }}">
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg {{ $card['tone'] }}">
+                                <x-nav-icon :name="$card['icon']" class="w-5 h-5" />
+                            </span>
+                            <p class="text-xs font-medium text-gray-500">{{ $card['label'] }}</p>
+                        </div>
+                        <p class="mt-3 text-2xl font-bold text-gray-900">{{ number_format($card['value']) }}</p>
+                        <p class="text-xs text-gray-400">{{ $card['note'] }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+
+        <!-- Akun pengguna -->
+        <section class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div class="rounded-xl border border-gray-200 p-4">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+                        <x-nav-icon name="users" class="w-5 h-5" />
+                    </span>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500">Akun Pengguna Terverifikasi</p>
+                        <p class="text-2xl font-bold text-gray-900">
+                            {{ number_format($userStats['verified']) }}
+                            <span class="text-sm font-normal text-gray-400">dari {{ number_format($userStats['total']) }} akun</span>
+                        </p>
+                    </div>
+                </div>
+                <dl class="mt-3 space-y-1 border-t border-gray-100 pt-3 text-sm">
                     <div class="flex justify-between gap-2">
-                        <span class="text-gray-600">ASN ber-NIP, unit kerja internal Kaltara</span>
-                        <span class="font-semibold text-gray-800">{{ number_format($userStats['verified_internal_nip']) }}</span>
+                        <dt class="text-gray-600">ASN ber-NIP, unit kerja internal Kaltara</dt>
+                        <dd class="font-semibold text-gray-800">{{ number_format($userStats['verified_internal_nip']) }}</dd>
                     </div>
                     <div class="flex justify-between gap-2">
-                        <span class="text-gray-600">Instansi Pusat/Lainnya</span>
-                        <span class="font-semibold text-gray-800">{{ number_format($userStats['verified_pusat']) }}</span>
+                        <dt class="text-gray-600">Instansi Pusat/Lainnya</dt>
+                        <dd class="font-semibold text-gray-800">{{ number_format($userStats['verified_pusat']) }}</dd>
                     </div>
-                    @if($userStats['verified_other'] > 0)
+                    @if ($userStats['verified_other'] > 0)
                         <div class="flex justify-between gap-2 text-xs text-gray-400">
-                            <span>Lainnya (tanpa NIP / tanpa unit kerja)</span>
-                            <span>{{ number_format($userStats['verified_other']) }}</span>
+                            <dt>Lainnya (tanpa NIP / tanpa unit kerja)</dt>
+                            <dd>{{ number_format($userStats['verified_other']) }}</dd>
                         </div>
                     @endif
-                </div>
+                </dl>
             </div>
-            <div class="bg-white border-l-4 border-yellow-500 p-4 rounded-lg shadow">
-                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Pengguna Menunggu Verifikasi</p>
-                <p class="text-3xl font-bold text-gray-800">{{ number_format($userStats['unverified']) }}</p>
-                @if(auth()->user()->hasRole('Admin'))
-                    <a href="{{ route('admin.users') }}" class="text-xs text-blue-600 hover:text-blue-700 font-medium mt-1 inline-block">Kelola pengguna &rarr;</a>
+
+            <div class="flex flex-col justify-between rounded-xl border p-4 {{ $userStats['unverified'] > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-gray-200' }}">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                        <x-nav-icon name="user" class="w-5 h-5" />
+                    </span>
+                    <div>
+                        <p class="text-xs font-medium text-gray-500">Pengguna Menunggu Verifikasi</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format($userStats['unverified']) }}</p>
+                    </div>
+                </div>
+                @if ($admin->hasRole('Admin'))
+                    <a href="{{ route('admin.users') }}"
+                        class="mt-3 inline-flex items-center gap-1 self-start text-sm font-medium text-emerald-700 hover:text-emerald-800">
+                        Verifikasi di Kelola Pengguna <x-nav-icon name="arrow-right" class="w-4 h-4" />
+                    </a>
                 @else
-                    <p class="text-xs text-gray-500 mt-1">Belum diverifikasi admin</p>
+                    <p class="mt-3 text-xs text-gray-500">Belum diverifikasi admin.</p>
                 @endif
             </div>
-        </div>
+        </section>
 
-        <!-- Kartu Ringkasan -->
-        <div class="max-w-full grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div class="bg-green-100 p-4 rounded-lg text-center shadow">
-                <p class="text-sm text-gray-700">Total Permohonan</p>
-                <p class="text-2xl font-bold text-green-800">{{ $total }}</p>
-            </div>
-            <div class="bg-yellow-100 p-4 rounded-lg text-center shadow">
-                <p class="text-sm text-gray-700">Menunggu</p>
-                <p class="text-2xl font-bold text-yellow-800">{{ $waiting }}</p>
-            </div>
-            <div class="bg-blue-100 p-4 rounded-lg text-center shadow">
-                <p class="text-sm text-gray-700">Dalam Proses</p>
-                <p class="text-2xl font-bold text-blue-800">{{ $processing }}</p>
-            </div>
-            <div class="bg-red-100 p-4 rounded-lg text-center shadow">
-                <p class="text-sm text-gray-700">Ditolak</p>
-                <p class="text-2xl font-bold text-red-800">{{ $rejected }}</p>
-            </div>
-            <div class="bg-emerald-100 p-4 rounded-lg text-center shadow">
-                <p class="text-sm text-gray-700">Selesai</p>
-                <p class="text-2xl font-bold text-emerald-800">{{ $finished }}</p>
-            </div>
-        </div>
-
-        <!-- Subdomain Statistics -->
-        <div class="max-w-full mb-8">
-            <div class="max-w-full flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Kelola Subdomain</h2>
-                <a href="{{ route('admin.unified-subdomain.index') }}" class="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center">
-                    Lihat Semua
-                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </a>
+        <!-- Subdomain -->
+        <section>
+            <div class="mb-3 flex items-center justify-between gap-2">
+                <h2 class="text-base font-semibold text-gray-900">Subdomain &amp; Monitoring Website</h2>
+                @if ($canManageSubdomain)
+                    <a href="{{ route('admin.unified-subdomain.index') }}" class="inline-flex items-center gap-1 text-sm font-medium text-emerald-700 hover:text-emerald-800">
+                        Kelola subdomain <x-nav-icon name="arrow-right" class="w-4 h-4" />
+                    </a>
+                @endif
             </div>
 
-            <div class="max-w-full grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                @php
-                    $subdomainStats = app(\App\Services\SubdomainAggregatorService::class)->getStats();
-                @endphp
-
-                <!-- Subdomain Aktif -->
-                <div class="bg-white border-l-4 border-blue-500 p-4 rounded-lg shadow hover:shadow-lg transition">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Subdomain Aktif</p>
-                            <p class="text-3xl font-bold text-gray-800">{{ $subdomainStats['active_monitors'] }}</p>
-                            <p class="text-sm font-bold text-gray-600 mt-1">Total Subdomain : {{ $subdomainStats['total_monitors'] }}</p>
-                        </div>
-                        <div class="bg-blue-100 rounded-full p-3">
-                            <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
-                            </svg>
-                        </div>
-                    </div>
+            <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <p class="text-xs font-medium text-gray-500">Subdomain Aktif</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900">{{ $subdomainStats['active_monitors'] }}</p>
+                    <p class="text-xs text-gray-400">dari {{ $subdomainStats['total_monitors'] }} subdomain</p>
                 </div>
-
-                <!-- Permohonan Pending -->
-                <div class="bg-white border-l-4 border-yellow-500 p-4 rounded-lg shadow hover:shadow-lg transition">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Permohonan Pending</p>
-                            <p class="text-3xl font-bold text-gray-800">{{ $subdomainStats['pending_requests'] }}</p>
-                            <p class="text-xs text-gray-500 mt-1">Menunggu persetujuan</p>
-                        </div>
-                        <div class="bg-yellow-100 rounded-full p-3">
-                            <svg class="w-8 h-8 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
-                    </div>
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <p class="text-xs font-medium text-gray-500">Permohonan Pending</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900">{{ $subdomainStats['pending_requests'] }}</p>
+                    <p class="text-xs text-gray-400">menunggu persetujuan</p>
                 </div>
-
-                <!-- Website Down -->
-                <div class="bg-white border-l-4 border-red-500 p-4 rounded-lg shadow hover:shadow-lg transition">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Website Down</p>
-                            <p class="text-3xl font-bold text-gray-800">{{ $subdomainStats['down_websites'] }}</p>
-                            <p class="text-xs text-red-600 mt-1">
-                                @if($subdomainStats['down_websites'] > 0)
-                                    Perlu perhatian!
-                                @else
-                                    Semua normal
-                                @endif
-                            </p>
-                        </div>
-                        <div class="bg-red-100 rounded-full p-3">
-                            <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
-                    </div>
+                <div class="rounded-xl border p-4 {{ $subdomainStats['down_websites'] > 0 ? 'border-red-200 bg-red-50/60' : 'border-gray-200' }}">
+                    <p class="text-xs font-medium text-gray-500">Website Down</p>
+                    <p class="mt-1 text-2xl font-bold {{ $subdomainStats['down_websites'] > 0 ? 'text-red-600' : 'text-gray-900' }}">{{ $subdomainStats['down_websites'] }}</p>
+                    <p class="text-xs {{ $subdomainStats['down_websites'] > 0 ? 'text-red-600' : 'text-gray-400' }}">
+                        {{ $subdomainStats['down_websites'] > 0 ? 'Perlu perhatian!' : 'Semua normal' }}
+                    </p>
                 </div>
-
-                <!-- Need Check -->
-                <div class="bg-white border-l-4 border-purple-500 p-4 rounded-lg shadow hover:shadow-lg transition">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Perlu Pengecekan</p>
-                            <p class="text-3xl font-bold text-gray-800">{{ $subdomainStats['websites_needing_check'] }}</p>
-                            <p class="text-xs text-gray-500 mt-1">&gt;24 jam tidak dicek</p>
-                        </div>
-                        <div class="bg-purple-100 rounded-full p-3">
-                            <svg class="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
-                    </div>
+                <div class="rounded-xl border border-gray-200 p-4">
+                    <p class="text-xs font-medium text-gray-500">Perlu Pengecekan</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900">{{ $subdomainStats['websites_needing_check'] }}</p>
+                    <p class="text-xs text-gray-400">&gt;24 jam tidak dicek</p>
                 </div>
             </div>
 
-            <!-- Problematic Websites Alert -->
-            @if($subdomainStats['down_websites'] > 0)
-                @php
-                    $problematicWebsites = app(\App\Services\SubdomainAggregatorService::class)->getProblematicWebsites();
-                @endphp
-                @if($problematicWebsites->count() > 0)
-                    <div class="max-w-full bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                        <div class="flex items-start">
-                            <svg class="w-6 h-6 text-red-600 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                            </svg>
-                            <div class="flex-1">
-                                <h3 class="text-sm font-semibold text-red-800 mb-2">Website Bermasalah</h3>
-                                <div class="space-y-1">
-                                    @foreach($problematicWebsites->take(5) as $website)
-                                        <div class="flex items-center justify-between text-sm">
-                                            <span class="text-red-700 font-mono">{{ $website->subdomain }}</span>
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                                {{ ucfirst($website->status) }}
-                                            </span>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <a href="{{ route('admin.unified-subdomain.index', ['source' => 'all', 'status_monitoring' => 'active']) }}" class="text-xs text-red-600 hover:text-red-700 font-medium mt-2 inline-block">
-                                    Lihat Semua →
-                                </a>
+            @if ($problematicWebsites->count() > 0)
+                <div class="mt-3 rounded-xl border border-red-200 bg-red-50 p-4">
+                    <div class="flex items-start gap-3">
+                        <x-nav-icon name="exclamation" class="w-5 h-5 mt-0.5 flex-shrink-0 text-red-600" />
+                        <div class="min-w-0 flex-1">
+                            <h3 class="mb-2 text-sm font-semibold text-red-800">Website Bermasalah</h3>
+                            <div class="space-y-1">
+                                @foreach ($problematicWebsites->take(5) as $website)
+                                    <div class="flex items-center justify-between gap-2 text-sm">
+                                        <span class="truncate font-mono text-red-700">{{ $website->subdomain }}</span>
+                                        <span class="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">{{ ucfirst($website->status) }}</span>
+                                    </div>
+                                @endforeach
                             </div>
+                            @if ($canManageSubdomain)
+                                <a href="{{ route('admin.unified-subdomain.index', ['source' => 'all', 'status_monitoring' => 'active']) }}"
+                                    class="mt-2 inline-block text-xs font-medium text-red-600 hover:text-red-700">
+                                    Lihat semua &rarr;
+                                </a>
+                            @endif
                         </div>
                     </div>
-                @endif
+                </div>
             @endif
+        </section>
 
-            <!-- Subdomain Growth Chart -->
-            <div class="max-w-full bg-white p-6 rounded-lg shadow">
-                <div class="max-w-full flex items-center justify-between mb-4 flex-wrap gap-2">
-                    <p class="text-lg font-semibold text-gray-700">Pertumbuhan Subdomain <span id="periodLabel">(6 Bulan Terakhir)</span></p>
-                    <div class="flex gap-2 flex-wrap">
-                        <button onclick="changeChartPeriod(3, event)" class="period-btn px-3 py-1 text-xs font-medium rounded border border-gray-300" style="transition: none;">3 Bulan</button>
-                        <button onclick="changeChartPeriod(6, event)" class="period-btn px-3 py-1 text-xs font-medium rounded border border-gray-300 bg-green-600 text-white" style="transition: none;">6 Bulan</button>
-                        <button onclick="changeChartPeriod(12, event)" class="period-btn px-3 py-1 text-xs font-medium rounded border border-gray-300" style="transition: none;">1 Tahun</button>
-                        <button onclick="changeChartPeriod(24, event)" class="period-btn px-3 py-1 text-xs font-medium rounded border border-gray-300" style="transition: none;">2 Tahun</button>
-                        <button onclick="changeChartPeriod(36, event)" class="period-btn px-3 py-1 text-xs font-medium rounded border border-gray-300" style="transition: none;">3 Tahun</button>
-                        <button onclick="changeChartPeriod(48, event)" class="period-btn px-3 py-1 text-xs font-medium rounded border border-gray-300" style="transition: none;">4 Tahun</button>
-                        <button onclick="changeChartPeriod(60, event)" class="period-btn px-3 py-1 text-xs font-medium rounded border border-gray-300" style="transition: none;">5 Tahun</button>
+        <!-- Grafik -->
+        <section class="grid grid-cols-1 gap-5 xl:grid-cols-3">
+            <div class="min-w-0 rounded-xl border border-gray-200 p-4 xl:col-span-2">
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-base font-semibold text-gray-900">Pertumbuhan Subdomain</h2>
+                        <p class="text-xs text-gray-500" id="periodLabel">6 bulan terakhir</p>
+                    </div>
+                    <div class="inline-flex flex-wrap rounded-lg bg-gray-100 p-1" role="group" aria-label="Periode grafik">
+                        @foreach ([3 => '3 Bln', 6 => '6 Bln', 12 => '1 Thn', 24 => '2 Thn', 36 => '3 Thn', 48 => '4 Thn', 60 => '5 Thn'] as $months => $label)
+                            <button type="button" onclick="changeChartPeriod({{ $months }}, this)" data-months="{{ $months }}"
+                                class="period-btn rounded-md px-2.5 py-1 text-xs font-medium {{ $months === 6 ? 'is-active' : '' }}">
+                                {{ $label }}
+                            </button>
+                        @endforeach
                     </div>
                 </div>
                 <div class="max-w-full" style="height: 300px;">
                     <canvas id="chartSubdomain"></canvas>
                 </div>
             </div>
-        </div>
 
-        <!-- Progress Formulir Digital -->
-        <div class="max-w-full mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Progress Formulir Digital</h2>
-            <div class="max-w-full bg-white p-6 rounded-lg shadow">
-                <div class="max-w-full overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Formulir</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Menunggu</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Proses</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ditolak</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Selesai</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($digitalFormStats as $key => $stats)
-                                @php
-                                    $progressPercent = $stats['total'] > 0 ? round(($stats['selesai'] / $stats['total']) * 100) : 0;
-                                @endphp
-                                <tr class="{{ $stats['total'] > 0 ? 'hover:bg-gray-50' : 'opacity-50' }}">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="text-sm font-medium text-gray-900">{{ $stats['label'] }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <span class="text-sm font-semibold text-gray-900">{{ $stats['total'] }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['menunggu'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                {{ $stats['menunggu'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['proses'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {{ $stats['proses'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['ditolak'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                {{ $stats['ditolak'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['selesai'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {{ $stats['selesai'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                                <div class="bg-green-600 h-2.5 rounded-full" style="width: {{ $progressPercent }}%"></div>
-                                            </div>
-                                            <span class="text-xs font-medium text-gray-700">{{ $progressPercent }}%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+            <div class="rounded-xl border border-gray-200 p-4">
+                <h2 class="text-base font-semibold text-gray-900">Status Permohonan</h2>
+                <p class="mb-3 text-xs text-gray-500">Bulan {{ now()->translatedFormat('F Y') }}</p>
+                <div class="max-w-full" style="height: 300px;">
+                    <canvas id="chartStatus"></canvas>
                 </div>
             </div>
-        </div>
+        </section>
 
-        @if(false)
-        <!-- Progress Permohonan per Jenis Layanan -->
-        <div class="max-w-full mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Progress Permohonan Berdasarkan Jenis Layanan</h2>
-            <div class="max-w-full bg-white p-6 rounded-lg shadow">
-                <div class="max-w-full overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Layanan</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Menunggu</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Proses</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ditolak</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Selesai</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($serviceTypes as $service)
-                                @php
-                                    $stats = $serviceStats[$service] ?? [
-                                        'total' => 0,
-                                        'menunggu' => 0,
-                                        'proses' => 0,
-                                        'ditolak' => 0,
-                                        'selesai' => 0
-                                    ];
-                                    $progressPercent = $stats['total'] > 0 ? round(($stats['selesai'] / $stats['total']) * 100) : 0;
-                                @endphp
-                                <tr class="{{ $stats['total'] > 0 ? 'hover:bg-gray-50' : 'opacity-50' }}">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="text-sm font-medium text-gray-900">{{ $service }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <span class="text-sm font-semibold text-gray-900">{{ $stats['total'] }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['menunggu'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                {{ $stats['menunggu'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['proses'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {{ $stats['proses'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['ditolak'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                {{ $stats['ditolak'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if($stats['selesai'] > 0)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {{ $stats['selesai'] }}
-                                            </span>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                                <div class="bg-green-600 h-2.5 rounded-full" style="width: {{ $progressPercent }}%"></div>
-                                            </div>
-                                            <span class="text-xs font-medium text-gray-700">{{ $progressPercent }}%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        @endif
-
-        <!-- Grafik Kinerja -->
-        <div class="max-w-full bg-white p-6 rounded-lg shadow mb-10">
-            <p class="text-lg font-semibold mb-4 text-gray-700">Grafik Kinerja Permohonan Bulan Ini</p>
-            <div class="max-w-full" style="height: 300px;">
-                <canvas id="chartStatus"></canvas>
-            </div>
-        </div>
-        @if (session('success'))
-            <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show"
-                class="max-w-full mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Sukses!</strong>
-                <span class="block sm:inline">{{ session('success') }}</span>
-            </div>
-        @endif
-        @if(false)
-        <!-- Tabel Permohonan -->
-        <div class="max-w-full bg-white shadow p-6 rounded-lg">
+        <!-- Progress formulir digital -->
+        <section class="rounded-xl border border-gray-200 p-4">
+            <h2 class="mb-3 text-base font-semibold text-gray-900">Progress Formulir Digital</h2>
             <div class="max-w-full overflow-x-auto">
-                <table id="requests-table" class="min-w-full table-auto">
-                <thead>
-                    <tr>
-                        <th class="px-4 py-2">Nama User</th>
-                        <th class="px-4 py-2">Layanan</th>
-                        <th class="px-4 py-2">Status</th>
-                        <th class="px-4 py-2">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($requests as $request)
-                        <tr class="border-b">
-                            <td class="px-4 py-2">{{ $request->user->name ?? '-' }}</td>
-                            <td class="px-4 py-2">{{ $request->service }}</td>
-                            <td class="px-4 py-2">{{ $request->status }}</td>
-                            <td class="px-4 py-2">
-                                <form method="POST" action="{{ route('admin.update-status', $request) }}">
-                                    @csrf
-                                    <select name="status" onchange="this.form.submit()" class="border p-1 rounded">
-                                        <option {{ $request->status == 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                        <option {{ $request->status == 'Dalam Proses' ? 'selected' : '' }}>Dalam Proses
-                                        </option>
-                                        <option {{ $request->status == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
-                                        <option {{ $request->status == 'Selesai' ? 'selected' : '' }}>Selesai</option>
-                                    </select>
-                                </form>
-
-                            </td>
+                <table class="min-w-full text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                        <tr>
+                            <th class="px-4 py-2.5 text-left font-medium">Jenis Formulir</th>
+                            <th class="px-3 py-2.5 text-center font-medium">Total</th>
+                            <th class="px-3 py-2.5 text-center font-medium">Menunggu</th>
+                            <th class="px-3 py-2.5 text-center font-medium">Proses</th>
+                            <th class="px-3 py-2.5 text-center font-medium">Ditolak</th>
+                            <th class="px-3 py-2.5 text-center font-medium">Selesai</th>
+                            <th class="px-4 py-2.5 text-left font-medium">Penyelesaian</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($digitalFormStats as $key => $stats)
+                            @php
+                                $progressPercent = $stats['total'] > 0 ? round(($stats['selesai'] / $stats['total']) * 100) : 0;
+                            @endphp
+                            <tr class="{{ $stats['total'] > 0 ? 'hover:bg-gray-50' : 'text-gray-400' }}">
+                                <td class="whitespace-nowrap px-4 py-2.5 font-medium {{ $stats['total'] > 0 ? 'text-gray-900' : '' }}">{{ $stats['label'] }}</td>
+                                <td class="px-3 py-2.5 text-center font-semibold">{{ $stats['total'] }}</td>
+                                @foreach (['menunggu' => 'bg-amber-100 text-amber-800', 'proses' => 'bg-sky-100 text-sky-800', 'ditolak' => 'bg-red-100 text-red-800', 'selesai' => 'bg-emerald-100 text-emerald-800'] as $col => $tone)
+                                    <td class="px-3 py-2.5 text-center">
+                                        @if ($stats[$col] > 0)
+                                            <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium {{ $tone }}">{{ $stats[$col] }}</span>
+                                        @else
+                                            <span class="text-gray-300">–</span>
+                                        @endif
+                                    </td>
+                                @endforeach
+                                <td class="whitespace-nowrap px-4 py-2.5">
+                                    <div class="flex items-center gap-2">
+                                        <div class="h-2 w-28 rounded-full bg-gray-200">
+                                            <div class="h-2 rounded-full bg-emerald-500" style="width: {{ $progressPercent }}%"></div>
+                                        </div>
+                                        <span class="text-xs font-medium text-gray-600">{{ $progressPercent }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-        </div>
-        @endif
+        </section>
     </div>
 @endsection
 
 @push('styles')
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.tailwindcss.min.css">
     <style>
-        /* Disable hover effects on period buttons */
-        .period-btn:hover {
-            background-color: inherit !important;
-            color: inherit !important;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-
-        /* Active button should keep its green background on hover */
-        .period-btn.bg-green-600:hover {
-            background-color: rgb(22 163 74) !important;
-            color: white !important;
-        }
+        .period-btn { color: #4b5563; background: transparent; border: none !important; }
+        .period-btn:hover { color: #111827; }
+        .period-btn.is-active { background: #fff; color: #047857; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
     </style>
 @endpush
 
 @push('scripts')
-    <!-- jQuery dan DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.tailwindcss.min.js"></script>
-
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        $(document).ready(function() {
-            $('#requests-table').DataTable();
-        });
-
-        // Subdomain Growth Chart
-        const ctxSubdomain = document.getElementById('chartSubdomain').getContext('2d');
-        @php
-            $chartData = app(\App\Services\SubdomainAggregatorService::class)->getChartData(6);
-        @endphp
-        let chartSubdomain = new Chart(ctxSubdomain, {
+        // Grafik pertumbuhan subdomain
+        let chartSubdomain = new Chart(document.getElementById('chartSubdomain').getContext('2d'), {
             type: 'line',
             data: {
                 labels: {!! json_encode($chartData['labels']) !!},
@@ -493,101 +332,65 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                    },
+                    legend: { position: 'top', labels: { boxWidth: 12 } },
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
                 },
                 elements: {
-                    line: {
-                        tension: 0.4
-                    }
+                    line: { tension: 0.4 }
                 }
             }
         });
 
-        // Function to change chart period
-        function changeChartPeriod(months, event) {
-            console.log('changeChartPeriod called with months:', months);
+        const periodLabels = {
+            3: '3 bulan terakhir',
+            6: '6 bulan terakhir',
+            12: '1 tahun terakhir',
+            24: '2 tahun terakhir',
+            36: '3 tahun terakhir',
+            48: '4 tahun terakhir',
+            60: '5 tahun terakhir'
+        };
 
-            // Update active button
-            document.querySelectorAll('.period-btn').forEach(btn => {
-                btn.classList.remove('bg-green-600', 'text-white');
-            });
-            event.target.classList.add('bg-green-600', 'text-white');
-
-            // Update label
-            const periodLabels = {
-                3: '(3 Bulan Terakhir)',
-                6: '(6 Bulan Terakhir)',
-                12: '(1 Tahun Terakhir)',
-                24: '(2 Tahun Terakhir)',
-                36: '(3 Tahun Terakhir)',
-                48: '(4 Tahun Terakhir)',
-                60: '(5 Tahun Terakhir)'
-            };
+        function changeChartPeriod(months, button) {
+            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('is-active'));
+            button.classList.add('is-active');
             document.getElementById('periodLabel').textContent = periodLabels[months];
 
-            // Fetch new data via AJAX
-            const url = `{{ route('admin.dashboard.chart-data') }}?months=${months}`;
-            console.log('Fetching data from:', url);
-
-            fetch(url)
-                .then(response => {
-                    console.log('Response status:', response.status);
-                    return response.json();
-                })
+            fetch(`{{ route('admin.dashboard.chart-data') }}?months=${months}`)
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Data received:', data);
-                    // Update chart data
                     chartSubdomain.data.labels = data.labels;
                     chartSubdomain.data.datasets = data.datasets;
                     chartSubdomain.update();
-                    console.log('Chart updated successfully');
                 })
-                .catch(error => {
-                    console.error('Error fetching chart data:', error);
-                });
+                .catch(error => console.error('Gagal memuat data grafik:', error));
         }
 
-        // Service Request Chart
-        const ctx = document.getElementById('chartStatus').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'bar',
+        // Grafik status permohonan bulan ini
+        new Chart(document.getElementById('chartStatus').getContext('2d'), {
+            type: 'doughnut',
             data: {
                 labels: ['Menunggu', 'Dalam Proses', 'Ditolak', 'Selesai'],
                 datasets: [{
-                    label: 'Jumlah Permohonan Bulan {{ now()->translatedFormat('F') }}',
                     data: [
                         {{ $summary['Menunggu'] ?? 0 }},
                         {{ $summary['Dalam Proses'] ?? 0 }},
                         {{ $summary['Ditolak'] ?? 0 }},
                         {{ $summary['Selesai'] ?? 0 }},
                     ],
-                    backgroundColor: [
-                        '#facc15', // Menunggu
-                        '#38bdf8', // Dalam Proses
-                        '#ef4444', // Ditolak
-                        '#22c55e', // Selesai
-                    ],
-                    borderRadius: 6,
-                    borderWidth: 1
+                    backgroundColor: ['#f59e0b', '#0ea5e9', '#ef4444', '#10b981'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+                cutout: '62%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 14 } }
                 }
             }
         });
