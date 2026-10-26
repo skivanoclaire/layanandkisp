@@ -21,10 +21,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Bind anhskohbo/no-captcha under a dedicated key because mews/captcha
         // also binds the default 'captcha' key and overwrites it at boot.
+        // Baca lewat config (bukan env()) supaya tetap jalan setelah `php artisan config:cache`.
         $this->app->singleton('nocaptcha', function () {
             return new \Anhskohbo\NoCaptcha\NoCaptcha(
-                env('NOCAPTCHA_SECRET'),
-                env('NOCAPTCHA_SITEKEY')
+                (string) config('services.captcha.secret'),
+                (string) config('services.captcha.sitekey')
             );
         });
     }

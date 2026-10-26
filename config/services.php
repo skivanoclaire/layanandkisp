@@ -35,9 +35,10 @@ return [
         ],
     ],
 
+    // Google reCAPTCHA (halaman /register). Terima nama variabel NOCAPTCHA_* maupun RECAPTCHA_*.
     'captcha' => [
-    'sitekey' => env('NOCAPTCHA_SITEKEY'),
-    'secret' => env('NOCAPTCHA_SECRET'),
+        'sitekey' => env('NOCAPTCHA_SITEKEY') ?: env('RECAPTCHA_SITE_KEY'),
+        'secret' => env('NOCAPTCHA_SECRET') ?: env('RECAPTCHA_SECRET_KEY'),
     ],
 
     'simpeg' => [
