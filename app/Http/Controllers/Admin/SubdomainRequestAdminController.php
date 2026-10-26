@@ -74,6 +74,7 @@ class SubdomainRequestAdminController extends Controller
         ])->findOrFail($id);
 
         $old = $item->status;
+        $oldCompletedAt = $item->completed_at;
         $item->status = $r->status;
 
         // Set timestamps
@@ -90,7 +91,10 @@ class SubdomainRequestAdminController extends Controller
         $cloudflareResult = null;
         $webMonitorResult = null;
 
-        if ($r->status === 'selesai') {
+        // Tiket yang sudah pernah diselesaikan (DNS & Web Monitor sudah dibuat) tidak diproses ulang
+        $sudahDiproses = $item->cloudflare_record_id && $item->webMonitor;
+
+        if ($r->status === 'selesai' && ! $sudahDiproses) {
             DB::beginTransaction();
             try {
                 // 1. Create Cloudflare DNS A record
@@ -104,13 +108,15 @@ class SubdomainRequestAdminController extends Controller
                     'needs_proxy' => $item->needs_proxy
                 ]);
 
-                $dnsRecord = $cloudflare->createDnsRecord([
-                    'type' => 'A',
-                    'name' => $item->subdomain_requested,
-                    'content' => $item->ip_address,
-                    'ttl' => 1, // Auto
-                    'proxied' => $item->needs_proxy ?? false,
-                ]);
+                // Pakai record yang sudah ada bila A record dengan nama & IP yang sama sudah dibuat
+                $dnsRecord = $cloudflare->findDnsRecord('A', $fullDomain, $item->ip_address)
+                    ?? $cloudflare->createDnsRecord([
+                        'type' => 'A',
+                        'name' => $item->subdomain_requested,
+                        'content' => $item->ip_address,
+                        'ttl' => 1, // Auto
+                        'proxied' => $item->needs_proxy ?? false,
+                    ]);
 
                 if ($dnsRecord) {
                     $cloudflareResult = [
@@ -138,11 +144,11 @@ class SubdomainRequestAdminController extends Controller
                         'note' => 'DNS A record berhasil dibuat di Cloudflare (Record ID: ' . $dnsRecord['id'] . ')',
                     ]);
 
-                    // 2. Create WebMonitor entry
+                    // 2. Create WebMonitor entry (pakai yang sudah ada bila tiket pernah diproses)
                     try {
-                        $webMonitor = WebMonitor::create([
+                        $webMonitor = $item->webMonitor ?? WebMonitor::create([
                             'subdomain_request_id' => $item->id,
-                            'subdomain' => $item->subdomain_requested,
+                            'subdomain' => $fullDomain,
                             'ip_address' => $item->ip_address,
                             'instansi_id' => $item->unit_kerja_id,
                             'nama_sistem' => $item->nama_aplikasi,
@@ -269,6 +275,11 @@ class SubdomainRequestAdminController extends Controller
 
             } catch (\Exception $e) {
                 DB::rollBack();
+
+                // Status disimpan sebelum transaksi; kembalikan agar tiket tidak tampak selesai tanpa DNS
+                $item->status = $old;
+                $item->completed_at = $oldCompletedAt;
+                $item->save();
 
                 Log::error('Exception during subdomain approval process', [
                     'ticket_no' => $item->ticket_no,

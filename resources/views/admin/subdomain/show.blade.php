@@ -796,13 +796,15 @@ function checkWebsiteStatus(monitorId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Status berhasil dicek!\n\nStatus: ' + data.status + '\nLast Checked: ' + data.last_checked_at);
+            alert('Status berhasil dicek!\n\nStatus: ' + data.status + '\nLast Checked: ' + data.last_checked_at
+                + (data.error ? '\nError: ' + data.error : ''));
             location.reload();
         } else {
             alert('Error: ' + (data.message || 'Failed to check status'));

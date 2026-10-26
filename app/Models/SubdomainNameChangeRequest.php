@@ -27,6 +27,12 @@ class SubdomainNameChangeRequest extends Model
         'processed_at' => 'datetime',
     ];
 
+    // Nama DNS tidak peka huruf besar/kecil; simpan selalu huruf kecil
+    public function setNewSubdomainNameAttribute($value): void
+    {
+        $this->attributes['new_subdomain_name'] = $value === null ? null : strtolower(trim($value));
+    }
+
     // Relationships
     public function user(): BelongsTo
     {

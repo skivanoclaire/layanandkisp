@@ -485,9 +485,19 @@ class WebMonitorController extends Controller
     /**
      * Check status of a single website
      */
-    public function checkStatus(WebMonitor $webMonitor)
+    public function checkStatus(Request $request, WebMonitor $webMonitor)
     {
         $webMonitor->checkStatus();
+
+        // Tombol "Check Now" di halaman detail subdomain memanggil lewat fetch dan membaca JSON
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'status' => $webMonitor->status,
+                'last_checked_at' => $webMonitor->last_checked_at?->format('Y-m-d H:i:s'),
+                'error' => $webMonitor->check_error,
+            ]);
+        }
 
         return back()->with('success', 'Status berhasil dicek: ' . ($webMonitor->is_active ? 'Aktif' : 'Tidak Aktif'));
     }

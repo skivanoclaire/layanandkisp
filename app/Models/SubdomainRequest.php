@@ -57,6 +57,12 @@ class SubdomainRequest extends Model
     public function scopePending($query) { return $query->where('status', 'menunggu'); }
     public function scopeCompleted($query) { return $query->where('status', 'selesai'); }
 
+    // Nama DNS tidak peka huruf besar/kecil; simpan selalu huruf kecil
+    public function setSubdomainRequestedAttribute($value): void
+    {
+        $this->attributes['subdomain_requested'] = $value === null ? null : strtolower(trim($value));
+    }
+
     // Accessor
     public function getFullDomainAttribute(): string
     {

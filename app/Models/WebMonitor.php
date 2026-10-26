@@ -144,6 +144,12 @@ class WebMonitor extends Model
         return $this->hasMany(SurveiKepuasanLayanan::class);
     }
 
+    // Nama DNS tidak peka huruf besar/kecil; simpan selalu huruf kecil
+    public function setSubdomainAttribute($value): void
+    {
+        $this->attributes['subdomain'] = $value === null ? null : strtolower(trim($value));
+    }
+
     // Status attribute accessor
     public function getIsActiveAttribute(): bool
     {
@@ -164,7 +170,9 @@ class WebMonitor extends Model
         }
 
         $cloudflare = new CloudflareService();
-        $result = $cloudflare->checkDomainStatus($this->subdomain);
+        // Data lama dari approval subdomain hanya menyimpan nama tanpa domain induk
+        $domain = str_contains($this->subdomain, '.') ? $this->subdomain : $this->subdomain . '.kaltaraprov.go.id';
+        $result = $cloudflare->checkDomainStatus($domain);
 
         $this->update([
             'status' => $result['is_active'] ? 'active' : 'inactive',
@@ -229,7 +237,8 @@ class WebMonitor extends Model
         ]);
 
         if ($success) {
-            $this->subdomain = $newSubdomainName;
+            // Simpan nama lengkap (FQDN) seperti Web Monitor lainnya
+            $this->subdomain = $success['name'] ?? $newSubdomainName . '.kaltaraprov.go.id';
             $this->is_proxied = false;  // Ensure it's set to DNS Only
             $this->save();
         }

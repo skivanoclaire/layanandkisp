@@ -202,6 +202,41 @@ class CloudflareService
     }
 
     /**
+     * Find an existing DNS record by type, full name, and (optionally) content
+     */
+    public function findDnsRecord(string $type, string $name, ?string $content = null): ?array
+    {
+        if (!$this->zoneId) {
+            $this->zoneId = $this->getZoneId();
+        }
+
+        if (!$this->zoneId) {
+            return null;
+        }
+
+        try {
+            $query = ['type' => $type, 'name' => strtolower($name)];
+            if ($content !== null) {
+                $query['content'] = $content;
+            }
+
+            $response = Http::withToken($this->apiToken)
+                ->withOptions(['verify' => false])
+                ->get("{$this->baseUrl}/zones/{$this->zoneId}/dns_records", $query);
+
+            if ($response->successful() && $response->json('success')) {
+                return $response->json('result.0');
+            }
+
+            Log::error('Cloudflare find DNS record failed: ' . $response->body());
+        } catch (\Exception $e) {
+            Log::error('Cloudflare find DNS record error: ' . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    /**
      * Create DNS record
      */
     public function createDnsRecord(array $data): ?array
