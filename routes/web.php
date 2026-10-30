@@ -330,6 +330,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'index'])->name('index');
             Route::get('/{id}', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'show'])->name('show');
+            Route::post('/{id}/upload', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'uploadDokumen'])->name('upload');
             Route::get('/{id}/dokumen/{dokumenId}', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'downloadDokumen'])->name('dokumen.download');
             Route::delete('/{id}/dokumen/{dokumenId}', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'deleteDokumen'])->name('dokumen.delete');
             Route::post('/{id}/note', [\App\Http\Controllers\Admin\FasePengembanganAdminController::class, 'addNote'])->name('note.add');

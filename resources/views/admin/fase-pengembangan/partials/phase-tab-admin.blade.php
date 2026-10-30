@@ -1,5 +1,45 @@
 @include('partials.fase-pengembangan.petunjuk', ['fase' => $fase])
 
+<!-- Upload Section (Admin) -->
+<div class="mb-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Upload Dokumen</h3>
+
+    <form action="{{ route('admin.fase-pengembangan.upload', $proposalId) }}" method="POST" enctype="multipart/form-data" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6">
+        @csrf
+        <input type="hidden" name="fase" value="{{ $fase }}">
+
+        <div class="flex flex-col items-center">
+            <svg class="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+
+            <div class="mb-3">
+                <label for="dokumen_{{ $fase }}" class="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition inline-block">
+                    Pilih File
+                </label>
+                <input type="file" id="dokumen_{{ $fase }}" name="dokumen" accept=".zip,.rar,.7z" class="hidden" required>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-1">Format: ZIP, RAR, 7Z</p>
+            <p class="text-xs text-gray-500">Maksimal 50MB &middot; Upload oleh admin tercatat di log aktivitas</p>
+
+            <button type="submit" class="mt-4 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                Upload Dokumen
+            </button>
+        </div>
+    </form>
+
+    <script>
+        // Show selected filename
+        document.getElementById('dokumen_{{ $fase }}').addEventListener('change', function() {
+            const fileName = this.files[0]?.name;
+            if (fileName) {
+                this.previousElementSibling.textContent = fileName;
+            }
+        });
+    </script>
+</div>
+
 <h3 class="text-lg font-semibold text-gray-800 mb-4">Dokumen {{ $title }}</h3>
 
 @if ($documents->isEmpty())

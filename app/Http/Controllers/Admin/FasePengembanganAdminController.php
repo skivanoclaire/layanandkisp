@@ -64,6 +64,63 @@ class FasePengembanganAdminController extends Controller
     }
 
     /**
+     * Upload a document for a specific phase (on behalf of the applicant).
+     */
+    public function uploadDokumen(Request $request, $id)
+    {
+        $request->validate([
+            'fase' => 'required|in:rancang_bangun,implementasi,uji_kelaikan,pemeliharaan,evaluasi',
+            'dokumen' => 'required|file|mimes:zip,rar,7z|max:51200', // 50MB
+        ], [
+            'dokumen.required' => 'Dokumen harus diupload.',
+            'dokumen.file' => 'File yang diupload tidak valid.',
+            'dokumen.mimes' => 'Dokumen harus berformat ZIP, RAR, atau 7Z.',
+            'dokumen.max' => 'Ukuran dokumen maksimal 50MB.',
+        ]);
+
+        $proposal = RekomendasiAplikasiForm::findOrFail($id);
+
+        // Verify fase
+        if ($proposal->fase_saat_ini !== 'pengembangan') {
+            return redirect()->route('admin.fase-pengembangan.index')
+                ->with('error', 'Usulan ini belum memasuki fase pengembangan.');
+        }
+
+        $file = $request->file('dokumen');
+        $fase = $request->fase;
+
+        // Same naming & storage layout as user uploads: {fase}_{original_name}_{timestamp}.{extension}
+        $timestamp = now()->format('Ymd_His');
+        $extension = $file->getClientOriginalExtension();
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalName);
+        $filename = "{$fase}_{$sanitizedName}_{$timestamp}.{$extension}";
+
+        $faseFolder = str_replace('_', '-', $fase);
+        $directory = "fase-pengembangan/{$proposal->ticket_number}/{$faseFolder}";
+        $filePath = $file->storeAs($directory, $filename, 'public');
+
+        FasePengembanganDokumen::create([
+            'rekomendasi_aplikasi_form_id' => $proposal->id,
+            'fase' => $fase,
+            'nama_file' => $filename,
+            'file_path' => $filePath,
+            'file_size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+            'uploaded_by' => auth()->id(),
+        ]);
+
+        $faseLabel = FasePengembanganDokumen::FASE_LABELS[$fase] ?? $fase;
+        $proposal->logActivity(
+            'admin_upload_dokumen_fase',
+            "Admin mengupload dokumen fase {$faseLabel}: {$file->getClientOriginalName()}",
+            auth()->id()
+        );
+
+        return redirect()->back()->with('success', 'Dokumen berhasil diupload.');
+    }
+
+    /**
      * Download a document.
      */
     public function downloadDokumen($id, $dokumenId)
