@@ -70,11 +70,11 @@ class FasePengembanganAdminController extends Controller
     {
         $request->validate([
             'fase' => 'required|in:rancang_bangun,implementasi,uji_kelaikan,pemeliharaan,evaluasi',
-            'dokumen' => 'required|file|mimes:zip,rar,7z|max:51200', // 50MB
+            'dokumen' => 'required|file|mimes:pdf,doc,docx,zip,rar,7z|max:51200', // 50MB
         ], [
             'dokumen.required' => 'Dokumen harus diupload.',
             'dokumen.file' => 'File yang diupload tidak valid.',
-            'dokumen.mimes' => 'Dokumen harus berformat ZIP, RAR, atau 7Z.',
+            'dokumen.mimes' => 'Dokumen harus berformat PDF, DOC, DOCX, ZIP, RAR, atau 7Z.',
             'dokumen.max' => 'Ukuran dokumen maksimal 50MB.',
         ]);
 

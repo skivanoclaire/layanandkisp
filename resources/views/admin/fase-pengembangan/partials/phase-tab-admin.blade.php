@@ -17,10 +17,11 @@
                 <label for="dokumen_{{ $fase }}" class="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition inline-block">
                     Pilih File
                 </label>
-                <input type="file" id="dokumen_{{ $fase }}" name="dokumen" accept=".zip,.rar,.7z" class="hidden" required>
+                <input type="file" id="dokumen_{{ $fase }}" name="dokumen" accept=".pdf,.doc,.docx,.zip,.rar,.7z" class="hidden" required>
             </div>
 
-            <p class="text-sm text-gray-600 mb-1">Format: ZIP, RAR, 7Z</p>
+            <p class="text-sm text-gray-600 mb-1">Format: PDF atau DOCX (sesuai format dokumen tahap ini)</p>
+            <p class="text-xs text-gray-500 mb-1">Lampiran pendukung boleh dalam ZIP/RAR/7Z</p>
             <p class="text-xs text-gray-500">Maksimal 50MB &middot; Upload oleh admin tercatat di log aktivitas</p>
 
             <button type="submit" class="mt-4 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
