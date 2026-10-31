@@ -458,6 +458,7 @@ class SidebarMenuService
         }
         if ($isAdmin) {
             $items[] = $this->link('Arsitektur', 'building', 'admin.master-arsitektur.index', ['admin.master-arsitektur.*']);
+            $items[] = $this->link('Presensi Kegiatan', 'calendar', 'admin.presensi-kegiatan.index', ['admin.presensi-kegiatan.*']);
         }
         if ($user->hasPermission('admin.web-monitor')) {
             $items[] = $this->link('Subdomain', 'globe', 'admin.web-monitor.index', ['admin.web-monitor.index', 'admin.web-monitor.create', 'admin.web-monitor.show', 'admin.web-monitor.edit']);

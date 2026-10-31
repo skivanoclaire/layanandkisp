@@ -331,6 +331,36 @@ class FonnteWhatsappService
         return $this->sendMessage($phoneNumber, $message);
     }
 
+    /**
+     * Kirim tautan rapat online kepada peserta kegiatan yang mengonfirmasi hadir online.
+     */
+    public function sendTautanKegiatanOnline(
+        string $phoneNumber,
+        string $nama,
+        \App\Models\PresensiKegiatan $kegiatan
+    ): bool {
+        if (empty($phoneNumber) || empty($kegiatan->tautan_online)) {
+            Log::warning("FonnteWhatsapp: tautan online tidak dikirim — nomor/tautan kosong untuk kegiatan {$kegiatan->slug}");
+            return false;
+        }
+
+        $message = "*{$this->header}*\n\n"
+            . "Yth. Bapak/Ibu *{$nama}*,\n\n"
+            . "Terima kasih telah mengonfirmasi *hadir online* pada kegiatan:\n"
+            . "*{$kegiatan->judul}*\n\n"
+            . "Hari, Tanggal: {$kegiatan->tanggal_label}\n"
+            . ($kegiatan->waktu ? "Waktu: {$kegiatan->waktu}\n" : '')
+            . "\nTautan rapat online:\n{$kegiatan->tautan_online}\n"
+            . ($kegiatan->keterangan_online ? "\n{$kegiatan->keterangan_online}\n" : '')
+            . "\nSaat kegiatan berlangsung, mohon mengisi presensi (daftar hadir) melalui:\n"
+            . $kegiatan->urlPresensi() . "\n"
+            . ($kegiatan->kontak ? "\nInformasi lebih lanjut: {$kegiatan->kontak}\n" : '')
+            . "\nTerima kasih.\n"
+            . "Helpdesk DKISP Kaltara";
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
     protected function getStatusLabel(string $status): string
     {
         return match ($status) {

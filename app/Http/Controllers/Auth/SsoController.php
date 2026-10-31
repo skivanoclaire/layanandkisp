@@ -75,6 +75,11 @@ class SsoController extends Controller
             // Regenerate session for security
             request()->session()->regenerate();
 
+            // Peserta yang masuk dari halaman presensi kegiatan dikembalikan ke form presensinya.
+            if ($tujuan = request()->session()->pull(\App\Http\Controllers\PresensiKegiatanPublikController::SESSION_REDIRECT)) {
+                return redirect($tujuan);
+            }
+
             // Redirect based on role (same logic as AuthenticatedSessionController)
             if ($user->hasRole('Admin')) {
                 return redirect('/admin');
@@ -168,6 +173,11 @@ class SsoController extends Controller
 
       Auth::login($user, true);
       $request->session()->regenerate();
+
+      // Peserta yang masuk dari halaman presensi kegiatan dikembalikan ke form presensinya.
+      if ($tujuan = $request->session()->pull(\App\Http\Controllers\PresensiKegiatanPublikController::SESSION_REDIRECT)) {
+          return redirect($tujuan);
+      }
 
       if ($user->hasRole('Admin')) {
           return redirect('/admin');

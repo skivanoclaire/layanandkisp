@@ -30,6 +30,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Peserta yang masuk dari halaman presensi kegiatan dikembalikan ke form presensinya.
+        if ($tujuan = $request->session()->pull(\App\Http\Controllers\PresensiKegiatanPublikController::SESSION_REDIRECT)) {
+            return redirect($tujuan);
+        }
+
         // Redirect based on user's roles (multi-role support)
         $user = auth()->user();
 

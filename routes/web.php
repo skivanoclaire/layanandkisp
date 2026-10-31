@@ -46,6 +46,19 @@ Route::prefix('arsitektur')->name('arsitektur.')->middleware('throttle:60,1')
             ->whereIn('kategori', config('master_arsitektur.publik.kategori'));
     });
 
+// Konfirmasi kehadiran & presensi kegiatan (publik; dibuka/ditutup admin di Master Data > Presensi Kegiatan)
+Route::prefix('kegiatan/{kegiatan}')->name('kegiatan.')
+    ->controller(\App\Http\Controllers\PresensiKegiatanPublikController::class)
+    ->group(function () {
+        Route::get('/', 'show')->name('show');
+        Route::get('/konfirmasi', 'konfirmasi')->name('konfirmasi');
+        Route::post('/konfirmasi', 'simpanKonfirmasi')->name('konfirmasi.simpan')->middleware('throttle:10,1');
+        Route::get('/presensi', 'presensi')->name('presensi');
+        Route::post('/presensi', 'simpanPresensi')->name('presensi.simpan')->middleware('throttle:10,1');
+        Route::get('/masuk/{mode}', 'masuk')->name('masuk');
+        Route::get('/selesai', 'selesai')->name('selesai');
+    });
+
 // Public Document Verification
 Route::get('/verify/{code}', [VerificationController::class, 'verify'])->name('verify.document');
 
@@ -1108,6 +1121,31 @@ Route::middleware(['auth', 'permission:Kelola Kuesioner Portal'])
         Route::get('/periode/{periode}/export', 'export')->name('export');
         Route::get('/respons/{response}', 'show')->name('show');
         Route::post('/respons/{response}/eksklusi', 'eksklusi')->name('eksklusi');
+    });
+
+// ===== PRESENSI KEGIATAN (Master Data, khusus Admin) =====
+Route::middleware(['auth', 'role:Admin'])
+    ->prefix('admin/presensi-kegiatan')
+    ->name('admin.presensi-kegiatan.')
+    ->controller(\App\Http\Controllers\Admin\PresensiKegiatanController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/tambah', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{kegiatan}', 'show')->name('show');
+        Route::get('/{kegiatan}/edit', 'edit')->name('edit');
+        Route::put('/{kegiatan}', 'update')->name('update');
+        Route::delete('/{kegiatan}', 'destroy')->name('destroy');
+        Route::post('/{kegiatan}/toggle', 'toggle')->name('toggle');
+        Route::get('/{kegiatan}/qr', 'qr')->name('qr');
+        Route::get('/{kegiatan}/rekap', 'rekap')->name('rekap');
+        Route::get('/{kegiatan}/ekspor', 'ekspor')->name('ekspor');
+        Route::post('/{kegiatan}/kirim-tautan-online', 'kirimTautanOnline')->name('kirim-tautan-online');
+        Route::post('/{kegiatan}/peserta', 'storePeserta')->name('peserta.store');
+        Route::post('/{kegiatan}/peserta/{peserta}/kirim-tautan', 'kirimTautanPeserta')->name('peserta.kirim-tautan');
+        Route::post('/{kegiatan}/peserta/{peserta}/hadir', 'tandaiHadir')->name('peserta.hadir');
+        Route::delete('/{kegiatan}/peserta/{peserta}', 'destroyPeserta')->name('peserta.destroy');
+        Route::get('/{kegiatan}/peserta/{peserta}/ttd', 'tandaTangan')->name('peserta.ttd');
     });
 
 // ===== PEMBARUAN DATA ARSITEKTUR OLEH INSTANSI =====
