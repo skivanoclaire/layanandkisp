@@ -7,7 +7,7 @@
     <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow border border-gray-200">
         <div class="flex items-start justify-between gap-4 mb-6">
             <h2 class="text-2xl font-bold text-green-700">Edit Profil Pengguna</h2>
-            @if(!empty($user->nik))
+            @if(!empty($user->nik) || !empty($user->nip))
                 <button type="button" id="btn-simpeg-sync"
                         class="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,10 +154,10 @@
                 @else
                     <p class="mt-2 text-sm text-gray-600 italic">
                         Belum ada data jabatan.
-                        @if(!empty($user->nik))
+                        @if(!empty($user->nik) || !empty($user->nip))
                             Klik tombol <strong>Sinkron Data via SIMPEG</strong> di atas untuk mengisi otomatis.
                         @else
-                            Isi NIK terlebih dulu, lalu klik Sinkron Data via SIMPEG.
+                            Isi NIK atau NIP terlebih dulu, lalu klik Sinkron Data via SIMPEG.
                         @endif
                     </p>
                 @endif
@@ -243,7 +243,7 @@
         const btnApply  = document.getElementById('simpeg-btn-apply');
         const flashBox  = document.getElementById('simpeg-flash');
 
-        if (!btn) return; // button hidden (user tanpa NIK)
+        if (!btn) return; // button hidden (user tanpa NIK maupun NIP)
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
                        || document.querySelector('input[name="_token"]')?.value;
@@ -276,9 +276,10 @@
                 .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
 
-        function renderResult(simpeg, current, editable) {
+        function renderResult(simpeg, current, editable, matchedBy) {
             const rows = [
                 { key: 'name',          label: 'Nama',        simpegVal: simpeg.nama,     currentVal: current.name },
+                { key: 'nik',           label: 'NIK',         simpegVal: simpeg.nik,      currentVal: current.nik },
                 { key: 'nip',           label: 'NIP',         simpegVal: simpeg.nip,      currentVal: current.nip },
                 { key: 'email',         label: 'Email',       simpegVal: simpeg.email,    currentVal: current.email },
                 { key: 'phone',         label: 'Nomor HP',    simpegVal: simpeg.telepon,  currentVal: current.phone },
@@ -308,7 +309,9 @@
                 `;
             }).join('');
 
+            const byLabel = matchedBy === 'nip' ? 'NIP' : 'NIK';
             resultBox.innerHTML = `
+                <p class="text-xs text-gray-500 mb-1">Data ditemukan berdasarkan <strong>${byLabel}</strong> yang tersimpan di profil Anda.</p>
                 <p class="text-sm text-gray-600 mb-3">Centang field yang ingin diupdate berdasarkan data SIMPEG:</p>
                 <div class="space-y-2">${rowsHtml}</div>
             `;
@@ -337,7 +340,7 @@
 
                 lastSimpeg = body.simpeg;
                 lastEditable = body.editable || {};
-                renderResult(body.simpeg, body.current, lastEditable);
+                renderResult(body.simpeg, body.current, lastEditable, body.matched_by);
                 resultBox.classList.remove('hidden');
                 btnApply.classList.remove('hidden');
             } catch (e) {

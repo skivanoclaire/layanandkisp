@@ -84,8 +84,13 @@ class ProfileController extends Controller
     }
 
     /**
-     * Lookup data SIMPEG berdasarkan NIK user saat ini. Dipanggil via AJAX
+     * Lookup data SIMPEG berdasarkan NIK atau NIP user saat ini. Dipanggil via AJAX
      * dari halaman /profile (tombol "Sinkron Data via SIMPEG").
+     *
+     * Pengguna SSO umumnya hanya punya NIP (NIK kosong), jadi urutannya:
+     * NIK (jika 16 digit) lebih dulu; bila kosong/tidak valid/tidak ditemukan,
+     * dilanjutkan ke NIP (jika 18 digit).
+     *
      * Mengembalikan JSON berisi data SIMPEG + nilai profil sekarang +
      * daftar field yang boleh diupdate (tergantung status verifikasi user).
      */
@@ -93,48 +98,68 @@ class ProfileController extends Controller
     {
         $user = $request->user()->load('jabatan.unitKerja', 'unitKerja');
 
-        if (empty($user->nik)) {
+        $nik = preg_replace('/\D+/', '', (string) $user->nik);
+        $nip = preg_replace('/\D+/', '', (string) $user->nip);
+
+        $lookups = [];
+        if (strlen($nik) === 16) {
+            $lookups['nik'] = $nik;
+        }
+        if (strlen($nip) === 18) {
+            $lookups['nip'] = $nip;
+        }
+
+        if ($lookups === []) {
             return response()->json([
                 'success' => false,
-                'message' => 'NIK Anda belum diisi di profil. Isi NIK dulu, simpan, lalu coba sinkron lagi.',
+                'message' => 'NIK (16 digit) atau NIP (18 digit) Anda belum diisi dengan benar di profil. '
+                    . 'Isi salah satunya, simpan, lalu coba sinkron lagi.',
             ], 422);
         }
 
-        $nik = preg_replace('/\D+/', '', (string) $user->nik);
+        $api = null;
+        $matchedBy = null;
 
-        try {
-            $api = $client->byNik($nik);
-        } catch (\App\Exceptions\SimpegException $e) {
-            Log::warning('SIMPEG check (user self-sync) failed', [
-                'user_id' => $user->id, 'status' => $e->status, 'msg' => $e->getMessage(),
-            ]);
-            $msg = match ($e->status) {
-                404 => 'NIK Anda tidak ditemukan di SIMPEG. Hubungi admin kepegawaian.',
-                429 => 'Terlalu banyak permintaan. Coba lagi beberapa saat.',
-                401, 403 => 'Layanan SIMPEG menolak akses saat ini.',
-                default => 'Layanan SIMPEG sedang bermasalah. Coba lagi nanti.',
-            };
-            return response()->json(['success' => false, 'message' => $msg], 502);
-        } catch (\Throwable $e) {
-            Log::error('SIMPEG check unexpected error', ['user_id' => $user->id, 'e' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Gangguan tidak terduga ke SIMPEG.'], 502);
-        }
-
-        if (empty($api['valid'])) {
-            if (($api['reason'] ?? null) === 'invalid_nik') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'NIK Anda tidak valid — NIK harus 16 digit angka. Perbaiki NIK di profil, simpan, lalu coba lagi.',
-                ], 422);
+        foreach ($lookups as $type => $value) {
+            try {
+                $result = $type === 'nik' ? $client->byNik($value) : $client->byNip($value);
+            } catch (\App\Exceptions\SimpegException $e) {
+                Log::warning('SIMPEG check (user self-sync) failed', [
+                    'user_id' => $user->id, 'by' => $type, 'status' => $e->status, 'msg' => $e->getMessage(),
+                ]);
+                $msg = match ($e->status) {
+                    429 => 'Terlalu banyak permintaan. Coba lagi beberapa saat.',
+                    401, 403 => 'Layanan SIMPEG menolak akses saat ini.',
+                    default => 'Layanan SIMPEG sedang bermasalah. Coba lagi nanti.',
+                };
+                return response()->json(['success' => false, 'message' => $msg], 502);
+            } catch (\Throwable $e) {
+                Log::error('SIMPEG check unexpected error', ['user_id' => $user->id, 'by' => $type, 'e' => $e->getMessage()]);
+                return response()->json(['success' => false, 'message' => 'Gangguan tidak terduga ke SIMPEG.'], 502);
             }
 
+            if (!empty($result['valid'])) {
+                $api = $result;
+                $matchedBy = $type;
+                break;
+            }
+        }
+
+        if ($api === null) {
+            $tried = implode(' maupun ', array_map('strtoupper', array_keys($lookups)));
             return response()->json([
                 'success' => false,
-                'message' => 'NIK Anda tidak ditemukan di SIMPEG.',
+                'message' => "Data Anda tidak ditemukan di SIMPEG berdasarkan {$tried} yang tersimpan di profil. "
+                    . 'Periksa kembali NIK/NIP Anda atau hubungi admin kepegawaian.',
             ], 404);
         }
 
         $data = is_array($api['data'] ?? null) ? $api['data'] : [];
+        $simpegNik = preg_replace('/\D+/', '', (string) ($data['nik'] ?? '')) ?: null;
+
+        // NIK dari SIMPEG disimpan di session supaya simpegApply() tidak menerima
+        // NIK sembarang dari client.
+        $request->session()->put('simpeg_profile_nik', $simpegNik);
 
         // Coba cocokkan instansi SIMPEG dengan Master UnitKerja lokal
         $instansiText = $data['instansi'] ?? $data['unit_kerja'] ?? $data['unitKerja']
@@ -160,14 +185,18 @@ class ProfileController extends Controller
             'phone'         => true,
             'jabatan'       => true,
             'nip'           => $canEditLocked,
-            'nik'           => $canEditLocked,
+            // NIK yang masih kosong (umumnya user SSO) boleh dilengkapi dari SIMPEG
+            // walau akun sudah terverifikasi; mengganti NIK yang sudah ada tetap terkunci.
+            'nik'           => $canEditLocked || empty($user->nik),
             'unit_kerja_id' => $canEditLocked,
         ];
 
         return response()->json([
             'success' => true,
+            'matched_by' => $matchedBy,
             'editable' => $editable,
             'simpeg' => [
+                'nik'      => $simpegNik,
                 'nip'      => $data['nip'] ?? null,
                 'nama'     => $data['nama'] ?? null,
                 'telepon'  => $data['telepon'] ?? null,
@@ -178,6 +207,7 @@ class ProfileController extends Controller
                 'matched_unit_kerja_nama' => $matchedUnitKerja->nama ?? null,
             ],
             'current' => [
+                'nik'   => $user->nik,
                 'nip'   => $user->nip,
                 'name'  => $user->name,
                 'phone' => $user->phone,
@@ -215,14 +245,38 @@ class ProfileController extends Controller
         $skipped = [];
 
         foreach ($validated['fields'] as $field) {
-            // Server-side enforce lock
+            // Server-side enforce lock. Pengecualian: NIK yang masih kosong boleh
+            // dilengkapi dari SIMPEG (lihat simpegCheck()).
             $isLocked = in_array($field, ['nip', 'nik', 'unit_kerja'], true);
-            if ($isLocked && !$canEditLocked) {
+            $nikFillable = $field === 'nik' && empty($user->nik);
+            if ($isLocked && !$canEditLocked && !$nikFillable) {
                 $skipped[] = $field;
                 continue;
             }
 
             switch ($field) {
+                case 'nik':
+                    // Ambil dari hasil cek SIMPEG di session, bukan dari input client.
+                    $simpegNik = $request->session()->get('simpeg_profile_nik');
+                    if (empty($simpegNik) || strlen($simpegNik) !== 16) {
+                        break;
+                    }
+                    $nikHash = \App\Models\User::hashNik($simpegNik);
+                    if ($nikHash === \App\Models\User::hashNik($user->nik)) {
+                        break;
+                    }
+                    $nikConflict = \App\Models\User::where('nik_hash', $nikHash)
+                        ->where('id', '!=', $user->id)
+                        ->exists();
+                    if ($nikConflict) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'NIK dari SIMPEG sudah terdaftar pada akun lain. Hubungi admin untuk penggabungan akun.',
+                        ], 409);
+                    }
+                    $user->nik = $simpegNik;
+                    $updated[] = 'NIK';
+                    break;
                 case 'name':
                     if (!empty($validated['name'])) {
                         $user->name = $validated['name'];
