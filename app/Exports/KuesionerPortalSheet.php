@@ -3,9 +3,11 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-class KuesionerPortalSheet implements FromArray, WithTitle
+/** WithStrictNullComparison: nilai 0 tetap ditulis 0, tidak menjadi sel kosong. */
+class KuesionerPortalSheet implements FromArray, WithTitle, WithStrictNullComparison
 {
     public function __construct(private string $judul, private array $rows)
     {

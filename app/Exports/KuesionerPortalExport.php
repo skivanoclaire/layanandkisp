@@ -49,7 +49,7 @@ class KuesionerPortalExport implements WithMultipleSheets
         foreach ($layanan as $l) {
             $header[] = "layanan_$l";
         }
-        $header[] = 'layanan_lainnya';
+        $header[] = 'layanan_lainnya_teks';
         $header[] = 'pernah_hubungi_petugas';
         foreach ($kodeAtribut as $k) {
             $header[] = "I_$k";
@@ -123,6 +123,7 @@ class KuesionerPortalExport implements WithMultipleSheets
         foreach (config('kuesioner_portal.profil.layanan') as $k => $v) {
             $rows[] = ["layanan_$k", "1 = pernah mengajukan $v"];
         }
+        $rows[] = ['layanan_lainnya_teks', 'Isian bebas bila memilih layanan Lainnya'];
         $rows[] = ['pernah_hubungi_petugas', '1 = ya, 0 = tidak (bila 0, P_CS1–P_CS4 kosong)'];
         $rows[] = ['I_<kode>', 'Kepentingan (Bagian B), 1 = sangat tidak penting … 5 = sangat penting'];
         $rows[] = ['P_<kode>', 'Kinerja (Bagian C), 1 = sangat tidak setuju … 5 = sangat setuju'];
