@@ -317,7 +317,7 @@ class RekomendasiSuratController extends Controller
             $fileBuktiPath = null;
             if ($request->hasFile('file_bukti')) {
                 $file = $request->file('file_bukti');
-                $filename = 'bukti_kirim_' . $surat->proposal->ticket_number . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $filename = 'bukti_kirim_' . $surat->proposal->ticket_number . '_' . time() . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'jpg', 'jpeg', 'png']);
                 $fileBuktiPath = $file->storeAs('rekomendasi/surat/bukti', $filename, 'public');
             }
 

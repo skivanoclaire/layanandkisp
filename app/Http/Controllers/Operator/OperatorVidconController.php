@@ -90,7 +90,7 @@ class OperatorVidconController extends Controller
                     $manager = new ImageManager(new Driver());
                     $image = $manager->read($photo);
                     $image->orient(); // Fix EXIF orientation
-                    $fileName = time() . '_' . $index . '_' . pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME) . '.jpg';
+                    $fileName = time() . '_' . $index . '_' . \App\Support\SafeUpload::baseName($photo) . '.jpg';
 
                     // Save as JPEG with compression
                     $filePath = 'vidcon_documentations/' . $fileName;
@@ -102,7 +102,7 @@ class OperatorVidconController extends Controller
                     $manager = new ImageManager(new Driver());
                     $image = $manager->read($photo);
                     $image->orient(); // Fix EXIF orientation for all images
-                    $fileName = time() . '_' . $index . '_' . $photo->getClientOriginalName();
+                    $fileName = time() . '_' . $index . '_' . \App\Support\SafeUpload::baseName($photo) . '.' . \App\Support\SafeUpload::extension($photo, ['jpeg', 'jpg', 'png'], 'jpg');
                     $filePath = 'vidcon_documentations/' . $fileName;
                     $fullPath = storage_path('app/public/' . $filePath);
                     $image->save($fullPath, quality: 90);

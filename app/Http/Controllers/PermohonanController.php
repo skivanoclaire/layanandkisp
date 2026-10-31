@@ -31,7 +31,8 @@ class PermohonanController extends Controller
         
         // Cek apakah ada file yang diupload
         if ($request->hasFile('file') && $request->file('file')->isValid()) {
-            $originalExtension = $request->file('file')->getClientOriginalExtension();
+            // Ekstensi dari klien TIDAK dipercaya (insiden webshell TKT-20250808-*)
+            $originalExtension = \App\Support\SafeUpload::extension($request->file('file'), ['pdf', 'jpg', 'jpeg', 'png']);
             // Gunakan ticket number sebagai nama file
             $filename = $ticketNumber . '.' . $originalExtension;
             $filePath = $request->file('file')->storeAs('surat', $filename, 'public');

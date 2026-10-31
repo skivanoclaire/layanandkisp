@@ -48,7 +48,7 @@ class LaporanGangguanController extends Controller
         $fotoPaths = [];
         if ($request->hasFile('lampiran_foto')) {
             foreach ($request->file('lampiran_foto') as $file) {
-                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $fileName = time() . '_' . uniqid() . '.' . \App\Support\SafeUpload::extension($file, ['jpeg', 'png', 'jpg'], 'jpg');
                 $path = $file->storeAs('laporan-gangguan', $fileName, 'public');
                 $fotoPaths[] = $path;
             }

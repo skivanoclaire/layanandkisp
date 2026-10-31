@@ -115,7 +115,7 @@ class KonsultasiAiKnowledgeController extends Controller
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-            $filename = ($filename ?: 'dokumen') . '-' . time() . '.' . $file->getClientOriginalExtension();
+            $filename = ($filename ?: 'dokumen') . '-' . time() . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx', 'txt', 'md', 'csv'], 'txt');
 
             $dokumen->file_path = $file->storeAs(self::FOLDER, $filename, self::DISK);
             $dokumen->file_name = $file->getClientOriginalName();

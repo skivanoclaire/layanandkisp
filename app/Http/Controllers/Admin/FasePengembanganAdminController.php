@@ -91,7 +91,7 @@ class FasePengembanganAdminController extends Controller
 
         // Same naming & storage layout as user uploads: {fase}_{original_name}_{timestamp}.{extension}
         $timestamp = now()->format('Ymd_His');
-        $extension = $file->getClientOriginalExtension();
+        $extension = \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx', 'zip', 'rar', '7z']);
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalName);
         $filename = "{$fase}_{$sanitizedName}_{$timestamp}.{$extension}";

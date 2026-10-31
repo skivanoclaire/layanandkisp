@@ -69,21 +69,21 @@ class RekomendasiEvaluasiController extends Controller
             $fileSurveyPath = null;
             if ($request->hasFile('file_survey')) {
                 $file = $request->file('file_survey');
-                $filename = 'survey_' . time() . '_' . $file->getClientOriginalName();
+                $filename = 'survey_' . time() . '_' . \App\Support\SafeUpload::baseName($file) . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx', 'xls', 'xlsx']);
                 $fileSurveyPath = $file->storeAs('rekomendasi/evaluasi/survey', $filename, 'public');
             }
 
             $fileLaporanEvaluasiPath = null;
             if ($request->hasFile('file_laporan_evaluasi')) {
                 $file = $request->file('file_laporan_evaluasi');
-                $filename = 'laporan_evaluasi_' . time() . '_' . $file->getClientOriginalName();
+                $filename = 'laporan_evaluasi_' . time() . '_' . \App\Support\SafeUpload::baseName($file) . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx']);
                 $fileLaporanEvaluasiPath = $file->storeAs('rekomendasi/evaluasi/laporan', $filename, 'public');
             }
 
             $fileLaporanPimpinanPath = null;
             if ($request->hasFile('file_laporan_pimpinan')) {
                 $file = $request->file('file_laporan_pimpinan');
-                $filename = 'laporan_pimpinan_' . time() . '_' . $file->getClientOriginalName();
+                $filename = 'laporan_pimpinan_' . time() . '_' . \App\Support\SafeUpload::baseName($file) . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx']);
                 $fileLaporanPimpinanPath = $file->storeAs('rekomendasi/evaluasi/pimpinan', $filename, 'public');
             }
 
@@ -214,7 +214,7 @@ class RekomendasiEvaluasiController extends Controller
                     \Storage::disk('public')->delete($evaluasi->file_survey);
                 }
                 $file = $request->file('file_survey');
-                $filename = 'survey_' . time() . '_' . $file->getClientOriginalName();
+                $filename = 'survey_' . time() . '_' . \App\Support\SafeUpload::baseName($file) . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx', 'xls', 'xlsx']);
                 $updateData['file_survey'] = $file->storeAs('rekomendasi/evaluasi/survey', $filename, 'public');
             }
 
@@ -223,7 +223,7 @@ class RekomendasiEvaluasiController extends Controller
                     \Storage::disk('public')->delete($evaluasi->file_laporan_evaluasi);
                 }
                 $file = $request->file('file_laporan_evaluasi');
-                $filename = 'laporan_evaluasi_' . time() . '_' . $file->getClientOriginalName();
+                $filename = 'laporan_evaluasi_' . time() . '_' . \App\Support\SafeUpload::baseName($file) . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx']);
                 $updateData['file_laporan_evaluasi'] = $file->storeAs('rekomendasi/evaluasi/laporan', $filename, 'public');
             }
 
@@ -232,7 +232,7 @@ class RekomendasiEvaluasiController extends Controller
                     \Storage::disk('public')->delete($evaluasi->file_laporan_pimpinan);
                 }
                 $file = $request->file('file_laporan_pimpinan');
-                $filename = 'laporan_pimpinan_' . time() . '_' . $file->getClientOriginalName();
+                $filename = 'laporan_pimpinan_' . time() . '_' . \App\Support\SafeUpload::baseName($file) . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx']);
                 $updateData['file_laporan_pimpinan'] = $file->storeAs('rekomendasi/evaluasi/pimpinan', $filename, 'public');
             }
 

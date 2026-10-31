@@ -85,7 +85,7 @@ class FasePengembanganController extends Controller
 
         // Generate unique filename with format: {fase}_{original_name}_{timestamp}.{extension}
         $timestamp = now()->format('Ymd_His');
-        $extension = $file->getClientOriginalExtension();
+        $extension = \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx', 'zip', 'rar', '7z']);
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         // Sanitize filename: remove special characters, keep only alphanumeric, dash, underscore
         $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalName);

@@ -24,7 +24,7 @@ class RekomendasiDocumentService
         // Generate filename
         $rekomendasi = RekomendasiAplikasiForm::findOrFail($rekomendasiId);
         $ticketNumber = $rekomendasi->ticket_number;
-        $extension = $file->getClientOriginalExtension();
+        $extension = \App\Support\SafeUpload::extension($file, ['pdf'], 'pdf');
         $timestamp = now()->format('YmdHis');
         $filename = "{$ticketNumber}_{$jenisDokumen}_{$timestamp}.{$extension}";
 
