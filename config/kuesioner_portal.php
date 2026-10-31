@@ -198,10 +198,8 @@ return [
         'status_kepegawaian' => [
             'pns' => 'PNS',
             'pppk' => 'PPPK',
-            'non_asn' => 'Non-ASN/operator',
         ],
         'peran' => [
-            'operator' => 'Operator/pengelola TIK OPD',
             'pejabat' => 'Pejabat struktural',
             'staf' => 'Staf pengguna',
         ],

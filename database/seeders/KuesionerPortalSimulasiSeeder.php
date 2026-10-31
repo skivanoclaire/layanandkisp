@@ -183,8 +183,8 @@ class KuesionerPortalSimulasiSeeder extends Seeder
                     'submitted_at' => $mulai->copy()->addSeconds($durasi),
                     'durasi_detik' => $durasi,
                     'unit_kerja_id' => $user->unit_kerja_id ?? $unitCadangan[array_rand($unitCadangan)],
-                    'status_kepegawaian' => $this->pilih(['pns' => 60, 'pppk' => 15, 'non_asn' => 25]),
-                    'peran' => $this->pilih(['operator' => 55, 'pejabat' => 10, 'staf' => 35]),
+                    'status_kepegawaian' => $this->pilih(['pns' => 80, 'pppk' => 20]),
+                    'peran' => $this->pilih(['pejabat' => 15, 'staf' => 85]),
                     // Portal beroperasi sejak November 2025, jadi belum ada pengguna di atas satu tahun.
                     'lama_penggunaan' => $this->pilih(['lt6b' => 40, '6_12b' => 60]),
                     'frekuensi' => $this->pilih(['mingguan' => 20, 'bulanan' => 45, 'tahunan' => 35]),

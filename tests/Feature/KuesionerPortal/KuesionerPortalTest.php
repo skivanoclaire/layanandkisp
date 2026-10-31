@@ -343,7 +343,7 @@ class KuesionerPortalTest extends TestCase
         $data = [
             'unit_kerja_id' => $this->unitKerja->id,
             'status_kepegawaian' => 'pns',
-            'peran' => 'operator',
+            'peran' => 'staf',
             'lama_penggunaan' => '1_2t',
             'frekuensi' => 'bulanan',
             'layanan_diajukan' => ['email', 'subdomain'],

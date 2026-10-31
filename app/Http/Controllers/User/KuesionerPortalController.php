@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
- * Pengisian Kuesioner Kualitas Layanan Portal oleh responden (ASN/operator OPD).
+ * Pengisian Kuesioner Kualitas Layanan Portal oleh responden (ASN perangkat daerah).
  * Alur: persetujuan → isi Bagian A–E → selesai. Satu akun satu kali per periode.
  */
 class KuesionerPortalController extends Controller

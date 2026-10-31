@@ -26,7 +26,7 @@
                 </a>
             @elseif (! $memenuhi)
                 <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-                    Kuesioner ini ditujukan bagi ASN dan operator perangkat daerah yang pernah mengajukan minimal satu
+                    Kuesioner ini ditujukan bagi ASN perangkat daerah yang pernah mengajukan minimal satu
                     permohonan layanan melalui portal. Akun Anda belum memenuhi kriteria tersebut.
                 </div>
             @elseif ($response?->status === \App\Models\KuesionerPortalResponse::STATUS_PERSETUJU)
