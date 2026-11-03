@@ -32,7 +32,7 @@ class VpnResetController extends Controller
 
         $user = Auth::user();
         $validated['nama'] = $user->name;
-        $validated['nip'] = $user->nik;
+        $validated['nip'] = $user->nip;
         $validated['unit_kerja_id'] = $user->unit_kerja_id;
         $validated['is_kabupaten_kota'] = false;
         $validated['kabupaten_kota'] = null;

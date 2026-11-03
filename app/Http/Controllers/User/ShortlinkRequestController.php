@@ -37,7 +37,7 @@ class ShortlinkRequestController extends Controller
         $item = new ShortlinkRequest($data);
         $item->user_id      = $user->id;
         $item->nama         = $user->name;
-        $item->nip          = $user->nik;
+        $item->nip          = $user->nip;
         $item->instansi     = $user->unitKerja->nama ?? null;
         $item->status       = 'menunggu';
         $item->submitted_at = now();
