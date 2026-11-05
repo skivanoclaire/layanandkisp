@@ -156,6 +156,37 @@ class FonnteWhatsappService
         );
     }
 
+    /**
+     * Pemberitahuan status "proses" untuk pendaftaran akun TTE, disertai tautan
+     * konfirmasi bahwa pemohon sudah melakukan registrasi di BSSN.
+     */
+    public function sendTteRegistrationBssnLink(
+        string $phoneNumber,
+        string $ticketNo,
+        string $nama,
+        string $konfirmasiUrl,
+        ?string $keteranganAdmin = null
+    ): bool {
+        if (empty($phoneNumber)) {
+            Log::warning("FonnteWhatsapp: phone empty for TTE registration BSSN link {$ticketNo}");
+            return false;
+        }
+
+        $message = "*{$this->header}*\n\n"
+            . "Yth. Bapak/Ibu *{$nama}*,\n\n"
+            . "Permohonan Pendaftaran Akun TTE Anda sedang *diproses*.\n\n"
+            . "No. Tiket: {$ticketNo}\n"
+            . "Status: *Sedang Diproses*\n"
+            . "Catatan: " . ($keteranganAdmin ?: '-') . "\n\n"
+            . "Setelah Anda melakukan registrasi di *BSSN*, mohon konfirmasi melalui tautan berikut:\n"
+            . "{$konfirmasiUrl}\n\n"
+            . "_Tautan ini berlaku 7 hari dan hanya untuk pemohon._\n\n"
+            . "Terima kasih.\n"
+            . "Helpdesk DKISP Kaltara";
+
+        return $this->sendMessage($phoneNumber, $message);
+    }
+
     public function sendAccountVerifiedNotification(
         string $phoneNumber,
         string $nama,

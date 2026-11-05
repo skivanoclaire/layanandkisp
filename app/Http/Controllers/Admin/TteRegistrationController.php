@@ -78,7 +78,23 @@ class TteRegistrationController extends Controller
 
         try {
             $wa = new FonnteWhatsappService();
-            $wa->sendTteStatusNotification($tteRegistration, 'Pendaftaran Akun TTE', $request->status, $request->keterangan_admin);
+            if ($request->status === 'proses') {
+                // Pemberitahuan proses disertai tautan konfirmasi registrasi BSSN (berlaku 7 hari).
+                $konfirmasiUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                    'user.tte.registration.konfirmasi-bssn',
+                    now()->addDays(7),
+                    ['tteRegistration' => $tteRegistration->id]
+                );
+                $wa->sendTteRegistrationBssnLink(
+                    $tteRegistration->no_hp ?? '',
+                    $tteRegistration->ticket_no,
+                    $tteRegistration->nama,
+                    $konfirmasiUrl,
+                    $request->keterangan_admin
+                );
+            } else {
+                $wa->sendTteStatusNotification($tteRegistration, 'Pendaftaran Akun TTE', $request->status, $request->keterangan_admin);
+            }
         } catch (\Exception $e) {
             Log::error('WhatsApp notification failed: ' . $e->getMessage());
         }

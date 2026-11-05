@@ -22,6 +22,11 @@ class TteRegistrationRequest extends Model
         'admin_notes',
         'keterangan_admin',
         'processed_by',
+        'konfirmasi_bssn_at',
+    ];
+
+    protected $casts = [
+        'konfirmasi_bssn_at' => 'datetime',
     ];
 
     protected static function boot()

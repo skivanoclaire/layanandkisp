@@ -110,4 +110,40 @@ class TteRegistrationController extends Controller
         $this->authorize('view', $tteRegistration);
         return view('user.tte.registration.show', compact('tteRegistration'));
     }
+
+    /**
+     * Halaman konfirmasi dari tautan WA (signed URL, tanpa login).
+     */
+    public function konfirmasiBssnForm(Request $request, TteRegistrationRequest $tteRegistration)
+    {
+        return view('user.tte.registration.konfirmasi-bssn', compact('tteRegistration'));
+    }
+
+    /**
+     * Catat bahwa pemohon sudah melakukan registrasi di BSSN, lalu beri tahu admin via Telegram.
+     */
+    public function konfirmasiBssnSimpan(Request $request, TteRegistrationRequest $tteRegistration)
+    {
+        if ($tteRegistration->konfirmasi_bssn_at) {
+            return view('user.tte.registration.konfirmasi-bssn', compact('tteRegistration'))
+                ->with('success', 'Konfirmasi sebelumnya sudah tercatat. Terima kasih.');
+        }
+
+        $tteRegistration->update(['konfirmasi_bssn_at' => now()]);
+
+        try {
+            (new TelegramService())->sendMessage(
+                "✅ <b>[Konfirmasi BSSN] Pendaftaran Akun TTE</b>\n\n"
+                . "No. Tiket: <b>" . e($tteRegistration->ticket_no) . "</b>\n"
+                . "Nama: <b>" . e($tteRegistration->nama) . "</b>\n"
+                . "Pemohon menyatakan sudah melakukan registrasi di BSSN.\n"
+                . "— Layanan TTE DKISP Kaltara"
+            );
+        } catch (\Exception $e) {
+            Log::error('Telegram konfirmasi BSSN failed: ' . $e->getMessage());
+        }
+
+        return view('user.tte.registration.konfirmasi-bssn', compact('tteRegistration'))
+            ->with('success', 'Terima kasih, konfirmasi registrasi BSSN Anda sudah kami catat.');
+    }
 }

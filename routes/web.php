@@ -1570,6 +1570,15 @@ Route::middleware(['auth','verified.user','permission:Akses Registrasi TTE'])
         Route::get('/{tteRegistration}', [\App\Http\Controllers\User\TteRegistrationController::class, 'show'])->name('show');
     });
 
+// TTE - Konfirmasi registrasi BSSN dari tautan WA (tanpa login, dilindungi signed URL)
+Route::middleware(['signed', 'throttle:20,1'])
+    ->prefix('digital/tte/registration')
+    ->name('user.tte.registration.')
+    ->group(function () {
+        Route::get('/{tteRegistration}/konfirmasi-bssn', [\App\Http\Controllers\User\TteRegistrationController::class, 'konfirmasiBssnForm'])->name('konfirmasi-bssn');
+        Route::post('/{tteRegistration}/konfirmasi-bssn', [\App\Http\Controllers\User\TteRegistrationController::class, 'konfirmasiBssnSimpan'])->name('konfirmasi-bssn.simpan');
+    });
+
 // TTE - Reset Passphrase TTE (User)
 Route::middleware(['auth','verified.user','permission:Akses Reset Passphrase TTE'])
     ->prefix('digital/tte/passphrase-reset')

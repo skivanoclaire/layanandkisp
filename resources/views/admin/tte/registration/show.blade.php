@@ -179,6 +179,16 @@
         </div>
     </div>
 
+    <!-- Konfirmasi Registrasi BSSN dari pemohon -->
+    <div class="mt-6 bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Konfirmasi Registrasi BSSN</h3>
+        @if($tteRegistration->konfirmasi_bssn_at)
+            <p class="text-green-700">Pemohon mengonfirmasi sudah melakukan registrasi BSSN pada {{ $tteRegistration->konfirmasi_bssn_at->format('d M Y H:i') }}.</p>
+        @else
+            <p class="text-gray-600">Belum ada konfirmasi dari pemohon.</p>
+        @endif
+    </div>
+
     <!-- Admin Notes Section (shown below if exists) -->
     @if($tteRegistration->keterangan_admin)
     <div class="mt-6 bg-white rounded-lg shadow-md p-6">

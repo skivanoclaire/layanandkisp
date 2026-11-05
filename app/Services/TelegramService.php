@@ -21,7 +21,8 @@ class TelegramService
 
     public function __construct(?string $chatId = null)
     {
-        $this->enabled  = (bool) config('services.telegram.enabled', false);
+        // env() mengembalikan string: (bool) "false" bernilai true, jadi pakai parser boolean.
+        $this->enabled  = filter_var(config('services.telegram.enabled', false), FILTER_VALIDATE_BOOLEAN);
         $this->botToken = (string) config('services.telegram.bot_token', '');
         $this->chatId   = (string) ($chatId ?? config('services.telegram.group_chat_id', ''));
         $this->apiUrl   = rtrim((string) config('services.telegram.api_url', 'https://api.telegram.org'), '/');
