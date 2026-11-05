@@ -57,6 +57,7 @@ return [
         'host' => env('WHM_HOST', 'mail.kaltaraprov.go.id'),
         'username' => env('WHM_USERNAME', 'root'),
         'token' => env('WHM_TOKEN'),
+        'cpanel_user' => env('WHM_CPANEL_USER', 'kaltara'),
     ],
 
     'fonnte' => [

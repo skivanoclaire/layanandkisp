@@ -14,9 +14,15 @@ class CpanelEmailService
 
     public function __construct()
     {
-        $this->host = env('WHM_HOST');
-        $this->token = env('WHM_TOKEN');
-        $this->cpanelUser = env('WHM_CPANEL_USER', 'kaltara'); // Default cpanel username
+        // Baca dari config/services.php, bukan env() langsung: env() mengembalikan null
+        // setelah `php artisan config:cache`, sehingga base_uri menjadi https://:2087.
+        $this->host = config('services.whm.host', 'mail.kaltaraprov.go.id');
+        $this->token = config('services.whm.token');
+        $this->cpanelUser = config('services.whm.cpanel_user', 'kaltara');
+
+        if (empty($this->host) || empty($this->token)) {
+            throw new \RuntimeException('Konfigurasi WHM (WHM_HOST / WHM_TOKEN) belum lengkap di .env.');
+        }
 
         $this->client = new Client([
             'base_uri' => "https://{$this->host}:2087",
