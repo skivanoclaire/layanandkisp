@@ -65,7 +65,8 @@ return [
             'Kuesioner Portal' => ['Kelola Kuesioner Portal'],
             'Tata Kelola Keamanan Informasi' => ['Kelola Tata Kelola Keamanan'],
             'Pembaruan Data Arsitektur' => ['Kelola Permohonan Data Arsitektur'],
-            'Internet' => ['Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah'],
+            'Internet' => ['Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah', 'Kelola Pasang Baru Internet'],
+            'Peminjaman Ruang Rapat' => ['Kelola Peminjaman Ruang Rapat'],
             'Jaringan Privat/VPN' => ['Kelola Pendaftaran VPN', 'Kelola Reset Akun VPN', 'Kelola Akses JIP PDNS'],
             'Pusat Data/Komputasi' => [
                 'Kelola Kunjungan/Colocation',
@@ -132,7 +133,8 @@ return [
                 'Akses Pembaruan Sertifikat TTE',
             ],
             'Zoom/Youtube Live' => ['Akses Video Conference'],
-            'Internet' => ['Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah'],
+            'Internet' => ['Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah', 'Akses Pasang Baru Internet'],
+            'Peminjaman Ruang Rapat' => ['Akses Peminjaman Ruang Rapat'],
             'Jaringan Privat/VPN' => ['Akses Pendaftaran VPN', 'Akses Reset Akun VPN', 'Akses JIP PDNS'],
             'Pusat Data/Komputasi' => [
                 'Akses Kunjungan/Colocation Data Center',

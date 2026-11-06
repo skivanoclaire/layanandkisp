@@ -1322,6 +1322,65 @@ Route::middleware(['auth', 'permission:Kelola Starlink Jelajah'])
         Route::post('/toggle-service', [\App\Http\Controllers\Admin\StarlinkAdminController::class, 'toggleService'])->name('toggle-service');
     });
 
+// Pasang Baru Internet - User Routes
+Route::middleware(['auth', 'verified.user', 'permission:Akses Pasang Baru Internet'])
+    ->prefix('digital/internet/pasang-baru')
+    ->name('user.internet.pasang-baru.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\User\PasangBaruInternetController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\User\PasangBaruInternetController::class, 'create'])->name('create');
+        Route::post('/store', [\App\Http\Controllers\User\PasangBaruInternetController::class, 'store'])->name('store');
+        Route::get('/{pasangBaru}', [\App\Http\Controllers\User\PasangBaruInternetController::class, 'show'])->name('show');
+    });
+
+// Pasang Baru Internet - Admin Routes
+Route::middleware(['auth', 'permission:Kelola Pasang Baru Internet'])
+    ->prefix('admin/digital/internet/pasang-baru')
+    ->name('admin.internet.pasang-baru.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PasangBaruInternetAdminController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\PasangBaruInternetAdminController::class, 'show'])->name('show');
+        Route::post('/{id}/process', [\App\Http\Controllers\Admin\PasangBaruInternetAdminController::class, 'process'])->name('process');
+        Route::post('/{id}/complete', [\App\Http\Controllers\Admin\PasangBaruInternetAdminController::class, 'complete'])->name('complete');
+        Route::post('/{id}/reject', [\App\Http\Controllers\Admin\PasangBaruInternetAdminController::class, 'reject'])->name('reject');
+        Route::post('/{id}/update-notes', [\App\Http\Controllers\Admin\PasangBaruInternetAdminController::class, 'updateNotes'])->name('update-notes');
+    });
+
+// Peminjaman Ruang Rapat - User Routes
+Route::middleware(['auth', 'verified.user', 'permission:Akses Peminjaman Ruang Rapat'])
+    ->prefix('digital/peminjaman-ruang-rapat')
+    ->name('user.peminjaman-ruang-rapat.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\User\PeminjamanRuangRapatController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\User\PeminjamanRuangRapatController::class, 'create'])->name('create');
+        Route::post('/store', [\App\Http\Controllers\User\PeminjamanRuangRapatController::class, 'store'])->name('store');
+        Route::get('/{peminjamanRuangRapat}', [\App\Http\Controllers\User\PeminjamanRuangRapatController::class, 'show'])->name('show');
+        Route::post('/{peminjamanRuangRapat}/batal', [\App\Http\Controllers\User\PeminjamanRuangRapatController::class, 'cancel'])->name('cancel');
+    });
+
+// Peminjaman Ruang Rapat - Admin Routes
+Route::middleware(['auth', 'permission:Kelola Peminjaman Ruang Rapat'])
+    ->name('admin.')
+    ->group(function () {
+        Route::prefix('admin/digital/peminjaman-ruang-rapat')
+            ->name('peminjaman-ruang-rapat.')
+            ->group(function () {
+                Route::get('/', [\App\Http\Controllers\Admin\PeminjamanRuangRapatAdminController::class, 'index'])->name('index');
+                Route::get('/{id}', [\App\Http\Controllers\Admin\PeminjamanRuangRapatAdminController::class, 'show'])->name('show');
+                Route::post('/{id}/approve', [\App\Http\Controllers\Admin\PeminjamanRuangRapatAdminController::class, 'approve'])->name('approve');
+                Route::post('/{id}/reject', [\App\Http\Controllers\Admin\PeminjamanRuangRapatAdminController::class, 'reject'])->name('reject');
+            });
+
+        Route::prefix('admin/digital/ruang-rapat')
+            ->name('ruang-rapat.')
+            ->group(function () {
+                Route::get('/', [\App\Http\Controllers\Admin\RuangRapatAdminController::class, 'index'])->name('index');
+                Route::post('/', [\App\Http\Controllers\Admin\RuangRapatAdminController::class, 'store'])->name('store');
+                Route::put('/{meetingRoom}', [\App\Http\Controllers\Admin\RuangRapatAdminController::class, 'update'])->name('update');
+                Route::delete('/{meetingRoom}', [\App\Http\Controllers\Admin\RuangRapatAdminController::class, 'destroy'])->name('destroy');
+            });
+    });
+
 // VPN Registration - User
 Route::middleware(['auth','verified.user','permission:Akses Pendaftaran VPN'])
     ->prefix('digital/vpn/registration')

@@ -177,7 +177,7 @@ class SidebarMenuService
             $items[] = $this->link('Pembaruan Data Arsitektur', 'building', 'admin.arsitektur-permohonan.index', ['admin.arsitektur-permohonan.*'], $pc['arsitektur_permohonan'] ?? 0);
         }
 
-        if ($user->hasAnyPermission(['Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah'])) {
+        if ($user->hasAnyPermission(['Kelola Laporan Gangguan Internet', 'Kelola Starlink Jelajah', 'Kelola Pasang Baru Internet'])) {
             $children = [];
             if ($user->hasPermission('Kelola Laporan Gangguan Internet')) {
                 $children[] = $this->link('Laporan Gangguan', null, 'admin.internet.laporan-gangguan.index', ['admin.internet.laporan-gangguan.*'], $pc['laporan_gangguan'] ?? 0);
@@ -185,7 +185,17 @@ class SidebarMenuService
             if ($user->hasPermission('Kelola Starlink Jelajah')) {
                 $children[] = $this->link('Starlink Jelajah', null, 'admin.internet.starlink.index', ['admin.internet.starlink.*'], $pc['starlink'] ?? 0);
             }
+            if ($user->hasPermission('Kelola Pasang Baru Internet')) {
+                $children[] = $this->link('Pasang Baru', null, 'admin.internet.pasang-baru.index', ['admin.internet.pasang-baru.*'], $pc['pasang_baru'] ?? 0);
+            }
             $items[] = $this->group('Internet', 'wifi', $children, $pc['internet'] ?? 0);
+        }
+
+        if ($user->hasPermission('Kelola Peminjaman Ruang Rapat')) {
+            $items[] = $this->group('Peminjaman Ruang Rapat', 'calendar', [
+                $this->link('Permohonan', null, 'admin.peminjaman-ruang-rapat.index', ['admin.peminjaman-ruang-rapat.*'], $pc['ruang_rapat'] ?? 0),
+                $this->link('Master Ruang Rapat', null, 'admin.ruang-rapat.index', ['admin.ruang-rapat.*']),
+            ], $pc['ruang_rapat'] ?? 0);
         }
 
         if ($user->hasAnyPermission(['Kelola Pendaftaran VPN', 'Kelola Reset Akun VPN', 'Kelola Akses JIP PDNS'])) {
@@ -367,7 +377,7 @@ class SidebarMenuService
             $items[] = $this->link('Zoom/Youtube Live', 'video', 'user.vidcon.index', ['user.vidcon.*']);
         }
 
-        if ($user->hasAnyPermission(['Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah'])) {
+        if ($user->hasAnyPermission(['Akses Lapor Gangguan Internet', 'Akses Starlink Jelajah', 'Akses Pasang Baru Internet'])) {
             $children = [];
             if ($user->hasPermission('Akses Lapor Gangguan Internet')) {
                 $children[] = $this->link('Lapor Gangguan', null, 'user.internet.laporan-gangguan.index', ['user.internet.laporan-gangguan.*']);
@@ -375,7 +385,14 @@ class SidebarMenuService
             if ($user->hasPermission('Akses Starlink Jelajah')) {
                 $children[] = $this->link('Starlink Jelajah', null, 'user.internet.starlink.index', ['user.internet.starlink.*']);
             }
+            if ($user->hasPermission('Akses Pasang Baru Internet')) {
+                $children[] = $this->link('Pasang Baru', null, 'user.internet.pasang-baru.index', ['user.internet.pasang-baru.*']);
+            }
             $items[] = $this->group('Internet', 'wifi', $children);
+        }
+
+        if ($user->hasPermission('Akses Peminjaman Ruang Rapat')) {
+            $items[] = $this->link('Peminjaman Ruang Rapat', 'calendar', 'user.peminjaman-ruang-rapat.index', ['user.peminjaman-ruang-rapat.*']);
         }
 
         if ($user->hasAnyPermission(['Akses Pendaftaran VPN', 'Akses Reset Akun VPN', 'Akses JIP PDNS'])) {
