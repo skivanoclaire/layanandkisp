@@ -28,9 +28,13 @@ use App\Http\Controllers\VerificationController;
 
 
 // Halaman Publik Layanan
+// Beranda utama: versi Kalimantan Utara (welcome-v2). Versi lama ada di storage/backups/beranda/.
 Route::get('/', function () {
-    return view('welcome');
+    return view('welcome-v2');
 });
+
+// Alamat pratinjau lama tetap berfungsi dan diarahkan ke beranda utama.
+Route::redirect('/beranda-v2', '/', 301);
 
 Route::get('/services', function () {
     return view('services');

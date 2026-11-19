@@ -17,7 +17,7 @@
 
     {{-- HEADER --}}
     <header
-        class="shadow-sm px-6 py-6
+        class="@yield('headerClass', 'bg-white') shadow-sm px-6 py-6
                     flex flex-col sm:flex-row sm:justify-between sm:items-center
                     space-y-6 sm:space-y-0">
 
@@ -49,10 +49,19 @@
                 class="bg-emerald-500 hover:bg-emerald-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
                 WhatsApp
             </a>
-            <a href="https://chatgpt.com/g/g-68d4e245a8348191b95faca91144169f-asisten-spbe-kalimantan-utara"
-                class="bg-emerald-500 hover:bg-emerald-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
-                AI SPBE Kaltara
-            </a>
+            @auth
+                @if (Auth::user()->hasPermission('Akses Konsultasi SPBE AI'))
+                    <a href="{{ route('user.konsultasi-spbe-ai.index') }}"
+                        class="bg-emerald-500 hover:bg-emerald-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
+                        Konsultasi SPBE AI
+                    </a>
+                @endif
+            @else
+                <a href="{{ route('login') }}"
+                    class="bg-emerald-500 hover:bg-emerald-600 text-white text-base sm:text-lg px-6 py-3 rounded-md">
+                    Konsultasi SPBE AI
+                </a>
+            @endauth
             @auth
                 @php $user = Auth::user(); @endphp
                 @if ($user->hasRole('Admin'))
@@ -87,7 +96,7 @@
     </header>
 
     {{-- KONTEN HALAMAN --}}
-    <main class="px-6 py-12">
+    <main class="@yield('mainClass', 'px-6 py-12')">
         @yield('content')
     </main>
 
