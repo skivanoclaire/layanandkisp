@@ -28,7 +28,14 @@ class PeminjamanRuangRapatController extends Controller
                 ->with('error', 'Belum ada ruang rapat yang dapat dipinjam saat ini.');
         }
 
-        return view('user.peminjaman-ruang-rapat.create', compact('rooms'));
+        $roomsJs = $rooms->mapWithKeys(fn ($r) => [$r->id => [
+            'nama' => $r->nama,
+            'lokasi' => $r->lokasi,
+            'fasilitas' => $r->fasilitas,
+            'kapasitas' => $r->kapasitas,
+        ]])->all();
+
+        return view('user.peminjaman-ruang-rapat.create', compact('rooms', 'roomsJs'));
     }
 
     public function store(Request $request)

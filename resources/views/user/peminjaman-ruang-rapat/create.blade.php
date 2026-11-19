@@ -148,7 +148,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const select = document.getElementById('meeting_room_id');
     const info = document.getElementById('room-info');
-    const rooms = @json($rooms->mapWithKeys(fn ($r) => [$r->id => ['nama' => $r->nama, 'lokasi' => $r->lokasi, 'fasilitas' => $r->fasilitas, 'kapasitas' => $r->kapasitas]]));
+    const rooms = @json($roomsJs);
 
     function tampilkanInfo() {
         const room = rooms[select.value];
