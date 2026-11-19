@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "906b0627311b36d8988d1836c2898890",
+    "content-hash": "3917f99cf42775e59c226fa21b261b75",
     "packages": [
         {
             "name": "anhskohbo/no-captcha",
@@ -2099,6 +2099,56 @@
                 }
             ],
             "time": "2025-12-17T13:38:29+00:00"
+        },
+        {
+            "name": "kaltaraprov/sso-portal-laravel",
+            "version": "1.1.0",
+            "dist": {
+                "type": "zip",
+                "url": "./paket/sso-portal-laravel-1.1.0.zip",
+                "shasum": "23df0880698073d5d17e08463db4204d036b5261"
+            },
+            "require": {
+                "illuminate/http": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/routing": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+                "phpunit/phpunit": "^10.5|^11.0|^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Kaltaraprov\\SsoPortal\\SsoPortalServiceProvider"
+                    ],
+                    "aliases": {
+                        "SsoPortal": "Kaltaraprov\\SsoPortal\\Facades\\SsoPortal"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kaltaraprov\\SsoPortal\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Kaltaraprov\\SsoPortal\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Integrasi aplikasi Laravel dengan Portal SSO Pemprov Kaltara",
+            "keywords": [
+                "kaltara",
+                "keycloak",
+                "laravel",
+                "sso"
+            ]
         },
         {
             "name": "laravel/framework",

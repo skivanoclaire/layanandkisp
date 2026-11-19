@@ -10,9 +10,9 @@
     @endif
 
     {{-- SSO Login Button: login dilakukan di Portal SSO Kaltara --}}
-    @if(config('sso.portal_login_url'))
+    @if(config('sso-portal.application_id'))
     <div class="mb-6">
-        <a href="{{ config('sso.portal_login_url') }}"
+        <a href="{{ route('sso-portal.login') }}"
            class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white !bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
            style="background-color: #047857 !important;">
             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
