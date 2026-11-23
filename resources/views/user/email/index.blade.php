@@ -44,7 +44,12 @@
 @foreach ($items as $it)
   <tr class="border-b">
     <td class="px-3 py-2 font-mono">{{ $it->ticket_no }}</td>
-    <td class="px-3 py-2">{{ $it->username }}@kaltaraprov.go.id</td>
+    <td class="px-3 py-2">
+      {{ $it->username }}@kaltaraprov.go.id
+      @if($it->isUnit())
+        <span class="ml-1 px-2 py-0.5 rounded text-xs bg-indigo-100 text-indigo-800">{{ $it->jenis_label }}</span>
+      @endif
+    </td>
     <td class="px-3 py-2">{{ $it->instansi }}</td>
     <td class="px-3 py-2 capitalize">
       <span class="px-2 py-1 rounded text-xs
@@ -63,8 +68,12 @@
     <td class="px-3 py-2">
       @if ($it->status === 'menunggu')
         <div class="flex gap-2">
-          <a href="{{ route('user.email.edit', $it->id) }}"
-             class="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">Edit</a>
+          @if(! $it->isUnit())
+            <a href="{{ route('user.email.edit', $it->id) }}"
+               class="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">Edit</a>
+          @else
+            <span class="px-3 py-1 rounded bg-gray-200 text-gray-500 text-sm cursor-not-allowed" title="Email unit tidak dapat diedit, hapus lalu ajukan ulang">Edit</span>
+          @endif
 
           <form action="{{ route('user.email.destroy', $it->id) }}" method="POST"
                 onsubmit="return confirm('Hapus permohonan ini?');">

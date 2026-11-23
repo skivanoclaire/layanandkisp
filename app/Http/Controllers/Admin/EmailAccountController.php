@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmailAccount;
+use App\Models\EmailRequest;
+use App\Models\UnitKerja;
+use App\Models\UnitOrganisasi;
 use App\Services\WhmApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -24,6 +27,11 @@ class EmailAccountController extends Controller
         // Filter by suspended status
         if ($request->filled('suspended')) {
             $query->where('suspended', $request->suspended);
+        }
+
+        // Filter by jenis email (pribadi / unit_kerja / unit_organisasi)
+        if ($request->filled('jenis') && in_array($request->jenis, ['pribadi', 'unit_kerja', 'unit_organisasi'], true)) {
+            $query->where('jenis', $request->jenis);
         }
 
         // Search by email
@@ -69,6 +77,54 @@ class EmailAccountController extends Controller
         $emailAccounts = $query->paginate(50);
 
         return view('admin.email-accounts.index', compact('emailAccounts', 'domains'));
+    }
+
+    /**
+     * Monitoring: setiap unit kerja / unit organisasi beserta email resminya (atau statusnya bila belum ada).
+     */
+    public function units(Request $request)
+    {
+        $tipe = $request->get('tipe', 'unit_kerja');
+        if (!in_array($tipe, ['unit_kerja', 'unit_organisasi'], true)) {
+            $tipe = 'unit_kerja';
+        }
+
+        $accounts = EmailAccount::where('jenis', $tipe)
+            ->get()
+            ->groupBy($tipe === 'unit_kerja' ? 'unit_kerja_id' : 'unit_organisasi_id');
+
+        $pending = EmailRequest::where('jenis', $tipe)
+            ->whereIn('status', ['menunggu', 'proses'])
+            ->orderByDesc('submitted_at')
+            ->get()
+            ->groupBy($tipe === 'unit_kerja' ? 'unit_kerja_id' : 'unit_organisasi_id');
+
+        if ($tipe === 'unit_kerja') {
+            $targets = UnitKerja::forLayananDigital()->active()->orderBy('nama')->get()
+                ->map(fn ($uk) => ['id' => $uk->id, 'nama' => $uk->nama, 'induk' => null]);
+        } else {
+            $targets = UnitOrganisasi::with('unitKerja')->orderBy('nama')->get()
+                ->map(fn ($uo) => ['id' => $uo->id, 'nama' => $uo->nama, 'induk' => $uo->unitKerja?->nama, 'tipe' => $uo->tipe, 'is_active' => $uo->is_active]);
+        }
+
+        $rows = $targets->map(function ($t) use ($accounts, $pending) {
+            $account = $accounts->get($t['id'])?->first();
+            $request = $pending->get($t['id'])?->first();
+            return $t + [
+                'email' => $account?->email,
+                'suspended' => $account?->isSuspended() ?? false,
+                'pending_ticket' => $request?->ticket_no,
+                'pending_status' => $request?->status,
+            ];
+        });
+
+        $stats = [
+            'total' => $rows->count(),
+            'terdaftar' => $rows->whereNotNull('email')->count(),
+            'belum' => $rows->whereNull('email')->count(),
+        ];
+
+        return view('admin.email-accounts.units', compact('tipe', 'rows', 'stats'));
     }
 
     public function sync()

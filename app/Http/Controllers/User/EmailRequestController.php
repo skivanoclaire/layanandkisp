@@ -22,7 +22,29 @@ class EmailRequestController extends Controller
         return view('user.email.index', compact('items'));
     }
 
+    /**
+     * Formulir email pribadi (satu NIP = satu akun pribadi).
+     */
     public function create()
+    {
+        return $this->renderCreate(EmailRequest::JENIS_PRIBADI);
+    }
+
+    /**
+     * Formulir email unit kerja / unit organisasi (bidang, sekretariat).
+     * Query ?tipe=unit_kerja|unit_organisasi menentukan tab yang aktif.
+     * NIP boleh sama dengan permohonan lain, karena yang dicatat adalah unit tujuannya.
+     */
+    public function createUnit(Request $r)
+    {
+        $tipe = $r->query('tipe') === EmailRequest::JENIS_UNIT_ORGANISASI
+            ? EmailRequest::JENIS_UNIT_ORGANISASI
+            : EmailRequest::JENIS_UNIT_KERJA;
+
+        return $this->renderCreate($tipe);
+    }
+
+    private function renderCreate(string $jenis)
     {
         // Check if user has NIP
         $user = auth()->user();
@@ -33,7 +55,9 @@ class EmailRequestController extends Controller
 
         // Get active unit kerja for dropdown
         $unitKerjaList = \App\Models\UnitKerja::forLayananDigital()->active()->orderBy('nama')->get();
-        return view('user.email.create', compact('unitKerjaList'));
+        $unitOrganisasiList = \App\Models\UnitOrganisasi::with('unitKerja')->active()->orderBy('nama')->get();
+
+        return view('user.email.create', compact('jenis', 'unitKerjaList', 'unitOrganisasiList'));
     }
 
     public function store(Request $r)
@@ -46,17 +70,71 @@ class EmailRequestController extends Controller
             ]);
         }
 
-        // Check if NIP already has an approved email request or exists in email_accounts
-        $nipExists = \App\Models\EmailRequest::where('nip', $user->nip)
-            ->whereIn('status', ['proses', 'selesai'])
-            ->exists();
+        $jenis = (string) $r->input('jenis', EmailRequest::JENIS_PRIBADI);
+        if (!in_array($jenis, EmailRequest::jenisOptions(), true)) {
+            throw ValidationException::withMessages(['jenis' => 'Jenis permohonan tidak valid.']);
+        }
+        $isUnit = $jenis !== EmailRequest::JENIS_PRIBADI;
 
-        $nipInMasterData = \App\Models\EmailAccount::where('nip', $user->nip)->exists();
+        // Satu NIP hanya boleh punya satu akun email PRIBADI.
+        // Permohonan email unit tidak dihitung di sini, sehingga NIP yang sama tetap bisa mengajukan unit.
+        if (!$isUnit) {
+            $nipExists = \App\Models\EmailRequest::where('nip', $user->nip)
+                ->where('jenis', EmailRequest::JENIS_PRIBADI)
+                ->whereIn('status', ['proses', 'selesai'])
+                ->exists();
 
-        if ($nipExists || $nipInMasterData) {
-            throw ValidationException::withMessages([
-                'nip' => 'NIP Anda sudah terdaftar untuk layanan email. Satu NIP hanya dapat memiliki satu akun email.'
+            $nipInMasterData = \App\Models\EmailAccount::where('nip', $user->nip)
+                ->where('jenis', EmailRequest::JENIS_PRIBADI)
+                ->exists();
+
+            if ($nipExists || $nipInMasterData) {
+                throw ValidationException::withMessages([
+                    'nip' => 'NIP Anda sudah terdaftar untuk layanan email. Satu NIP hanya dapat memiliki satu akun email.'
+                ]);
+            }
+        }
+
+        // Tujuan unit (divalidasi terhadap master data, bukan input teks bebas)
+        $unitKerja = null;
+        $unitOrganisasi = null;
+        $instansi = null;
+        if ($jenis === EmailRequest::JENIS_UNIT_KERJA) {
+            $r->validate(['unit_kerja_id' => ['required', 'integer']], [
+                'unit_kerja_id.required' => 'Silakan pilih Unit Kerja.',
             ]);
+            $unitKerja = \App\Models\UnitKerja::forLayananDigital()->active()->find($r->input('unit_kerja_id'));
+            if (!$unitKerja) {
+                throw ValidationException::withMessages(['unit_kerja_id' => 'Unit Kerja tidak valid.']);
+            }
+            $instansi = $unitKerja->nama;
+        } elseif ($jenis === EmailRequest::JENIS_UNIT_ORGANISASI) {
+            $r->validate(['unit_organisasi_id' => ['required', 'integer']], [
+                'unit_organisasi_id.required' => 'Silakan pilih Unit Organisasi.',
+            ]);
+            $unitOrganisasi = \App\Models\UnitOrganisasi::with('unitKerja')->active()->find($r->input('unit_organisasi_id'));
+            if (!$unitOrganisasi || !$unitOrganisasi->unitKerja?->is_active) {
+                throw ValidationException::withMessages(['unit_organisasi_id' => 'Unit Organisasi tidak valid.']);
+            }
+            $instansi = $unitOrganisasi->label;
+        }
+
+        // Satu unit hanya punya satu email resmi: tolak bila sudah ada permohonan aktif atau akun terdaftar
+        if ($isUnit) {
+            $column = $unitKerja ? 'unit_kerja_id' : 'unit_organisasi_id';
+            $targetId = $unitKerja ? $unitKerja->id : $unitOrganisasi->id;
+
+            $unitTaken = EmailRequest::where('jenis', $jenis)
+                    ->where($column, $targetId)
+                    ->whereIn('status', ['menunggu', 'proses', 'selesai'])
+                    ->exists()
+                || \App\Models\EmailAccount::where('jenis', $jenis)->where($column, $targetId)->exists();
+
+            if ($unitTaken) {
+                throw ValidationException::withMessages([
+                    $column => 'Unit ini sudah memiliki permohonan email aktif atau email resmi terdaftar.'
+                ]);
+            }
         }
 
         // Alamat email tidak membedakan huruf besar/kecil, simpan username dalam huruf kecil
@@ -64,7 +142,8 @@ class EmailRequestController extends Controller
 
         $data = $r->validate([
             'nama'             => ['required','string','max:200'],
-            'instansi'         => ['required','string','max:200'],
+            // Instansi pemohon hanya wajib untuk email pribadi; untuk unit diisi dari master unit
+            'instansi'         => $isUnit ? ['nullable'] : ['required','string','max:200'],
             'username'         => ['required','alpha_num','min:3','max:30', Rule::unique('email_requests','username')],
             'email_alternatif' => ['nullable','email','max:200'],
             'no_hp'            => ['required','string','max:30'],
@@ -83,7 +162,14 @@ class EmailRequestController extends Controller
             'username.unique'          => 'Username sudah digunakan.',
         ]);
 
+        if ($isUnit) {
+            $data['instansi'] = $instansi;
+        }
+
         $req = new EmailRequest($data);
+        $req->jenis        = $jenis;
+        $req->unit_kerja_id      = $unitKerja?->id;
+        $req->unit_organisasi_id = $unitOrganisasi?->id;
         $req->user_id      = auth()->id();
         $req->nip          = $user->nip; // Auto-filled from user, not from request input
         $req->ticket_no    = EmailRequest::nextTicket();
@@ -138,6 +224,9 @@ class EmailRequestController extends Controller
     public function edit($id)
     {
         $item = EmailRequest::where('id',$id)->where('user_id',auth()->id())->firstOrFail();
+        if ($item->isUnit()) {
+            abort(403, 'Permohonan email unit tidak dapat diedit. Silakan hapus lalu ajukan ulang.');
+        }
         if ($item->status !== 'menunggu') {
             abort(403, 'Permohonan tidak bisa diedit karena sudah diproses.');
         }
@@ -150,6 +239,9 @@ class EmailRequestController extends Controller
     public function update(Request $r, $id)
     {
         $item = EmailRequest::where('id',$id)->where('user_id',auth()->id())->firstOrFail();
+        if ($item->isUnit()) {
+            throw ValidationException::withMessages(['status' => 'Permohonan email unit tidak dapat diubah. Silakan hapus lalu ajukan ulang.']);
+        }
         if ($item->status !== 'menunggu') {
             throw ValidationException::withMessages(['status' => 'Permohonan tidak bisa diubah karena sudah diproses.']);
         }
@@ -258,13 +350,16 @@ class EmailRequestController extends Controller
             ]);
         }
 
-        // Check if NIP already has an approved email request
+        // Check if NIP already has an approved PERSONAL email request (email unit tidak dihitung)
         $nipInRequests = EmailRequest::where('nip', $user->nip)
+            ->where('jenis', EmailRequest::JENIS_PRIBADI)
             ->whereIn('status', ['proses', 'selesai'])
             ->exists();
 
-        // Check if NIP exists in Master Data Email
-        $nipInMasterData = \App\Models\EmailAccount::where('nip', $user->nip)->exists();
+        // Check if NIP exists in Master Data Email as a personal account
+        $nipInMasterData = \App\Models\EmailAccount::where('nip', $user->nip)
+            ->where('jenis', EmailRequest::JENIS_PRIBADI)
+            ->exists();
 
         if ($nipInRequests || $nipInMasterData) {
             return response()->json([

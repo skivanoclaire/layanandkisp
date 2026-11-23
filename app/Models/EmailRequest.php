@@ -8,10 +8,33 @@ use Illuminate\Support\Facades\DB;
 
 class EmailRequest extends Model
 {
+    public const JENIS_PRIBADI = 'pribadi';
+    public const JENIS_UNIT_KERJA = 'unit_kerja';
+    public const JENIS_UNIT_ORGANISASI = 'unit_organisasi';
+
     protected $fillable = [
-        'ticket_no','user_id','nama','nip','instansi','username','email_granted','email_alternatif','no_hp',
+        'ticket_no','jenis','unit_kerja_id','unit_organisasi_id','user_id','nama','nip','instansi','username','email_granted','email_alternatif','no_hp',
         'password_encrypted','consent_true','status','submitted_at','processing_at','rejected_at','completed_at'
     ];
+
+    public static function jenisOptions(): array
+    {
+        return [self::JENIS_PRIBADI, self::JENIS_UNIT_KERJA, self::JENIS_UNIT_ORGANISASI];
+    }
+
+    public function isUnit(): bool
+    {
+        return $this->jenis !== self::JENIS_PRIBADI;
+    }
+
+    public function getJenisLabelAttribute(): string
+    {
+        return match ($this->jenis) {
+            self::JENIS_UNIT_KERJA => 'Unit Kerja',
+            self::JENIS_UNIT_ORGANISASI => 'Unit Organisasi',
+            default => 'Pribadi',
+        };
+    }
 
     protected $casts = [
         'consent_true' => 'boolean',
@@ -28,6 +51,8 @@ class EmailRequest extends Model
     // ====== Relations ======
     public function user(){ return $this->belongsTo(User::class); }
     public function logs(){ return $this->hasMany(EmailRequestLog::class); }
+    public function unitKerja(){ return $this->belongsTo(UnitKerja::class); }
+    public function unitOrganisasi(){ return $this->belongsTo(UnitOrganisasi::class); }
 
     // ====== Ticket number generator ======
     /**

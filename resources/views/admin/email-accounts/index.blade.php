@@ -23,6 +23,9 @@
             <a href="{{ route('admin.email-accounts.import-nip.show') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold inline-block">
                 Import NIP
             </a>
+            <a href="{{ route('admin.email-accounts.units') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded font-semibold inline-block">
+                Monitoring Email Unit
+            </a>
         </div>
     </div>
 
@@ -41,7 +44,7 @@
     <!-- Filters -->
     <div class="bg-white rounded-lg shadow-md p-4 mb-6">
         <form method="GET" action="{{ route('admin.email-accounts.index') }}">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Cari Email</label>
                     <input type="text" name="search" value="{{ request('search') }}"
@@ -66,6 +69,15 @@
                         <option value="">-- Semua Status --</option>
                         <option value="0" {{ request('suspended') === '0' ? 'selected' : '' }}>Aktif</option>
                         <option value="1" {{ request('suspended') === '1' ? 'selected' : '' }}>Suspended</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Email</label>
+                    <select name="jenis" class="w-full border-gray-300 rounded-md shadow-sm">
+                        <option value="">-- Semua Jenis --</option>
+                        <option value="pribadi" {{ request('jenis') === 'pribadi' ? 'selected' : '' }}>Pribadi</option>
+                        <option value="unit_kerja" {{ request('jenis') === 'unit_kerja' ? 'selected' : '' }}>Unit Kerja</option>
+                        <option value="unit_organisasi" {{ request('jenis') === 'unit_organisasi' ? 'selected' : '' }}>Unit Organisasi</option>
                     </select>
                 </div>
                 <div class="flex items-end gap-2">
@@ -216,6 +228,11 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600">
+                            @if($account->isUnit())
+                                <span class="inline-block mb-1 px-2 py-0.5 rounded text-xs bg-indigo-100 text-indigo-800">
+                                    {{ $account->jenis === 'unit_kerja' ? 'Email Unit Kerja' : 'Email Unit Organisasi' }}
+                                </span><br>
+                            @endif
                             @if($account->requester_instansi)
                                 {{ $account->requester_instansi }}
                             @else
