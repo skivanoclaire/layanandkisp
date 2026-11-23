@@ -4,7 +4,37 @@
 
 @section('content')
     <div class="max-w-3xl mx-auto">
-        <h1 class="text-2xl font-bold mb-6">Formulir Pendaftaran Layanan Email Resmi ASN</h1>
+        <h1 class="text-2xl font-bold mb-6">
+            @if ($jenis === 'pribadi')
+                Formulir Pendaftaran Layanan Email Resmi ASN
+            @else
+                Formulir Pendaftaran Email Resmi {{ $jenis === 'unit_kerja' ? 'Unit Kerja' : 'Unit Organisasi' }}
+            @endif
+        </h1>
+
+        {{-- ====== PEMILIHAN JENIS PERMOHONAN ====== --}}
+        <div class="mb-6 flex flex-wrap gap-2 text-sm">
+            <a href="{{ route('user.email.create') }}"
+               class="px-3 py-2 rounded border {{ $jenis === 'pribadi' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 hover:bg-gray-50' }}">
+                Email Pribadi
+            </a>
+            <a href="{{ route('user.email.unit.create', ['tipe' => 'unit_kerja']) }}"
+               class="px-3 py-2 rounded border {{ $jenis === 'unit_kerja' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 hover:bg-gray-50' }}">
+                Email Unit Kerja (Perangkat Daerah)
+            </a>
+            <a href="{{ route('user.email.unit.create', ['tipe' => 'unit_organisasi']) }}"
+               class="px-3 py-2 rounded border {{ $jenis === 'unit_organisasi' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 hover:bg-gray-50' }}">
+                Email Unit Organisasi (Bidang/Sekretariat)
+            </a>
+        </div>
+
+        @if ($jenis !== 'pribadi')
+            <div class="mb-4 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+                Email unit adalah akun resmi milik unit kerja atau unit organisasi, bukan akun pribadi.
+                Anda tetap mengajukan dengan NIP Anda sebagai penanggung jawab, dan NIP yang sama
+                dapat digunakan untuk mengajukan email unit lain.
+            </div>
+        @endif
 
         <div class="mb-4 text-sm">
             Dengan mengisi formulir ini, Anda menyatakan data benar dan menyetujui
@@ -181,6 +211,7 @@
 
         <form action="{{ route('user.email.store') }}" method="POST" class="space-y-4">
             @csrf
+            <input type="hidden" name="jenis" value="{{ $jenis }}">
 
             <div>
                 <label class="block text-sm mb-1">Nama</label>
@@ -202,6 +233,7 @@
                         <p class="text-red-600 text-sm">{{ $message }}</p>
                     @enderror
                 </div>
+                @if ($jenis === 'pribadi')
                 <div>
                     <label class="block text-sm mb-1">Unit Kerja</label>
                     <select name="instansi" required class="w-full border rounded p-2">
@@ -217,6 +249,39 @@
                         <p class="text-red-600 text-sm">{{ $message }}</p>
                     @enderror
                 </div>
+                @elseif ($jenis === 'unit_kerja')
+                <div>
+                    <label class="block text-sm mb-1">Unit Kerja (Perangkat Daerah)</label>
+                    <select name="unit_kerja_id" required class="w-full border rounded p-2">
+                        <option value="" disabled {{ old('unit_kerja_id') ? '' : 'selected' }}>-- Pilih Unit Kerja --
+                        </option>
+                        @foreach ($unitKerjaList as $unitKerja)
+                            <option value="{{ $unitKerja->id }}" {{ (string) old('unit_kerja_id') === (string) $unitKerja->id ? 'selected' : '' }}>
+                                {{ $unitKerja->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('unit_kerja_id')
+                        <p class="text-red-600 text-sm">{{ $message }}</p>
+                    @enderror
+                </div>
+                @else
+                <div>
+                    <label class="block text-sm mb-1">Unit Organisasi (Bidang/Sekretariat)</label>
+                    <select name="unit_organisasi_id" required class="w-full border rounded p-2">
+                        <option value="" disabled {{ old('unit_organisasi_id') ? '' : 'selected' }}>-- Pilih Unit Organisasi --
+                        </option>
+                        @foreach ($unitOrganisasiList as $unitOrganisasi)
+                            <option value="{{ $unitOrganisasi->id }}" {{ (string) old('unit_organisasi_id') === (string) $unitOrganisasi->id ? 'selected' : '' }}>
+                                {{ $unitOrganisasi->label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('unit_organisasi_id')
+                        <p class="text-red-600 text-sm">{{ $message }}</p>
+                    @enderror
+                </div>
+                @endif
             </div>
 
             <div class="grid md:grid-cols-2 gap-4">
@@ -330,9 +395,12 @@
             const nipMessageDiv = document.getElementById('nip-availability-message');
 
             // Check NIP availability when page loads
+            // Pembatasan NIP hanya berlaku untuk email pribadi (email unit boleh memakai NIP yang sama)
+            @if ($jenis === 'pribadi')
             window.addEventListener('DOMContentLoaded', function() {
                 checkNipAvailability();
             });
+            @endif
 
             usernameInput.addEventListener('input', function() {
                 clearTimeout(checkTimeout);

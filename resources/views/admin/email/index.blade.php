@@ -11,6 +11,8 @@
             <a href="{{ route('admin.email.index', ['status' => 'proses']) }}" class="px-3 py-1 border rounded">Proses</a>
             <a href="{{ route('admin.email.index', ['status' => 'ditolak']) }}" class="px-3 py-1 border rounded">Ditolak</a>
             <a href="{{ route('admin.email.index', ['status' => 'selesai']) }}" class="px-3 py-1 border rounded">Selesai</a>
+            <a href="{{ route('admin.email.index', ['jenis' => 'unit_kerja']) }}" class="px-3 py-1 border rounded">Unit Kerja</a>
+            <a href="{{ route('admin.email.index', ['jenis' => 'unit_organisasi']) }}" class="px-3 py-1 border rounded">Unit Organisasi</a>
 
             <a href="{{ route('admin.email.export', ['status' => 'selesai']) }}"
                 class="ml-4 bg-green-600 text-white px-3 py-1 rounded">
@@ -89,7 +91,12 @@
                     <tr class="border-b">
                         <td class="px-3 py-2 font-mono">{{ $it->ticket_no }}</td>
                         <td class="px-3 py-2">{{ $it->nama }}</td>
-                        <td class="px-3 py-2">{{ $it->username }}@kaltaraprov.go.id</td>
+                        <td class="px-3 py-2">
+                            {{ $it->username }}@kaltaraprov.go.id
+                            @if($it->isUnit())
+                                <span class="ml-1 px-2 py-0.5 rounded text-xs bg-indigo-100 text-indigo-800">{{ $it->jenis_label }}</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2">{{ $it->instansi }}</td>
                         <td class="px-3 py-2 capitalize">
                             <span

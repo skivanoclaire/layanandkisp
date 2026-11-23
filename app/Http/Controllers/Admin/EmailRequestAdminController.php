@@ -27,6 +27,11 @@ class EmailRequestAdminController extends Controller
 
         if ($status) $q->where('status', $status);
 
+        // Filter by jenis (pribadi / unit_kerja / unit_organisasi)
+        if ($r->filled('jenis') && in_array($r->jenis, EmailRequest::jenisOptions(), true)) {
+            $q->where('jenis', $r->jenis);
+        }
+
         // Filter by date range
         if ($r->filled('dari_tanggal')) {
             $q->whereDate('submitted_at', '>=', $r->dari_tanggal);
@@ -117,6 +122,10 @@ class EmailRequestAdminController extends Controller
                                 'requester_instansi' => $item->instansi,
                                 'requester_email' => $item->user?->email ?? $item->email_alternatif,
                                 'requester_phone' => $item->no_hp,
+                                // Jenis email & unit tujuan (untuk memantau email resmi unit mana)
+                                'jenis' => $item->jenis ?? EmailRequest::JENIS_PRIBADI,
+                                'unit_kerja_id' => $item->unit_kerja_id,
+                                'unit_organisasi_id' => $item->unit_organisasi_id,
                             ]
                         );
 

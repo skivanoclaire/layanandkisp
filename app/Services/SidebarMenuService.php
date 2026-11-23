@@ -312,7 +312,13 @@ class SidebarMenuService
 
         if ($user->hasAnyPermission(['user.email.index', 'user.email.create', 'user.email.show', 'user.email-password-reset.index', 'user.email-password-reset.create'])) {
             $items[] = $this->group('Email', 'mail', [
-                $this->link('Permohonan', null, 'user.email.index', ['user.email.*']),
+                // Daftar rute permohonan pribadi (tanpa user.email.unit.*) agar hanya satu menu yang menyala
+                $this->link('Permohonan', null, 'user.email.index', [
+                    'user.email.index', 'user.email.create', 'user.email.store', 'user.email.thanks',
+                    'user.email.survey', 'user.email.edit', 'user.email.update', 'user.email.destroy',
+                    'user.email.check-email', 'user.email.check-nip',
+                ]),
+                $this->link('Permohonan Email Unit', null, 'user.email.unit.create', ['user.email.unit.*']),
                 $this->link('Reset Password', null, 'user.email-password-reset.index', ['user.email-password-reset.*']),
             ]);
         }
@@ -482,6 +488,7 @@ class SidebarMenuService
         }
         if ($user->hasPermission('Kelola Master Data Email')) {
             $items[] = $this->link('Email', 'mail', 'admin.email-accounts.index', ['admin.email-accounts.*']);
+            $items[] = $this->link('Unit Organisasi', 'office', 'admin.unit-organisasi.index', ['admin.unit-organisasi.*']);
         }
         if ($user->hasPermission('admin.web-monitor.check-ip-publik')) {
             $items[] = $this->link('IP Publik', 'signal', 'admin.web-monitor.check-ip-publik', ['admin.web-monitor.check-ip-publik']);

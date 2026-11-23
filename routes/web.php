@@ -472,6 +472,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Master Data Email Accounts
     Route::middleware('permission:Kelola Master Data Email')->group(function () {
     Route::get('/email-accounts', [\App\Http\Controllers\Admin\EmailAccountController::class, 'index'])->name('email-accounts.index');
+    Route::get('/email-accounts-unit', [\App\Http\Controllers\Admin\EmailAccountController::class, 'units'])->name('email-accounts.units');
     Route::post('/email-accounts/sync', [\App\Http\Controllers\Admin\EmailAccountController::class, 'sync'])->name('email-accounts.sync');
     Route::post('/email-accounts/test-connection', [\App\Http\Controllers\Admin\EmailAccountController::class, 'testConnection'])->name('email-accounts.test-connection');
     Route::get('/email-accounts/import-nip', [\App\Http\Controllers\Admin\EmailAccountController::class, 'showImportNip'])->name('email-accounts.import-nip.show');
@@ -483,6 +484,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('/email-accounts/{emailAccount}/unsuspend', [\App\Http\Controllers\Admin\EmailAccountController::class, 'unsuspend'])->name('email-accounts.unsuspend');
     Route::delete('/email-accounts/{emailAccount}', [\App\Http\Controllers\Admin\EmailAccountController::class, 'destroy'])->name('email-accounts.destroy');
     Route::delete('/email-accounts-destroy-all', [\App\Http\Controllers\Admin\EmailAccountController::class, 'destroyAll'])->name('email-accounts.destroy-all');
+
+    // Master Unit Organisasi (Bidang / Sekretariat) sebagai tujuan email unit
+    Route::get('/unit-organisasi', [\App\Http\Controllers\Admin\UnitOrganisasiController::class, 'index'])->name('unit-organisasi.index');
+    Route::post('/unit-organisasi', [\App\Http\Controllers\Admin\UnitOrganisasiController::class, 'store'])->name('unit-organisasi.store');
+    Route::put('/unit-organisasi/{unitOrganisasi}', [\App\Http\Controllers\Admin\UnitOrganisasiController::class, 'update'])->name('unit-organisasi.update');
+    Route::post('/unit-organisasi/{unitOrganisasi}/toggle', [\App\Http\Controllers\Admin\UnitOrganisasiController::class, 'toggle'])->name('unit-organisasi.toggle');
     });
 
 });
@@ -512,6 +519,7 @@ Route::middleware(['auth','verified.user','permission:user.email.index,user.emai
     ->group(function () {
         Route::get('/',           [EmailRequestController::class, 'index'])->name('index');   // daftar
         Route::get('/create',     [EmailRequestController::class, 'create'])->name('create'); // form
+        Route::get('/unit/create', [EmailRequestController::class, 'createUnit'])->name('unit.create'); // form email unit kerja / unit organisasi
         Route::post('/submit',    [EmailRequestController::class, 'store'])->name('store');   // submit
         Route::get('/thanks/{ticket}', [EmailRequestController::class, 'thanks'])->name('thanks');
         Route::get('/survey/{ticket}', [EmailRequestController::class, 'survey'])->name('survey');
