@@ -194,6 +194,13 @@ class AdminController extends Controller
             $query->where('unit_kerja_id', $request->unit_kerja_id);
         }
 
+        // Filter status verifikasi (belum = false atau null, sama dengan angka statistik di atas)
+        if ($request->input('verifikasi') === 'belum') {
+            $query->where(fn ($q) => $q->where('is_verified', false)->orWhereNull('is_verified'));
+        } elseif ($request->input('verifikasi') === 'terverifikasi') {
+            $query->where('is_verified', true);
+        }
+
         $users = $query->latest()->get();
         $roles = \App\Models\Role::all();
         $unitKerjas = \App\Models\UnitKerja::active()->orderBy('nama')->get();

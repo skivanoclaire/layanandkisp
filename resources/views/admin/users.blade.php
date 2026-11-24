@@ -41,6 +41,7 @@
         <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <p class="text-xs font-medium text-yellow-700">Belum Terverifikasi</p>
             <p class="mt-1 text-2xl font-bold text-yellow-700">{{ number_format($stats['unverified']) }}</p>
+            <a href="{{ route('admin.users', ['verifikasi' => 'belum']) }}" class="mt-1 inline-block text-xs font-semibold text-yellow-800 underline">Tampilkan daftarnya →</a>
         </div>
         <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <p class="text-xs font-medium text-blue-700">Pengguna SSO</p>
@@ -71,7 +72,7 @@
 
     {{-- Search and Filter Form --}}
     <form method="GET" action="{{ route('admin.users') }}" class="mb-5">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div class="sm:col-span-2 lg:col-span-1">
                 <label for="search" class="block text-xs font-medium text-gray-600 mb-1">Cari</label>
                 <input type="text" id="search" name="search"
@@ -103,6 +104,16 @@
                             {{ $uk->nama }}
                         </option>
                     @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label for="verifikasi" class="block text-xs font-medium text-gray-600 mb-1">Status Verifikasi</label>
+                <select id="verifikasi" name="verifikasi"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <option value="">Semua Status</option>
+                    <option value="belum" {{ request('verifikasi') === 'belum' ? 'selected' : '' }}>Belum Diverifikasi</option>
+                    <option value="terverifikasi" {{ request('verifikasi') === 'terverifikasi' ? 'selected' : '' }}>Terverifikasi</option>
                 </select>
             </div>
 

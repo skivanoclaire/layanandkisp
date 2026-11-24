@@ -164,6 +164,24 @@ class IdentitasDanBlokirTest extends TestCase
         $this->assertSame(self::NIP, $user->refresh()->nip);
     }
 
+    public function test_filter_status_verifikasi_di_daftar_pengguna_admin(): void
+    {
+        $admin = User::factory()->create(['is_verified' => true]);
+        $this->beriRole($admin, 'Admin');
+        User::factory()->create(['name' => 'Belum Verif Uji', 'is_verified' => false]);
+        User::factory()->create(['name' => 'Sudah Verif Uji', 'is_verified' => true]);
+
+        $this->actingAs($admin)->get(route('admin.users', ['verifikasi' => 'belum']))
+            ->assertOk()
+            ->assertSee('Belum Verif Uji')
+            ->assertDontSee('Sudah Verif Uji');
+
+        $this->actingAs($admin)->get(route('admin.users', ['verifikasi' => 'terverifikasi']))
+            ->assertOk()
+            ->assertSee('Sudah Verif Uji')
+            ->assertDontSee('Belum Verif Uji');
+    }
+
     public function test_perintah_audit_identitas_berjalan_dan_tidak_mengubah_data(): void
     {
         User::factory()->create(['is_verified' => false, 'is_sso_user' => false, 'nip' => self::NIP]);
