@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $kunci = fn ($field) => $akun && !empty($akun[$field]) && in_array($field, ['nama', 'nip', 'instansi'], true);
+    $kunci = fn ($field) => $akun && !empty($akun[$field]) && in_array($field, ['nama', 'nip', 'instansi', 'jenis_kelamin'], true);
     $nilai = fn ($field) => old($field, $akun[$field] ?? ($sudah?->{$field} ?? ''));
     $input = 'w-full rounded-lg border-gray-300 border px-3 py-2.5 text-base focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none';
 
@@ -94,6 +94,21 @@
                 <label class="block text-sm font-semibold mb-1" for="nip">NIP @if($kunci('nip'))🔒@endif <span class="text-gray-400 font-normal">(kosongkan bila non-ASN)</span></label>
                 <input id="nip" name="nip" value="{{ $nilai('nip') }}" inputmode="numeric" maxlength="25"
                        class="{{ $input }} {{ $kunci('nip') ? 'bg-gray-100' : '' }}" @readonly($kunci('nip'))>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold mb-1" for="jenis_kelamin">Jenis Kelamin @if($kunci('jenis_kelamin'))🔒@endif <span class="text-red-500">*</span></label>
+                @if($kunci('jenis_kelamin'))
+                    <input type="hidden" name="jenis_kelamin" value="{{ $akun['jenis_kelamin'] }}">
+                    <input id="jenis_kelamin" value="{{ \App\Support\JenisKelamin::label($akun['jenis_kelamin']) }}" readonly class="{{ $input }} bg-gray-100">
+                @else
+                    <select id="jenis_kelamin" name="jenis_kelamin" required class="{{ $input }} bg-white">
+                        <option value="">— Pilih —</option>
+                        @foreach(\App\Support\JenisKelamin::PILIHAN as $nilaiJk => $labelJk)
+                            <option value="{{ $nilaiJk }}" @selected($nilai('jenis_kelamin') === $nilaiJk)>{{ $labelJk }}</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
 
             <div>

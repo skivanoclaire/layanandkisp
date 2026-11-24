@@ -58,6 +58,7 @@ class User extends Authenticatable
         'nik',
         'nik_hash',
         'nip',
+        'jenis_kelamin',
         'phone',
         'unit_kerja_id',
         'is_verified',

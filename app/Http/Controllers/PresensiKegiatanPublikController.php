@@ -6,6 +6,7 @@ use App\Models\PresensiKegiatan;
 use App\Models\PresensiKegiatanPeserta;
 use App\Models\UnitKerja;
 use App\Models\User;
+use App\Support\JenisKelamin;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -123,6 +124,7 @@ class PresensiKegiatanPublikController extends Controller
             'user_id' => $user?->id ?? $peserta->user_id,
             'nama' => $data['nama'],
             'nip' => $data['nip'],
+            'jenis_kelamin' => $data['jenis_kelamin'],
             'jabatan' => $data['jabatan'],
             'unit_kerja_id' => $data['unit_kerja_id'],
             'instansi' => $data['instansi'],
@@ -176,6 +178,7 @@ class PresensiKegiatanPublikController extends Controller
             'instansi' => 'required|string|max:255',
             'no_hp' => 'required|digits_between:9,15',
             'email' => 'nullable|email|max:255',
+            'jenis_kelamin' => 'required|in:' . implode(',', array_keys(JenisKelamin::PILIHAN)),
         ];
 
         if ($mode === 'konfirmasi') {
@@ -205,6 +208,7 @@ class PresensiKegiatanPublikController extends Controller
                 'nama' => $akun['nama'],
                 'nip' => $akun['nip'],
                 'instansi' => $akun['instansi'],
+                'jenis_kelamin' => $akun['jenis_kelamin'],
             ]));
         }
 
@@ -276,6 +280,7 @@ class PresensiKegiatanPublikController extends Controller
         return [
             'nama' => $user->name,
             'nip' => $user->nip ? preg_replace('/\s+/', '', $user->nip) : null,
+            'jenis_kelamin' => $user->jenis_kelamin ?: JenisKelamin::dariData([], $user->nip, $user->nik),
             'jabatan' => $user->jabatan?->nama_jabatan,
             'instansi' => $user->unitKerja?->nama,
             'no_hp' => $user->phone ? PresensiKegiatanPeserta::normalisasiHp($user->phone) : null,

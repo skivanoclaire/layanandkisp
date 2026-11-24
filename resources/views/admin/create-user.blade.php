@@ -116,6 +116,23 @@
                 </div>
 
                 <div class="mb-6">
+                    <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700 mb-2">Jenis Kelamin</label>
+                    <select
+                        id="jenis_kelamin"
+                        name="jenis_kelamin"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jenis_kelamin') border-red-500 @enderror"
+                    >
+                        <option value="">-- Belum diisi --</option>
+                        @foreach(\App\Support\JenisKelamin::PILIHAN as $nilai => $label)
+                            <option value="{{ $nilai }}" {{ old('jenis_kelamin') === $nilai ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @error('jenis_kelamin')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-6">
                     <label for="unit_kerja_id" class="block text-sm font-medium text-gray-700 mb-2">
                         Unit Kerja
                     </label>

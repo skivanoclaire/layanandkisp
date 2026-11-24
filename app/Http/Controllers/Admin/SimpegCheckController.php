@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\SimpegCheck;
 use App\Services\SimpegClient;
+use App\Support\JenisKelamin;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -545,6 +546,9 @@ class SimpegCheckController extends Controller
 
         $allRoles = \App\Models\Role::orderBy('display_name')->get(['id', 'name', 'display_name']);
 
+        // Jenis kelamin: field SIMPEG bila ada, lalu digit NIP, lalu digit NIK.
+        $jenisKelamin = JenisKelamin::dariData($data, $data['nip'] ?? $user->nip, $nik ?: $user->nik);
+
         return response()->json([
             'success' => true,
             'roles' => $allRoles->map(fn ($r) => [
@@ -560,10 +564,13 @@ class SimpegCheckController extends Controller
                 'email'    => $cleanEmail,
                 'jabatan'  => $jabatanText,
                 'instansi' => $instansiText,
+                'jenis_kelamin'           => $jenisKelamin,
+                'jenis_kelamin_label'     => JenisKelamin::label($jenisKelamin),
                 'matched_unit_kerja_id'   => $matchedUnitKerja->id ?? null,
                 'matched_unit_kerja_nama' => $matchedUnitKerja->nama ?? null,
             ],
             'current' => [
+                'jenis_kelamin'   => $user->jenis_kelamin,
                 'nip'             => $user->nip,
                 'name'            => $user->name,
                 'phone'           => $user->phone,
@@ -584,8 +591,9 @@ class SimpegCheckController extends Controller
     {
         $validated = $request->validate([
             'fields'   => ['required', 'array', 'min:1'],
-            'fields.*' => ['in:nik,nip,name,phone,email,jabatan,unit_kerja,roles'],
+            'fields.*' => ['in:nik,nip,name,phone,email,jabatan,unit_kerja,jenis_kelamin,roles'],
             'nik'      => ['nullable', new NikIndonesia()],
+            'jenis_kelamin' => ['nullable', 'string', 'max:20'],
             'nip'      => ['nullable', 'string', 'max:20'],
             'name'     => ['nullable', 'string', 'max:255'],
             'phone'    => ['nullable', 'string', 'max:20'],
@@ -693,6 +701,13 @@ class SimpegCheckController extends Controller
                     if (!empty($validated['unit_kerja_id'])) {
                         $user->unit_kerja_id = $validated['unit_kerja_id'];
                         $updated[] = 'Unit Kerja';
+                    }
+                    break;
+                case 'jenis_kelamin':
+                    $jk = JenisKelamin::normalisasi($validated['jenis_kelamin'] ?? null);
+                    if ($jk !== null) {
+                        $user->jenis_kelamin = $jk;
+                        $updated[] = 'Jenis Kelamin';
                     }
                     break;
                 case 'roles':

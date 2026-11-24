@@ -71,6 +71,19 @@
                     placeholder="16 digit NIK (bukan NIP)">
             </div>
 
+            <!-- Jenis Kelamin -->
+            <div class="mb-4">
+                <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
+                <select name="jenis_kelamin" id="jenis_kelamin"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500">
+                    <option value="">-- Belum diisi --</option>
+                    @foreach(\App\Support\JenisKelamin::PILIHAN as $nilai => $label)
+                        <option value="{{ $nilai }}" {{ old('jenis_kelamin', $user->jenis_kelamin) === $nilai ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-gray-500">Terisi otomatis saat sinkron SIMPEG (NIK/NIP)</p>
+            </div>
+
             <!-- Phone -->
             <div class="mb-4">
                 <label for="phone" class="block text-sm font-medium text-gray-700">Nomor HP / WA</label>

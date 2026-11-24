@@ -29,7 +29,7 @@ class PresensiKegiatanExport extends StringValueBinder implements WithCustomValu
 
     public function headings(): array
     {
-        return ['No', 'Nama', 'NIP', 'Jabatan', 'Instansi', 'No. HP', 'Email', 'Konfirmasi', 'Waktu Konfirmasi', 'Catatan', 'Hadir', 'Waktu Hadir', 'Sumber Data'];
+        return ['No', 'Nama', 'NIP', 'Jenis Kelamin', 'Jabatan', 'Instansi', 'No. HP', 'Email', 'Konfirmasi', 'Waktu Konfirmasi', 'Catatan', 'Hadir', 'Waktu Hadir', 'Sumber Data'];
     }
 
     public function map($p): array
@@ -38,6 +38,7 @@ class PresensiKegiatanExport extends StringValueBinder implements WithCustomValu
             ++$this->no,
             $p->nama,
             $p->nip,
+            \App\Support\JenisKelamin::label($p->jenis_kelamin),
             $p->jabatan,
             $p->instansi,
             $p->no_hp,

@@ -6,6 +6,7 @@ use App\Rules\NikIndonesia;
 use App\Models\Request as UserRequest;
 use App\Models\User;
 use App\Services\FonnteWhatsappService;
+use App\Support\JenisKelamin;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -241,6 +242,7 @@ class AdminController extends Controller
             'nip'      => ['nullable','string','max:20'],
             'nik'      => ['nullable', new NikIndonesia()],
             'phone'    => ['nullable','string','max:20'],
+            'jenis_kelamin' => ['nullable', Rule::in(array_keys(JenisKelamin::PILIHAN))],
             'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
             'password' => ['nullable','string','min:8','confirmed'],
         ]);
@@ -264,6 +266,7 @@ class AdminController extends Controller
         $user->nip   = $validated['nip']   ?? null;
         $user->nik   = $validated['nik']   ?? null;
         $user->phone = $validated['phone'] ?? null;
+        $user->jenis_kelamin = $validated['jenis_kelamin'] ?? null;
         $user->unit_kerja_id = $validated['unit_kerja_id'] ?? null;
 
         if (!empty($validated['password'])) {
@@ -301,6 +304,7 @@ class AdminController extends Controller
             'nip'      => ['required', 'string', 'max:20'],
             'nik'      => ['required', new NikIndonesia()],
             'phone'    => ['required', 'string', 'max:20'],
+            'jenis_kelamin' => ['nullable', Rule::in(array_keys(JenisKelamin::PILIHAN))],
             'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'roles'    => ['required', 'array', 'min:1'],
@@ -326,6 +330,7 @@ class AdminController extends Controller
             'nip'      => $validated['nip'],
             'nik'      => $validated['nik'],
             'phone'    => $validated['phone'],
+            'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
             'unit_kerja_id' => $validated['unit_kerja_id'] ?? null,
             'password' => Hash::make($validated['password']),
             'role'     => $legacyRole, // Set based on selected roles

@@ -44,6 +44,7 @@ class ProfileController extends Controller
             'email' => ['required', 'email', 'max:255'],
             'nip' => ['nullable', 'string', 'max:20'],
             'nik' => ['nullable', new NikIndonesia()],
+            'jenis_kelamin' => ['nullable', 'in:laki-laki,perempuan'],
             'phone' => ['nullable', 'string', 'max:20'],
             'unit_kerja_id' => ['nullable', 'exists:unit_kerjas,id'],
 
@@ -57,6 +58,7 @@ class ProfileController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
+            'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
         ]);
 
         // NIP dan NIK hanya bisa diupdate jika:
@@ -191,6 +193,8 @@ class ProfileController extends Controller
             'unit_kerja_id' => $canEditLocked,
         ];
 
+        $jenisKelamin = \App\Support\JenisKelamin::dariData($data, $data['nip'] ?? $user->nip, $simpegNik ?: $user->nik);
+
         return response()->json([
             'success' => true,
             'matched_by' => $matchedBy,
@@ -199,6 +203,8 @@ class ProfileController extends Controller
                 'nik'      => $simpegNik,
                 'nip'      => $data['nip'] ?? null,
                 'nama'     => $data['nama'] ?? null,
+                'jenis_kelamin'       => $jenisKelamin,
+                'jenis_kelamin_label' => \App\Support\JenisKelamin::label($jenisKelamin),
                 'telepon'  => $data['telepon'] ?? null,
                 'email'    => $data['email'] ?? null,
                 'jabatan'  => $data['jabatan'] ?? null,
@@ -209,6 +215,7 @@ class ProfileController extends Controller
             'current' => [
                 'nik'   => $user->nik,
                 'nip'   => $user->nip,
+                'jenis_kelamin' => $user->jenis_kelamin,
                 'name'  => $user->name,
                 'phone' => $user->phone,
                 'email' => $user->email,
@@ -226,8 +233,9 @@ class ProfileController extends Controller
     {
         $validated = $request->validate([
             'fields'   => ['required', 'array', 'min:1'],
-            'fields.*' => ['in:name,email,phone,jabatan,nip,nik,unit_kerja'],
+            'fields.*' => ['in:name,email,phone,jabatan,nip,nik,unit_kerja,jenis_kelamin'],
             'nip'      => ['nullable', 'string', 'max:20'],
+            'jenis_kelamin' => ['nullable', 'string', 'max:20'],
             'name'     => ['nullable', 'string', 'max:255'],
             'phone'    => ['nullable', 'string', 'max:20'],
             'email'    => ['nullable', 'email', 'max:255'],
@@ -305,6 +313,13 @@ class ProfileController extends Controller
                     if (!empty($validated['unit_kerja_id'])) {
                         $user->unit_kerja_id = $validated['unit_kerja_id'];
                         $updated[] = 'Unit Kerja';
+                    }
+                    break;
+                case 'jenis_kelamin':
+                    $jk = \App\Support\JenisKelamin::normalisasi($validated['jenis_kelamin'] ?? null);
+                    if ($jk !== null) {
+                        $user->jenis_kelamin = $jk;
+                        $updated[] = 'Jenis Kelamin';
                     }
                     break;
                 case 'jabatan':

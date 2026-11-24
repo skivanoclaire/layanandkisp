@@ -164,7 +164,7 @@
                                         <span class="text-[10px] font-semibold bg-purple-50 text-purple-700 rounded px-1.5">panitia</span>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 text-xs">{{ $p->instansi }}</td>
+                                <td class="px-3 py-2 text-xs">{{ $p->instansi }} @if($p->jenis_kelamin)<span class="text-gray-400">· {{ \App\Support\JenisKelamin::label($p->jenis_kelamin) }}</span>@endif</td>
                                 <td class="px-3 py-2 text-xs whitespace-nowrap">
                                     @if($p->konfirmasi === 'hadir')
                                         <span class="text-blue-700 font-semibold">Di lokasi</span>
@@ -227,6 +227,12 @@
                     @csrf
                     <input name="nama" value="{{ old('nama') }}" required placeholder="Nama lengkap *" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <input name="nip" value="{{ old('nip') }}" placeholder="NIP" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <select name="jenis_kelamin" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                        <option value="">Jenis kelamin *</option>
+                        @foreach(\App\Support\JenisKelamin::PILIHAN as $nilaiJk => $labelJk)
+                            <option value="{{ $nilaiJk }}" @selected(old('jenis_kelamin') === $nilaiJk)>{{ $labelJk }}</option>
+                        @endforeach
+                    </select>
                     <input name="jabatan" value="{{ old('jabatan') }}" placeholder="Jabatan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <input name="instansi" value="{{ old('instansi') }}" required list="admin-instansi" placeholder="Instansi *" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <datalist id="admin-instansi">@foreach($unitKerjas as $uk)<option value="{{ $uk }}">@endforeach</datalist>

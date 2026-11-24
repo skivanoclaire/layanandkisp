@@ -18,6 +18,7 @@ class PresensiKegiatanPeserta extends Model
         'user_id',
         'nama',
         'nip',
+        'jenis_kelamin',
         'jabatan',
         'unit_kerja_id',
         'instansi',

@@ -69,6 +69,7 @@
                         <td>
                             {{ $p->nama }}
                             @if($p->nip)<br><span class="kecil">NIP. {{ $p->nip }}</span>@endif
+                            @if($p->jenis_kelamin)<br><span class="kecil">{{ \App\Support\JenisKelamin::label($p->jenis_kelamin) }}</span>@endif
                         </td>
                         <td>{{ $p->jabatan ?: '-' }}</td>
                         <td>
@@ -115,6 +116,7 @@
                         <td>
                             {{ $p->nama }}
                             @if($p->nip)<br><span class="kecil">NIP. {{ $p->nip }}</span>@endif
+                            @if($p->jenis_kelamin)<br><span class="kecil">{{ \App\Support\JenisKelamin::label($p->jenis_kelamin) }}</span>@endif
                         </td>
                         <td>{{ $p->instansi }}</td>
                         <td>{{ $p->no_hp }}</td>

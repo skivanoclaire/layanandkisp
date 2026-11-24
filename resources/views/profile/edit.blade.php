@@ -83,6 +83,18 @@
                 @endif
             </div>
 
+            <!-- Jenis Kelamin -->
+            <div class="mb-4">
+                <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
+                <select name="jenis_kelamin" id="jenis_kelamin"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                    <option value="">-- Belum diisi --</option>
+                    @foreach(\App\Support\JenisKelamin::PILIHAN as $nilai => $label)
+                        <option value="{{ $nilai }}" {{ old('jenis_kelamin', auth()->user()->jenis_kelamin) === $nilai ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <!-- Nomor HP / WA -->
             <div class="mb-4">
                 <label for="phone" class="block text-sm font-medium text-gray-700">Nomor HP / WA</label>
@@ -284,6 +296,7 @@
                 { key: 'email',         label: 'Email',       simpegVal: simpeg.email,    currentVal: current.email },
                 { key: 'phone',         label: 'Nomor HP',    simpegVal: simpeg.telepon,  currentVal: current.phone },
                 { key: 'jabatan',       label: 'Jabatan',     simpegVal: simpeg.jabatan,  currentVal: current.jabatan },
+                { key: 'jenis_kelamin', label: 'Jenis Kelamin', simpegVal: simpeg.jenis_kelamin_label, currentVal: ({'laki-laki':'Laki-laki','perempuan':'Perempuan'})[current.jenis_kelamin] ?? null },
                 { key: 'unit_kerja',    label: 'Unit Kerja',  simpegVal: simpeg.instansi, currentVal: current.unit_kerja_nama,
                   extra: simpeg.matched_unit_kerja_id ? '<span class="text-xs text-green-700">✓ Cocok dengan Master Data</span>' : '<span class="text-xs text-yellow-700">⚠ Tidak cocok dengan Master Data</span>' },
             ];
@@ -374,6 +387,7 @@
                     jabatan:  lastSimpeg.jabatan,
                     instansi: lastSimpeg.instansi,
                     unit_kerja_id: lastSimpeg.matched_unit_kerja_id,
+                    jenis_kelamin: lastSimpeg.jenis_kelamin,
                 };
                 const res = await fetch('{{ route('profile.simpeg.apply') }}', {
                     method: 'POST',

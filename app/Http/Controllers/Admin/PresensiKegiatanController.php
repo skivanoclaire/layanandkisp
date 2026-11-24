@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PresensiKegiatan;
 use App\Models\PresensiKegiatanPeserta;
 use App\Models\UnitKerja;
+use App\Support\JenisKelamin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -139,12 +140,14 @@ class PresensiKegiatanController extends Controller
             'jabatan' => 'nullable|string|max:255',
             'instansi' => 'required|string|max:255',
             'no_hp' => 'required|digits_between:9,15',
+            'jenis_kelamin' => 'required|in:' . implode(',', array_keys(JenisKelamin::PILIHAN)),
             'hadir' => 'nullable|boolean',
         ]);
 
         $kegiatan->peserta()->create([
             'nama' => trim($data['nama']),
             'nip' => $data['nip'],
+            'jenis_kelamin' => $data['jenis_kelamin'],
             'jabatan' => $data['jabatan'] ?? null,
             'instansi' => trim($data['instansi']),
             'unit_kerja_id' => UnitKerja::where('nama', trim($data['instansi']))->value('id'),
