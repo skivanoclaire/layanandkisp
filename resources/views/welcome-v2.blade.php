@@ -59,9 +59,8 @@
     <div class="v2">
         {{-- Hero: langit malam hutan Kalimantan, pola ukir Dayak, dan enggang terbang --}}
         <section class="v2-hero">
-            <div class="v2-pola" aria-hidden="true"></div>
             <div class="v2-glow" aria-hidden="true"></div>
-            <img class="v2-motif" src="{{ asset('images/motif-dayak.svg') }}" alt="" aria-hidden="true">
+            <img class="v2-mehndi" src="{{ asset('images/pola-mehndi.webp') }}" alt="" aria-hidden="true">
 
             <div class="v2-enggang-jalur" aria-hidden="true">
                 <div class="v2-enggang-goyang">
@@ -188,13 +187,13 @@
                 radial-gradient(700px 400px at -10% 110%, rgba(245, 197, 66, .18), transparent 60%),
                 linear-gradient(165deg, #04130f 0%, #0b3d2e 55%, #072a3a 100%);
         }
-        .v2-pola {
-            position: absolute; inset: 0; opacity: .14; pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23f5c542' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M12 48 C12 26 34 14 46 26 C58 38 46 56 34 48 C25 42 29 30 37 33'/%3E%3Cpath d='M84 12 L96 12 M48 84 C60 72 72 84 84 72'/%3E%3Ccircle cx='76' cy='34' r='5'/%3E%3Cpath d='M0 0 L8 8 M88 0 L96 8'/%3E%3C/g%3E%3C/svg%3E");
-            background-size: 96px 96px;
-            -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 95%);
-                    mask-image: linear-gradient(180deg, #000 0%, transparent 95%);
+        /* Ornamen mehndi (dari desain/illustration-mehndi-ornament.zip): satu sudut dekoratif di hero, bukan ubin berulang */
+        .v2-mehndi {
+            position: absolute; right: -4%; top: -6%; width: min(560px, 62%); height: auto;
+            transform: scaleX(-1); opacity: .2; pointer-events: none;
         }
+        @media (max-width: 767px) { .v2-mehndi { opacity: .12; width: 75%; right: -20%; top: -2%; } }
+
         .v2-glow {
             position: absolute; width: 520px; height: 520px; right: -140px; top: -160px; border-radius: 50%;
             background: radial-gradient(circle, rgba(52, 211, 153, .28), transparent 65%);
@@ -203,13 +202,6 @@
         @keyframes v2-napas { 0%, 100% { transform: scale(1); opacity: .8; } 50% { transform: scale(1.12); opacity: 1; } }
 
         /* Enggang: terbang melintasi hero, sayap dikepak, badan naik-turun */
-        /* Motif ukiran Dayak (gambar ulang) sebagai panel dekoratif di sisi kanan */
-        .v2-motif {
-            position: absolute; right: 2%; top: 50%; height: 88%; width: auto; max-width: 42%;
-            transform: translateY(-50%); opacity: .22; pointer-events: none;
-            filter: drop-shadow(0 0 18px rgba(52, 211, 153, .35));
-        }
-        @media (max-width: 767px) { .v2-motif { opacity: .1; right: -20%; height: 70%; } }
 
         .v2-enggang-jalur {
             position: absolute; top: 9%; left: 0; width: 100%; pointer-events: none;
