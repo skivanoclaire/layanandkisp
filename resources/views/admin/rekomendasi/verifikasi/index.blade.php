@@ -81,7 +81,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status Usulan</label>
                     <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Semua Status</option>
+                        <option value="">Semua Status (selain draft)</option>
                         <option value="diajukan" {{ request('status') === 'diajukan' ? 'selected' : '' }}>Diajukan</option>
                         <option value="diproses" {{ request('status') === 'diproses' ? 'selected' : '' }}>Diproses</option>
                         <option value="perlu_revisi" {{ request('status') === 'perlu_revisi' ? 'selected' : '' }}>Perlu Revisi</option>

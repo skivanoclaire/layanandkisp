@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Permohonan Pertimbangan - {{ $proposal->ticket_number }}</title>
     <style>
+        /* Dokumen resmi: hitam, putih, abu-abu. Tanpa warna. */
+        @page {
+            margin: 2.6cm 2.4cm 3cm 2.4cm;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,360 +18,304 @@
 
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 10pt;
-            line-height: 1.6;
-            color: #333;
-            padding: 40px 50px;
+            font-size: 9.5pt;
+            line-height: 1.5;
+            color: #111;
+            margin: 2.6cm 2.4cm 3cm 2.4cm;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 10px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #2563eb;
-            position: relative;
+        /* Kop surat */
+        table.kop {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .logo-section {
-            text-align: center;
-            margin-top: 15px;
-            margin-bottom: 25px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        .kop td {
+            border: none;
+            vertical-align: middle;
+            padding: 0;
         }
 
-        .logo-section img {
-            width: 300px;
+        .kop-logo {
+            width: 70px;
+        }
+
+        .kop-logo img {
+            width: 58px;
             height: auto;
-            display: block;
-            margin: 0 auto 15px auto;
         }
 
-        .logo-section .province-name {
-            font-size: 14pt;
-            font-weight: bold;
-            color: #000;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .kop-teks {
+            text-align: center;
+            padding-right: 70px;
         }
 
-        .header h1 {
-            font-size: 16pt;
-            color: #1e40af;
-            margin-bottom: 8px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .header h2 {
-            font-size: 13pt;
-            color: #3b82f6;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .header h3 {
-            font-size: 11pt;
-            color: #1e40af;
-            margin-bottom: 10px;
-            font-weight: normal;
-        }
-
-        .header .subtitle {
-            font-size: 9pt;
-            color: #666;
-        }
-
-        .info-box {
-            background-color: #f0f9ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-
-        .info-box h3 {
+        .kop-1 {
             font-size: 12pt;
-            color: #1e40af;
-            margin-bottom: 8px;
-            border-bottom: 2px solid #3b82f6;
-            padding-bottom: 4px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .kop-2 {
+            font-size: 10.5pt;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .kop-3 {
+            font-size: 8.5pt;
+            color: #444;
+            margin-top: 2px;
+        }
+
+        .kop-garis {
+            border-top: 2.5px solid #000;
+            border-bottom: 0.8px solid #000;
+            height: 3px;
+            margin: 8px 0 14px 0;
+        }
+
+        /* Judul dokumen */
+        .judul-dokumen {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .judul-1 {
+            font-size: 11.5pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .judul-2 {
+            font-size: 10pt;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        table.meta {
+            width: 100%;
+            margin-top: 10px;
+            font-size: 9pt;
+            border-collapse: collapse;
+        }
+
+        table.meta td {
+            padding: 2px 4px;
+            border: none;
+            text-align: left;
+        }
+
+        /* Seksi */
+        .section {
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-size: 10pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: #e6e6e6;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 5px 8px;
+            margin-bottom: 10px;
+        }
+
+        .subsection {
+            margin-bottom: 10px;
+        }
+
+        .subsection-title {
+            page-break-after: avoid;
+            font-size: 9.5pt;
+            font-weight: bold;
+            margin-bottom: 4px;
+            border-bottom: 0.5px solid #888;
+            padding-bottom: 2px;
+        }
+
+        .content {
+            text-align: justify;
+            margin-bottom: 6px;
+            padding-left: 4px;
+        }
+
+        /* Info dasar: tabel label-nilai dengan garis tipis */
+        .info-box {
+            border: 0.8px solid #888;
+            padding: 8px 10px;
+            margin-bottom: 10px;
         }
 
         .info-row {
             display: table;
             width: 100%;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .info-label {
             display: table-cell;
-            width: 35%;
+            width: 32%;
             font-weight: bold;
-            color: #555;
+            color: #333;
             padding-right: 10px;
         }
 
         .info-value {
             display: table-cell;
-            width: 65%;
+            width: 68%;
         }
 
-        .section {
-            margin-bottom: 20px;
+        /* Tabel umum dan isi rich text */
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .section-title {
-            font-size: 13pt;
+        .rich table th,
+        .rich table td {
+            border: 0.6px solid #888;
+            padding: 4px 6px;
+            font-size: 9pt;
+            vertical-align: top;
+        }
+
+        .rich table th {
+            background-color: #e6e6e6;
             font-weight: bold;
-            color: #1e40af;
-            background-color: #dbeafe;
-            padding: 8px 12px;
-            margin-bottom: 12px;
-            border-left: 4px solid #2563eb;
         }
 
-        .subsection {
-            margin-bottom: 12px;
+        .rich p {
+            margin-bottom: 4px;
         }
 
-        .subsection-title {
-            font-size: 11pt;
-            font-weight: bold;
-            color: #374151;
-            margin-bottom: 6px;
+        .rich ul,
+        .rich ol {
+            margin: 4px 0 6px 18px;
         }
 
-        .content {
-            text-align: justify;
-            margin-bottom: 8px;
-            padding-left: 5px;
+        .rich h1,
+        .rich h2,
+        .rich h3,
+        .rich h4 {
+            font-size: 10pt;
+            margin: 6px 0 4px 0;
         }
 
+        /* Manajemen risiko */
         .risk-item {
-            background-color: #fef3c7;
-            border: 1px solid #fbbf24;
-            border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 12px;
+            border: 0.8px solid #888;
+            padding: 8px 10px;
+            margin-bottom: 10px;
             page-break-inside: avoid;
         }
 
         .risk-header {
             font-weight: bold;
-            color: #92400e;
-            margin-bottom: 8px;
-            font-size: 11pt;
+            border-bottom: 0.5px solid #888;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .risk-detail {
-            margin-bottom: 6px;
-            font-size: 9pt;
+            margin-bottom: 4px;
         }
 
         .risk-label {
             font-weight: bold;
-            color: #78350f;
         }
 
         .badge {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 8pt;
+            padding: 1px 7px;
+            border: 0.8px solid #000;
+            font-size: 8.5pt;
             font-weight: bold;
+            background-color: #fff;
+            color: #000;
         }
 
         .badge-high {
-            background-color: #fee2e2;
-            color: #991b1b;
+            background-color: #000;
+            color: #fff;
         }
 
         .badge-medium {
-            background-color: #fef3c7;
-            color: #92400e;
+            background-color: #777;
+            color: #fff;
+            border-color: #777;
         }
 
         .badge-low {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 8pt;
-            color: #666;
-            padding: 10px;
-            border-top: 1px solid #e5e7eb;
+            background-color: #e6e6e6;
+            color: #000;
         }
 
         .page-break {
             page-break-after: always;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
+        /* Pengesahan */
+        table.pengesahan {
+            margin-top: 24px;
+            page-break-inside: avoid;
         }
 
-        table td {
-            padding: 4px;
+        table.pengesahan td {
+            width: 50%;
+            border: none;
             vertical-align: top;
+            text-align: center;
+            font-size: 9.5pt;
         }
 
-        ul {
-            margin-left: 20px;
-            margin-bottom: 8px;
+        .ttd-ruang {
+            height: 62px;
         }
 
-        li {
-            margin-bottom: 4px;
-        }
-
-        /* Isi rich text dari editor (paragraf, penomoran, butir, heading, tabel) */
-        .rich p,
-        .rich div,
-        .rich blockquote {
-            margin-bottom: 6px;
-        }
-
-        .rich h1,
-        .rich h2,
-        .rich h3,
-        .rich h4,
-        .rich h5,
-        .rich h6 {
+        .ttd-nama {
             font-weight: bold;
-            color: #1f2937;
-            text-align: left;
-            margin-top: 8px;
-            margin-bottom: 4px;
-            page-break-after: avoid;
-        }
-
-        .rich h1,
-        .rich h2 {
-            font-size: 11.5pt;
-        }
-
-        .rich h3 {
-            font-size: 10.5pt;
-        }
-
-        .rich h4,
-        .rich h5,
-        .rich h6 {
-            font-size: 10pt;
-        }
-
-        .rich ul,
-        .rich ol {
-            margin: 0 0 6px 0;
-            padding-left: 22px;
-        }
-
-        .rich ul {
-            list-style-type: disc;
-        }
-
-        .rich ol {
-            list-style-type: decimal;
-        }
-
-        .rich ul ul {
-            list-style-type: circle;
-        }
-
-        .rich ul ul ul {
-            list-style-type: square;
-        }
-
-        .rich li {
-            margin-bottom: 3px;
-        }
-
-        .rich li ul,
-        .rich li ol {
-            margin-top: 3px;
-            margin-bottom: 0;
-        }
-
-        .rich li p {
-            margin-bottom: 3px;
-        }
-
-        .rich blockquote {
-            padding-left: 10px;
-            border-left: 3px solid #cbd5e1;
-            color: #4b5563;
-        }
-
-        .rich a {
-            color: #1d4ed8;
             text-decoration: underline;
         }
 
-        .rich hr {
-            border: 0;
-            border-top: 1px solid #d1d5db;
-            margin: 8px 0;
-        }
-
-        .rich table {
-            margin: 4px 0 8px 0;
-            font-size: 9pt;
-            text-align: left;
-        }
-
-        .rich th,
-        .rich td {
-            border: 1px solid #9ca3af;
-            padding: 4px 6px;
-        }
-
-        .rich th {
-            background-color: #e5e7eb;
-            font-weight: bold;
-        }
-
-        .rich td p,
-        .rich th p {
-            margin-bottom: 2px;
+        .ttd-nip {
+            font-size: 8.5pt;
+            color: #333;
         }
     </style>
 </head>
 <body>
-    {{-- Footer (position: fixed) ditaruh paling awal agar tercetak di semua halaman --}}
-    <div class="footer">
-        Dokumen ini digenerate secara otomatis oleh Sistem E-Layanan DKISP<br>
-        {{ now()->format('d F Y H:i:s') }}
-    </div>
+    <!-- Kop surat -->
+    <table class="kop">
+        <tr>
+            <td class="kop-logo">@if($logoBase64)<img src="data:image/png;base64,{{ $logoBase64 }}" alt="Logo">@endif</td>
+            <td class="kop-teks">
+                <div class="kop-1">PEMERINTAH PROVINSI KALIMANTAN UTARA</div>
+                <div class="kop-2">DINAS KOMUNIKASI, INFORMATIKA, STATISTIK DAN PERSANDIAN</div>
+                <div class="kop-3">E-Layanan Digital DKISP Kalimantan Utara</div>
+            </td>
+        </tr>
+    </table>
+    <div class="kop-garis"></div>
 
-    <!-- Header -->
-    <div class="header">
-        <h1>Permohonan Pertimbangan Pembangunan Aplikasi</h1>
-        <h2>{{ $proposal->nama_aplikasi }}</h2>
-        <h3>Pemerintah Provinsi Kalimantan Utara</h3>
-        <div class="subtitle">
-            {{ $proposal->ticket_number }} | {{ $proposal->created_at->format('d F Y') }}
-        </div>
-    </div>
-
-    <!-- Logo -->
-    <div class="logo-section">
-        <img src="data:image/png;base64,{{ $logoBase64 }}" alt="Logo Kaltara">
-        <div class="province-name">PEMERINTAH PROVINSI KALIMANTAN UTARA</div>
+    <!-- Judul dokumen -->
+    <div class="judul-dokumen">
+        <div class="judul-1">Permohonan Pertimbangan Pembangunan Aplikasi</div>
+        <div class="judul-2">{{ $proposal->nama_aplikasi }}</div>
+        <table class="meta">
+            <tr>
+                <td style="width: 16%">Nomor Tiket</td>
+                <td style="width: 2%">:</td>
+                <td style="width: 34%">{{ $proposal->ticket_number }}</td>
+                <td style="width: 26%; white-space: nowrap;">Tanggal Pengajuan</td>
+                <td style="width: 2%">:</td>
+                <td>{{ $proposal->created_at->translatedFormat('d F Y') }}</td>
+            </tr>
+        </table>
     </div>
 
     {{-- Halaman pertama khusus sampul --}}
-    <div class="page-break"></div>
 
     <!-- Informasi Dasar -->
     <div class="section">
@@ -759,5 +708,23 @@
         @endforelse
     </div>
     @endif
+
+    <!-- Pengesahan -->
+    <table class="pengesahan">
+        <tr>
+            <td>
+                Pemohon,
+                <div class="ttd-ruang"></div>
+                <div class="ttd-nama">{{ $proposal->user?->name ?: '................................' }}</div>
+                <div class="ttd-nip">NIP. {{ $proposal->user?->nip ?: '................................' }}</div>
+            </td>
+            <td>
+                Diverifikasi oleh,
+                <div class="ttd-ruang"></div>
+                <div class="ttd-nama">{{ $proposal->verifikasi?->verifikator?->name ?: '................................' }}</div>
+                <div class="ttd-nip">Tanggal: ........................</div>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>

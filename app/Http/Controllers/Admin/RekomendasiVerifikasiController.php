@@ -27,8 +27,8 @@ class RekomendasiVerifikasiController extends Controller
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         } else {
-            // Default: show proposals that are submitted, need revision, being processed, or approved
-            $query->whereIn('status', ['diajukan', 'perlu_revisi', 'diproses', 'disetujui']);
+            // Default ("Semua Status"): semua usulan yang sudah diajukan (draft tidak ditampilkan)
+            $query->whereIn('status', ['diajukan', 'perlu_revisi', 'diproses', 'disetujui', 'ditolak']);
         }
 
         // Filter by verification status
@@ -738,6 +738,25 @@ class RekomendasiVerifikasiController extends Controller
     /**
      * Export proposal detail to PDF.
      */
+    /** Footer tiap halaman: garis tipis, identitas dokumen di kiri, nomor halaman di kanan. */
+    private function tambahFooterHalaman(\Dompdf\Dompdf $dompdf, string $ticket): void
+    {
+        $canvas = $dompdf->getCanvas();
+        $metrics = $dompdf->getFontMetrics();
+        $font = $metrics->getFont('DejaVu Sans', 'normal');
+        $ukuran = 7.5;
+        $warna = [0.3, 0.3, 0.3];
+
+        $lebarMax = $canvas->get_width();
+        $y = $canvas->get_height() - 58;
+        $teksKanan = 'Halaman {PAGE_NUM} dari {PAGE_COUNT}';
+        $lebarKanan = $metrics->getTextWidth('Halaman 99 dari 99', $font, $ukuran);
+
+        $canvas->line(84, $y - 8, $lebarMax - 84, $y - 8, [0.5, 0.5, 0.5], 0.5);
+        $canvas->page_text(84, $y, 'E-Layanan DKISP Kalimantan Utara · ' . $ticket . ' · ' . now()->format('d/m/Y H:i'), $font, $ukuran, $warna);
+        $canvas->page_text($lebarMax - 84 - $lebarKanan, $y, $teksKanan, $font, $ukuran, $warna);
+    }
+
     public function exportPdf($id)
     {
         try {
@@ -760,12 +779,9 @@ class RekomendasiVerifikasiController extends Controller
             // Create DomPDF instance
             $dompdf = new Dompdf($options);
 
-            // Encode logo as base64 for PDF embedding
+            // Logo kop memakai warna asli
             $logoPath = public_path('logokaltarafix.png');
-            $logoBase64 = '';
-            if (file_exists($logoPath)) {
-                $logoBase64 = base64_encode(file_get_contents($logoPath));
-            }
+            $logoBase64 = is_file($logoPath) ? base64_encode(file_get_contents($logoPath)) : '';
 
             // Load HTML content from view
             $html = view('admin.rekomendasi.verifikasi.pdf', compact('proposal', 'logoBase64'))->render();
@@ -776,6 +792,9 @@ class RekomendasiVerifikasiController extends Controller
 
             // Render PDF
             $dompdf->render();
+
+            // Footer halaman: nomor halaman dan identitas dokumen
+            $this->tambahFooterHalaman($dompdf, $proposal->ticket_number);
 
             // Generate filename
             $filename = 'Usulan_Rekomendasi_' . $proposal->ticket_number . '.pdf';

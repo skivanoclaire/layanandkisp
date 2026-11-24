@@ -82,6 +82,19 @@ class KoreksiStatusDariVerifikasiTest extends TestCase
         $this->assertSame('ditolak', $usulan->refresh()->status);
     }
 
+    public function test_daftar_verifikasi_default_menampilkan_usulan_ditolak_tetapi_bukan_draft(): void
+    {
+        $ditolak = RekomendasiAplikasiForm::factory()->create(['status' => 'ditolak', 'nama_aplikasi' => 'Aplikasi Ditolak Uji']);
+        RekomendasiAplikasiForm::factory()->create(['status' => 'draft', 'nama_aplikasi' => 'Aplikasi Draft Uji']);
+
+        $this->actingAs($this->admin)->get(route('admin.rekomendasi.verifikasi.index'))
+            ->assertOk()
+            ->assertSee('Aplikasi Ditolak Uji')
+            ->assertDontSee('Aplikasi Draft Uji');
+
+        $this->assertSame('ditolak', $ditolak->status);
+    }
+
     public function test_tujuan_di_luar_aturan_ditolak(): void
     {
         $usulan = $this->usulanPerluRevisi();
