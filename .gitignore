@@ -59,3 +59,7 @@ index.nginx-debian.html
 
 # Tesis
 /tesis/
+
+# Dokumen lokal (rahasia / desain), jangan masuk repositori
+/audit/
+/desain/
