@@ -279,6 +279,10 @@
             text-decoration: underline;
         }
 
+        .ttd-tanggal {
+            margin-bottom: 6px;
+        }
+
         .ttd-nip {
             font-size: 8.5pt;
             color: #333;
@@ -713,16 +717,18 @@
     <table class="pengesahan">
         <tr>
             <td>
+                <div class="ttd-tanggal">&nbsp;</div>
                 Pemohon,
                 <div class="ttd-ruang"></div>
                 <div class="ttd-nama">{{ $proposal->user?->name ?: '................................' }}</div>
                 <div class="ttd-nip">NIP. {{ $proposal->user?->nip ?: '................................' }}</div>
             </td>
             <td>
+                <div class="ttd-tanggal">Tanggal: {{ $proposal->verifikasi?->tanggal_verifikasi?->translatedFormat('d F Y') ?: '........................' }}</div>
                 Diverifikasi oleh,
                 <div class="ttd-ruang"></div>
                 <div class="ttd-nama">{{ $proposal->verifikasi?->verifikator?->name ?: '................................' }}</div>
-                <div class="ttd-nip">Tanggal: ........................</div>
+                <div class="ttd-nip">NIP. {{ $proposal->verifikasi?->verifikator?->nip ?: '................................' }}</div>
             </td>
         </tr>
     </table>
