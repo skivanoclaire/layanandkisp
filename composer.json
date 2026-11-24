@@ -10,7 +10,7 @@
         "anhskohbo/no-captcha": "^3.7",
         "anthropic-ai/sdk": "^0.40.0",
         "doctrine/dbal": "^4.4",
-        "dompdf/dompdf": "^2.0",
+        "dompdf/dompdf": "^3",
         "firebase/php-jwt": "^6.11",
         "google/apiclient": "^2.16",
         "intervention/image": "^3.11",
