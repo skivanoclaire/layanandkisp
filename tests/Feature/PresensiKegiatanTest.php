@@ -63,6 +63,7 @@ class PresensiKegiatanTest extends TestCase
             'jabatan' => 'Pranata Komputer',
             'pilihan_instansi' => (string) $this->dkisp->id,
             'no_hp' => '+62 812-3456-7890',
+            'jenis_kelamin' => 'laki-laki',
         ];
     }
 

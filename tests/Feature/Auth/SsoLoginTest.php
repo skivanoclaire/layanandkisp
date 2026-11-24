@@ -58,14 +58,24 @@ class SsoLoginTest extends TestCase
         $this->assertNull($pemilikEmail->fresh()->nip);
     }
 
-    public function test_nip_yang_terlanjur_ganda_masuk_ke_akun_lama_bukan_akun_buatan_sso(): void
+    /**
+     * Sejak index unik pada users.nip (audit A-05), NIP ganda tidak bisa tersimpan lagi.
+     * Login SSO tetap masuk ke akun terverifikasi yang memegang NIP tersebut.
+     */
+    public function test_nip_tidak_bisa_ganda_dan_login_sso_masuk_ke_akun_terverifikasi(): void
     {
-        $duplikat = User::factory()->create([
+        $lama = User::factory()->create([
             'nip' => self::NIP,
-            'email' => 'baru@example.com',
-            'is_sso_user' => true,
+            'email' => 'lama@example.com',
             'is_verified' => true,
         ]);
+
+        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
+        User::factory()->create(['nip' => self::NIP, 'email' => 'baru@example.com', 'is_sso_user' => true, 'is_verified' => true]);
+    }
+
+    public function test_login_sso_masuk_ke_akun_terverifikasi_pemegang_nip(): void
+    {
         $lama = User::factory()->create([
             'nip' => self::NIP,
             'email' => 'lama@example.com',
@@ -74,7 +84,6 @@ class SsoLoginTest extends TestCase
 
         $this->loginSso(self::NIP, 'baru@example.com')->assertRedirect('/dashboard');
 
-        $this->assertTrue($duplikat->id < $lama->id);
         $this->assertAuthenticatedAs($lama);
     }
 

@@ -12,6 +12,9 @@ use Illuminate\Http\Request;
 
 class RekomendasiFasePengembanganController extends Controller
 {
+    /** Allowlist ekstensi dokumen fase (audit A-01): tidak ada skrip/HTML/SVG. */
+    private const EKSTENSI_DOKUMEN = 'pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,zip,rar,7z,vsdx,drawio';
+
     /**
      * Display all development phases for a proposal.
      */
@@ -56,6 +59,7 @@ class RekomendasiFasePengembanganController extends Controller
      */
     public function updateProgress(Request $request, $rekomendasiId, $faseId)
     {
+        $this->pastikanMilik($rekomendasiId);
         $request->validate([
             'progress_persen' => 'required|integer|min:0|max:100',
             'keterangan' => 'nullable|string|max:1000',
@@ -111,7 +115,7 @@ class RekomendasiFasePengembanganController extends Controller
         $request->validate([
             'jenis_dokumen' => 'required|string|max:100',
             'kategori' => 'required|in:dokumentasi,timeline,tim,pengembangan,instalasi,antarmuka,sosialisasi,serah_terima,testing',
-            'file' => 'required|file|max:10240', // 10MB max
+            'file' => 'required|file|mimes:' . self::EKSTENSI_DOKUMEN . '|max:10240', // 10MB max, audit A-01
             'keterangan' => 'nullable|string|max:500',
         ]);
 
@@ -124,7 +128,8 @@ class RekomendasiFasePengembanganController extends Controller
 
             // Store file
             $file = $request->file('file');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            // Nama berkas acak; ekstensi hanya dari allowlist (audit A-01).
+            $filename = \Illuminate\Support\Str::random(40) . '.' . \App\Support\SafeUpload::extension($file, explode(',', self::EKSTENSI_DOKUMEN), 'bin');
             $path = $file->storeAs('rekomendasi/fase-pengembangan', $filename, 'public');
 
             // Create document record
@@ -165,6 +170,7 @@ class RekomendasiFasePengembanganController extends Controller
      */
     public function deleteDokumen($rekomendasiId, $faseId, $dokumenId)
     {
+        $this->pastikanMilik($rekomendasiId);
         try {
             $dokumen = RekomendasiDokumenPengembangan::where('id', $dokumenId)
                 ->whereHas('fasePengembangan', function ($q) use ($rekomendasiId, $faseId) {
@@ -197,6 +203,7 @@ class RekomendasiFasePengembanganController extends Controller
      */
     public function createMilestone(Request $request, $rekomendasiId, $faseId)
     {
+        $this->pastikanMilik($rekomendasiId);
         $request->validate([
             'nama_milestone' => 'required|string|max:255',
             'target_tanggal' => 'required|date',
@@ -237,9 +244,10 @@ class RekomendasiFasePengembanganController extends Controller
      */
     public function updateMilestone(Request $request, $rekomendasiId, $faseId, $milestoneId)
     {
+        $this->pastikanMilik($rekomendasiId);
         $request->validate([
             'status' => 'required|in:not_started,in_progress,completed',
-            'file_bukti' => 'nullable|file|max:5120', // 5MB max
+            'file_bukti' => 'nullable|file|mimes:' . self::EKSTENSI_DOKUMEN . '|max:5120', // 5MB max, audit A-01
             'keterangan' => 'nullable|string|max:500',
         ]);
 
@@ -266,7 +274,7 @@ class RekomendasiFasePengembanganController extends Controller
                 }
 
                 $file = $request->file('file_bukti');
-                $filename = time() . '_' . $file->getClientOriginalName();
+                $filename = \Illuminate\Support\Str::random(40) . '.' . \App\Support\SafeUpload::extension($file, explode(',', self::EKSTENSI_DOKUMEN), 'bin');
                 $path = $file->storeAs('rekomendasi/milestone-bukti', $filename, 'public');
                 $updateData['file_bukti'] = $path;
             }
@@ -299,6 +307,7 @@ class RekomendasiFasePengembanganController extends Controller
      */
     public function deleteMilestone($rekomendasiId, $faseId, $milestoneId)
     {
+        $this->pastikanMilik($rekomendasiId);
         try {
             $milestone = RekomendasiMilestone::where('id', $milestoneId)
                 ->whereHas('fasePengembangan', function ($q) use ($rekomendasiId, $faseId) {
@@ -378,6 +387,7 @@ class RekomendasiFasePengembanganController extends Controller
      */
     public function deleteTeamMember($rekomendasiId, $teamId)
     {
+        $this->pastikanMilik($rekomendasiId);
         try {
             $member = RekomendasiTimPengembangan::where('id', $teamId)
                 ->where('rekomendasi_aplikasi_form_id', $rekomendasiId)
@@ -402,6 +412,7 @@ class RekomendasiFasePengembanganController extends Controller
      */
     public function markPhaseComplete($rekomendasiId, $faseId)
     {
+        $this->pastikanMilik($rekomendasiId);
         try {
             \DB::beginTransaction();
 
@@ -439,6 +450,20 @@ class RekomendasiFasePengembanganController extends Controller
     /**
      * Ensure all 5 development phases exist for the proposal.
      */
+    /**
+     * Audit A-07: perubahan fase, dokumen, milestone, dan tim hanya untuk pemilik usulan (atau admin).
+     */
+    private function pastikanMilik($rekomendasiId): void
+    {
+        $query = RekomendasiAplikasiForm::where('id', $rekomendasiId);
+
+        if (! auth()->user()?->hasRole('Admin')) {
+            $query->where('user_id', auth()->id());
+        }
+
+        $query->firstOrFail();
+    }
+
     private function ensureAllPhasesExist($proposal)
     {
         $phases = ['rancang_bangun', 'implementasi', 'uji_kelaikan', 'pemeliharaan', 'evaluasi'];

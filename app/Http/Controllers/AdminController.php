@@ -354,6 +354,35 @@ class AdminController extends Controller
         return view('admin.edit-user', compact('user', 'roles', 'unitKerjas'));
     }
 
+    /** Blokir akun: tidak bisa login (lokal maupun SSO) dan sesi aktifnya langsung dihentikan. */
+    public function blokirUser(HttpRequest $request, User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Anda tidak dapat memblokir akun sendiri.');
+        }
+
+        $alasan = trim((string) $request->input('reason', ''));
+
+        $user->forceFill([
+            'blocked_at' => now(),
+            'blocked_by' => auth()->id(),
+            'blocked_reason' => mb_substr($alasan !== '' ? $alasan : 'Diblokir oleh admin', 0, 255),
+        ])->save();
+
+        Log::warning('Akun diblokir oleh admin', ['user_id' => $user->id, 'oleh' => auth()->id(), 'alasan' => $user->blocked_reason]);
+
+        return back()->with('success', "Akun {$user->name} diblokir.");
+    }
+
+    public function bukaBlokirUser(User $user)
+    {
+        $user->forceFill(['blocked_at' => null, 'blocked_by' => null, 'blocked_reason' => null])->save();
+
+        Log::info('Blokir akun dibuka oleh admin', ['user_id' => $user->id, 'oleh' => auth()->id()]);
+
+        return back()->with('success', "Blokir akun {$user->name} dibuka.");
+    }
+
     public function destroyUser(User $user)
     {
         $user->delete();

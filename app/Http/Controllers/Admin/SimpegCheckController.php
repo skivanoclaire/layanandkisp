@@ -60,7 +60,7 @@ class SimpegCheckController extends Controller
             $api = $client->byNik($nik);
         } catch (\App\Exceptions\SimpegException $e) {
             Log::error('SIMPEG check failed', [
-                'nik'    => $nik,
+                'nik'    => SimpegClient::samarkan($nik),
                 'status' => $e->status,
                 'payload'=> $e->payload,
                 'msg'    => $e->getMessage(),
@@ -77,7 +77,7 @@ class SimpegCheckController extends Controller
 
             return back()->withInput()->with('flash_error', $msg);
         } catch (Throwable $e) {
-            Log::error('SIMPEG unknown error', ['nik'=>$nik, 'e'=>$e->getMessage()]);
+            Log::error('SIMPEG unknown error', ['nik' => SimpegClient::samarkan($nik), 'e'=>$e->getMessage()]);
             return back()->withInput()->with('flash_error', 'NIK Tidak ditemukan/Gangguan tidak terduga ke SIMPEG');
         }
 
@@ -97,7 +97,7 @@ class SimpegCheckController extends Controller
 
         // Log all available fields from SIMPEG for debugging
         Log::info('SIMPEG data fields', [
-            'nik' => $nik,
+            'nik' => SimpegClient::samarkan($nik),
             'available_fields' => array_keys($data)
         ]);
 
@@ -181,7 +181,7 @@ class SimpegCheckController extends Controller
                 'user_agent'       => (string)$request->header('User-Agent'),
             ]);
         } catch (Throwable $e) {
-            Log::warning('SIMPEG check log failed', ['nik' => $nik, 'e' => $e->getMessage()]);
+            Log::warning('SIMPEG check log failed', ['nik' => SimpegClient::samarkan($nik), 'e' => $e->getMessage()]);
         }
 
         $logs = SimpegCheck::with(['user','createdBy'])->latest()->take(10)->get();
@@ -398,7 +398,7 @@ class SimpegCheckController extends Controller
                 'target_user_id' => $user->id,
                 'nik_len_raw'    => mb_strlen((string) $user->nik),
                 'nik_digits_len' => strlen($nik),
-                'nik_digits'     => $nik,
+                'nik_digits'     => SimpegClient::samarkan($nik),
                 'api_response'   => $api,
             ]);
 
@@ -493,7 +493,7 @@ class SimpegCheckController extends Controller
         if (!$jabatanText || !$instansiText) {
             Log::info('SIMPEG: jabatan/instansi null for user', [
                 'user_id'     => $user->id,
-                'nik'         => $nik,
+                'nik'         => SimpegClient::samarkan($nik),
                 'data_keys'   => array_keys($data),
                 'jabatan_raw' => $data['jabatan'] ?? null,
                 'instansi_raw'=> $data['instansi'] ?? null,

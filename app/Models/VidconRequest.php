@@ -20,6 +20,9 @@ class VidconRequest extends Model
     ];
 
     protected $casts = [
+        // Audit A-25: meeting password disimpan terenkripsi.
+        'meeting_password' => 'encrypted',
+        'pemohon_meeting_password' => 'encrypted',
         'submitted_at' => 'datetime',
         'processing_at' => 'datetime',
         'completed_at' => 'datetime',

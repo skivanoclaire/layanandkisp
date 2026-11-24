@@ -35,7 +35,9 @@ class AccessController extends Controller
             404,
             'Tidak ada berkas unduhan untuk token ini. Gunakan parameter kanal yang diberikan DKISP.'
         );
-        abort_unless(Storage::disk('public')->exists($item->file_path), 404, 'Berkas data tidak ditemukan.');
+        // Audit A-03: berkas data disimpan di disk privat; disk publik hanya dipakai untuk berkas lama sebelum dipindahkan.
+        $disk = Storage::disk('local')->exists($item->file_path) ? 'local' : 'public';
+        abort_unless(Storage::disk($disk)->exists($item->file_path), 404, 'Berkas data tidak ditemukan.');
 
         $item->recordDownload(auth()->user());
         $item->dataRequest?->accountRequest?->touchUsage();
@@ -47,7 +49,7 @@ class AccessController extends Controller
             'Data diunduh melalui token akses'
         );
 
-        return Storage::disk('public')->download(
+        return Storage::disk($disk)->download(
             $item->file_path,
             $item->nama_berkas ?: basename($item->file_path)
         );
@@ -69,7 +71,7 @@ class AccessController extends Controller
         $allowed = $request && (
             $request->user_id === $user->id
             || ($request->accountRequest?->members ?? collect())->contains(
-                fn ($m) => $m->user_id === $user->id || $m->email === $user->email
+                fn ($m) => $m->user_id === $user->id // audit A-23: cocokkan lewat user_id, bukan email (bisa diubah)
             )
         );
 

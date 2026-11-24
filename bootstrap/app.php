@@ -30,6 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
           'auth/sso/login',
         ]);
+        // Akun yang diblokir admin dikeluarkan dari sesi aktifnya di setiap request web.
+        $middleware->appendToGroup('web', \App\Http\Middleware\CekAkunDiblokir::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\SecurityHeaders::class); // audit A-21
+
         // Register middleware aliases
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,

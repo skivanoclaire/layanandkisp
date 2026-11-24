@@ -166,6 +166,10 @@ class RekomendasiEvaluasiController extends Controller
      */
     public function update(Request $request, $rekomendasiId, $evaluasiId)
     {
+        RekomendasiAplikasiForm::where('id', $rekomendasiId)
+            ->when(! auth()->user()?->hasRole('Admin'), fn ($q) => $q->where('user_id', auth()->id()))
+            ->firstOrFail(); // audit A-07: hanya pemilik usulan
+
         $request->validate([
             'periode' => 'required|string|max:100',
             'tanggal_evaluasi' => 'required|date',
@@ -265,6 +269,10 @@ class RekomendasiEvaluasiController extends Controller
      */
     public function destroy($rekomendasiId, $evaluasiId)
     {
+        RekomendasiAplikasiForm::where('id', $rekomendasiId)
+            ->when(! auth()->user()?->hasRole('Admin'), fn ($q) => $q->where('user_id', auth()->id()))
+            ->firstOrFail(); // audit A-07: hanya pemilik usulan
+
         try {
             $evaluasi = RekomendasiEvaluasi::where('id', $evaluasiId)
                 ->where('rekomendasi_aplikasi_form_id', $rekomendasiId)

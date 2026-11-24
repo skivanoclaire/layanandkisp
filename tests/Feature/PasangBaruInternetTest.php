@@ -20,7 +20,7 @@ class PasangBaruInternetTest extends TestCase
         parent::setUp();
 
         $this->pemohon = User::factory()->create(['is_verified' => true, 'nip' => '199001012020011001']);
-        $this->admin = User::factory()->create(['is_verified' => true, 'nip' => '199001012020011001']);
+        $this->admin = User::factory()->create(['is_verified' => true, 'nip' => null]);
         $this->beriPermission($this->pemohon, 'Akses Pasang Baru Internet', 'User');
         $this->beriPermission($this->admin, 'Kelola Pasang Baru Internet', 'Admin');
     }
@@ -122,7 +122,7 @@ class PasangBaruInternetTest extends TestCase
     {
         $permohonan = $this->buatPermohonan('menunggu');
 
-        $lain = User::factory()->create(['is_verified' => true, 'nip' => '199001012020011001']);
+        $lain = User::factory()->create(['is_verified' => true, 'nip' => null]);
         $this->beriPermission($lain, 'Akses Pasang Baru Internet', 'User');
 
         $this->actingAs($lain)

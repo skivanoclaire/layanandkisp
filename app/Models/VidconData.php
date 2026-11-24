@@ -50,6 +50,7 @@ class VidconData extends Model
     ];
 
     protected $casts = [
+        'meeting_password' => 'encrypted', // audit A-25
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
         'jam_mulai' => 'datetime:H:i',

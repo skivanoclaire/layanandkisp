@@ -132,8 +132,8 @@
                 <div><strong>Lokasi Implementasi:</strong> {{ $form->lokasi_implementasi }}</div>
             </div>
 
-            <div class="mb-4"><strong>Dasar Hukum:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->dasar_hukum, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Permasalahan Kebutuhan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->permasalahan_kebutuhan, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
+            <div class="mb-4"><strong>Dasar Hukum:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->dasar_hukum) !!}</div></div>
+            <div class="mb-4"><strong>Permasalahan Kebutuhan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->permasalahan_kebutuhan) !!}</div></div>
 
             {{-- Pihak Terkait --}}
             <div class="mb-4">
@@ -150,29 +150,29 @@
                 </ul>
             </div>
             @endif
-            <div class="mb-4"><strong>Stakeholder Eksternal:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->stakeholder_eksternal, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
+            <div class="mb-4"><strong>Stakeholder Eksternal:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->stakeholder_eksternal) !!}</div></div>
 
-            <div class="mb-4"><strong>Maksud & Tujuan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->maksud_tujuan, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Ruang Lingkup:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->ruang_lingkup, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Analisis Biaya Manfaat:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->analisis_biaya_manfaat, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Analisis Risiko:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->analisis_risiko, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
+            <div class="mb-4"><strong>Maksud & Tujuan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->maksud_tujuan) !!}</div></div>
+            <div class="mb-4"><strong>Ruang Lingkup:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->ruang_lingkup) !!}</div></div>
+            <div class="mb-4"><strong>Analisis Biaya Manfaat:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->analisis_biaya_manfaat) !!}</div></div>
+            <div class="mb-4"><strong>Analisis Risiko:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->analisis_risiko) !!}</div></div>
         </div>
 
         {{-- Dokumen Perencanaan --}}
         <div class="bg-white p-4 rounded shadow mb-6">
             <h2 class="text-lg font-bold mb-3">Dokumen Perencanaan</h2>
-            <div class="mb-4"><strong>Perencanaan Ruang Lingkup:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->perencanaan_ruang_lingkup, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Perencanaan Proses Bisnis:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->perencanaan_proses_bisnis, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Kerangka Kerja:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->kerangka_kerja, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Pelaksana Pembangunan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->pelaksana_pembangunan, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Peran & Tanggung Jawab:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->peran_tanggung_jawab, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Jadwal Pelaksanaan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->jadwal_pelaksanaan, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Rencana Aksi:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->rencana_aksi, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Keamanan Informasi:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->keamanan_informasi, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Sumber Daya:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->sumber_daya, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Indikator Keberhasilan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->indikator_keberhasilan, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Alih Pengetahuan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->alih_pengetahuan, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
-            <div class="mb-4"><strong>Pemantauan & Pelaporan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! strip_tags($form->pemantauan_pelaporan, '<p><br><strong><b><em><i><u><ul><ol><li><h1><h2><h3><h4><h5><h6>') !!}</div></div>
+            <div class="mb-4"><strong>Perencanaan Ruang Lingkup:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->perencanaan_ruang_lingkup) !!}</div></div>
+            <div class="mb-4"><strong>Perencanaan Proses Bisnis:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->perencanaan_proses_bisnis) !!}</div></div>
+            <div class="mb-4"><strong>Kerangka Kerja:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->kerangka_kerja) !!}</div></div>
+            <div class="mb-4"><strong>Pelaksana Pembangunan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->pelaksana_pembangunan) !!}</div></div>
+            <div class="mb-4"><strong>Peran & Tanggung Jawab:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->peran_tanggung_jawab) !!}</div></div>
+            <div class="mb-4"><strong>Jadwal Pelaksanaan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->jadwal_pelaksanaan) !!}</div></div>
+            <div class="mb-4"><strong>Rencana Aksi:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->rencana_aksi) !!}</div></div>
+            <div class="mb-4"><strong>Keamanan Informasi:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->keamanan_informasi) !!}</div></div>
+            <div class="mb-4"><strong>Sumber Daya:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->sumber_daya) !!}</div></div>
+            <div class="mb-4"><strong>Indikator Keberhasilan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->indikator_keberhasilan) !!}</div></div>
+            <div class="mb-4"><strong>Alih Pengetahuan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->alih_pengetahuan) !!}</div></div>
+            <div class="mb-4"><strong>Pemantauan & Pelaporan:</strong><div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded">{!! \App\Support\SanitasiHtml::bersihkan($form->pemantauan_pelaporan) !!}</div></div>
         </div>
 
         {{-- Manajemen Risiko --}}

@@ -20,11 +20,11 @@ Route::middleware('guest')->group(function () {
     Route::post('register', [RegisteredUserController::class, 'store']);
 
     Route::get('check-nik', [RegisteredUserController::class, 'checkNik'])
-        ->middleware('throttle:30,1')
+        ->middleware('throttle:10,1') // audit A-22: cek NIK/email terdaftar dibatasi
         ->name('register.check-nik');
 
     Route::get('check-field', [RegisteredUserController::class, 'checkField'])
-        ->middleware('throttle:30,1')
+        ->middleware('throttle:10,1') // audit A-22
         ->name('register.check-field');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
@@ -36,6 +36,7 @@ Route::middleware('guest')->group(function () {
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:5,1') // audit A-22
         ->name('password.email');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
@@ -60,7 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');
 
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
+    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store'])->middleware('throttle:5,1'); // audit A-22
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
@@ -71,6 +72,7 @@ Route::middleware('auth')->group(function () {
 // SSO Routes
 Route::post('auth/sso/login', [SsoController::class, 'loginWithJwt'])
       ->withoutMiddleware([VerifyCsrfToken::class])
+      ->middleware('throttle:10,1') // audit A-18: endpoint ini tanpa CSRF, wajib dibatasi
       ->name('sso.login');
 
 Route::get('auth/keycloak', [SsoController::class, 'redirect'])

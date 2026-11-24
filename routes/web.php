@@ -67,14 +67,22 @@ Route::prefix('kegiatan/{kegiatan}')->name('kegiatan.')
 Route::get('/verify/{code}', [VerificationController::class, 'verify'])->name('verify.document');
 
 // File Download Route (untuk handle storage file access)
+// Audit A-14: hanya berkas proses bisnis usulan yang boleh diunduh lewat rute ini, oleh pemiliknya atau admin.
 Route::get('/download/{path}', function ($path) {
-    $fullPath = storage_path('app/public/' . $path);
+    $base = realpath(storage_path('app/public'));
+    $fullPath = realpath(storage_path('app/public/' . $path));
 
-    if (!file_exists($fullPath)) {
-        abort(404, 'File tidak ditemukan: ' . $fullPath);
+    if (!$base || !$fullPath || !str_starts_with($fullPath, $base . DIRECTORY_SEPARATOR) || !is_file($fullPath)) {
+        abort(404, 'File tidak ditemukan.');
     }
 
-    return response()->file($fullPath);
+    $pemilik = \App\Models\RekomendasiAplikasiForm::where('proses_bisnis_file', $path)
+        ->when(!auth()->user()->hasRole('Admin'), fn ($q) => $q->where('user_id', auth()->id()))
+        ->exists();
+
+    abort_unless($pemilik || auth()->user()->hasRole('Admin'), 403);
+
+    return response()->file($fullPath, ['X-Content-Type-Options' => 'nosniff']);
 })->where('path', '.*')->name('file.download')->middleware('auth');
 
 Route::get('/request', function () {
@@ -307,6 +315,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::middleware('role:Admin')->group(function () {
         Route::post('/users/{user}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
         Route::post('/users/{user}/unverify', [AdminController::class, 'unverifyUser'])->name('users.unverify');
+        Route::post('/users/{user}/block', [AdminController::class, 'blokirUser'])->name('users.block');
+        Route::post('/users/{user}/unblock', [AdminController::class, 'bukaBlokirUser'])->name('users.unblock');
         Route::post('/users/{user}/notify-nik', [AdminController::class, 'notifyNikTidakSesuai'])
             ->middleware('throttle:20,1')
             ->name('users.notify-nik');

@@ -441,21 +441,21 @@
                         @if($webMonitor->description)
                         <div class="mt-4 pt-4 border-t border-gray-200">
                             <span class="text-gray-600 block mb-2 font-semibold">Deskripsi Website/Aplikasi:</span>
-                            <div class="text-gray-800 prose prose-sm max-w-none ck-content">{!! $webMonitor->description !!}</div>
+                            <div class="text-gray-800 prose prose-sm max-w-none ck-content">{!! \App\Support\SanitasiHtml::bersihkan($webMonitor->description) !!}</div>
                         </div>
                         @endif
 
                         @if($webMonitor->latar_belakang)
                         <div class="mt-4 pt-4 border-t border-gray-200">
                             <span class="text-gray-600 block mb-2 font-semibold">Latar Belakang Pembuatan:</span>
-                            <div class="text-gray-800 prose prose-sm max-w-none ck-content">{!! $webMonitor->latar_belakang !!}</div>
+                            <div class="text-gray-800 prose prose-sm max-w-none ck-content">{!! \App\Support\SanitasiHtml::bersihkan($webMonitor->latar_belakang) !!}</div>
                         </div>
                         @endif
 
                         @if($webMonitor->manfaat_aplikasi)
                         <div class="mt-4 pt-4 border-t border-gray-200">
                             <span class="text-gray-600 block mb-2 font-semibold">Manfaat Aplikasi:</span>
-                            <div class="text-gray-800 prose prose-sm max-w-none ck-content">{!! $webMonitor->manfaat_aplikasi !!}</div>
+                            <div class="text-gray-800 prose prose-sm max-w-none ck-content">{!! \App\Support\SanitasiHtml::bersihkan($webMonitor->manfaat_aplikasi) !!}</div>
                         </div>
                         @endif
                     </div>

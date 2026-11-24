@@ -17,6 +17,7 @@ use Illuminate\Validation\ValidationException;
 class PresensiKegiatanPublikController extends Controller
 {
     public const SESSION_REDIRECT = 'presensi_kegiatan_redirect';
+    public const SESSION_PESERTA = 'presensi_kegiatan_peserta_';
 
     /** Unit kerja yang muncul di pilihan instansi; instansi pusat/lainnya diisi manual. */
     public const TIPE_PEMPROV = [UnitKerja::TIPE_INDUK, UnitKerja::TIPE_CABANG, UnitKerja::TIPE_SEKOLAH];
@@ -104,7 +105,8 @@ class PresensiKegiatanPublikController extends Controller
         $user = $request->user();
         $data = $this->validasi($request, $kegiatan, $mode, $user);
 
-        $peserta = $this->cariPeserta($kegiatan, $data);
+        // Audit A-17: tamu tanpa akun hanya bisa mengubah baris yang ia buat sendiri di sesi ini.
+        $peserta = $user ? $this->cariPeserta($kegiatan, $data) : $this->pesertaSesiTamu($request, $kegiatan, $data);
 
         if ($mode === 'presensi' && $peserta?->hadir_at) {
             return redirect()->route('kegiatan.selesai', $kegiatan)->with('presensi_selesai', [
@@ -146,6 +148,10 @@ class PresensiKegiatanPublikController extends Controller
         }
 
         $peserta->save();
+
+        if (!$user) {
+            $request->session()->put(self::SESSION_PESERTA . $kegiatan->id, $peserta->id);
+        }
 
         // Tautan rapat online langsung dikirim ke WA bila panitia sudah mengisinya.
         $waTerkirim = false;
@@ -231,6 +237,23 @@ class PresensiKegiatanPublikController extends Controller
         $data['user_id'] = $user?->id;
 
         return $data + ['jabatan' => null, 'email' => null, 'catatan' => null, 'tanda_tangan' => null];
+    }
+
+    /** Baris peserta tamu yang dibuat dari sesi ini (bukan baris milik orang lain). */
+    private function pesertaSesiTamu(Request $request, PresensiKegiatan $kegiatan, array $data): ?PresensiKegiatanPeserta
+    {
+        $id = $request->session()->get(self::SESSION_PESERTA . $kegiatan->id);
+        if (!$id) {
+            return null;
+        }
+
+        $peserta = PresensiKegiatanPeserta::where('presensi_kegiatan_id', $kegiatan->id)->whereNull('user_id')->whereKey($id)->first();
+
+        // Orang lain yang memakai perangkat yang sama tidak boleh menimpa baris ini: harus cocok NIP atau nomor HP.
+        $cocok = ($peserta && !empty($data['nip']) && $peserta->nip === $data['nip'])
+            || ($peserta && !empty($data['no_hp']) && $peserta->no_hp === $data['no_hp']);
+
+        return $cocok ? $peserta : null;
     }
 
     /** Satu orang = satu baris per kegiatan; dicocokkan lewat akun, NIP, lalu nomor HP. */

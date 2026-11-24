@@ -38,6 +38,18 @@ class SimpegClient
      * Shared GET to the SIMPEG gateway: auth header, retry on transient failure,
      * and normalization through handleResponse().
      */
+    /**
+     * Samarkan NIK/NIP untuk log: hanya 4 digit awal dan 3 digit akhir yang terlihat (audit A-12).
+     */
+    public static function samarkan(?string $nilai): ?string
+    {
+        if ($nilai === null || strlen($nilai) <= 7) {
+            return $nilai === null ? null : str_repeat('*', strlen($nilai));
+        }
+
+        return substr($nilai, 0, 4).str_repeat('*', strlen($nilai) - 7).substr($nilai, -3);
+    }
+
     protected function get(string $path, array $query, string $invalidReason): array
     {
         $apiUrl = rtrim(config('services.simpeg.api_url'), '/');
@@ -51,7 +63,7 @@ class SimpegClient
 
         Log::info('SIMPEG: Fetching pegawai data', [
             'url' => $url,
-            'query' => $query,
+            'query' => array_map([self::class, 'samarkan'], $query),
         ]);
 
         try {
@@ -71,7 +83,7 @@ class SimpegClient
                 ->get($url, $query);
         } catch (ConnectionException $e) {
             Log::error('SIMPEG: Connection error', [
-                'query' => $query,
+                'query' => array_map([self::class, 'samarkan'], $query),
                 'error' => $e->getMessage()
             ]);
             throw new SimpegException('Timeout/connection error to SIMPEG API', 0, $e->getMessage());

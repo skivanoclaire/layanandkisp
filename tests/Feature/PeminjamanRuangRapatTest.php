@@ -22,7 +22,7 @@ class PeminjamanRuangRapatTest extends TestCase
         parent::setUp();
 
         $this->pemohon = User::factory()->create(['is_verified' => true, 'nip' => '199001012020011001']);
-        $this->admin = User::factory()->create(['is_verified' => true, 'nip' => '199001012020011001']);
+        $this->admin = User::factory()->create(['is_verified' => true, 'nip' => null]);
         $this->beriPermission($this->pemohon, 'Akses Peminjaman Ruang Rapat', 'User');
         $this->beriPermission($this->admin, 'Kelola Peminjaman Ruang Rapat', 'Admin');
 
@@ -152,7 +152,7 @@ class PeminjamanRuangRapatTest extends TestCase
     {
         $permohonan = $this->buatPermohonan(now()->addDays(3)->format('Y-m-d'), '09:00', '10:00');
 
-        $lain = User::factory()->create(['is_verified' => true, 'nip' => '199001012020011001']);
+        $lain = User::factory()->create(['is_verified' => true, 'nip' => null]);
         $this->beriPermission($lain, 'Akses Peminjaman Ruang Rapat', 'User');
 
         $this->actingAs($lain)

@@ -81,7 +81,8 @@ class RekomendasiUsulanController extends Controller
                 // Sanitize filename: remove spaces and special characters
                 $originalName = $file->getClientOriginalName();
                 $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $originalName);
-                $filename = 'proses_bisnis_' . time() . '_' . $sanitizedName;
+                // Nama acak, ekstensi hanya dari allowlist (audit A-01/A-08): tidak pernah ekstensi dari klien mentah.
+                $filename = 'proses_bisnis_' . \Illuminate\Support\Str::random(40) . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'zip', 'rar', '7z', 'vsdx', 'vsd', 'drawio', 'bpmn'], 'bin');
                 $path = $file->storeAs('rekomendasi/proses_bisnis', $filename, 'public');
                 $data['proses_bisnis_file'] = $path;
             }
@@ -246,7 +247,8 @@ class RekomendasiUsulanController extends Controller
                 // Sanitize filename: remove spaces and special characters
                 $originalName = $file->getClientOriginalName();
                 $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $originalName);
-                $filename = 'proses_bisnis_' . time() . '_' . $sanitizedName;
+                // Nama acak, ekstensi hanya dari allowlist (audit A-01/A-08): tidak pernah ekstensi dari klien mentah.
+                $filename = 'proses_bisnis_' . \Illuminate\Support\Str::random(40) . '.' . \App\Support\SafeUpload::extension($file, ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'zip', 'rar', '7z', 'vsdx', 'vsd', 'drawio', 'bpmn'], 'bin');
                 $path = $file->storeAs('rekomendasi/proses_bisnis', $filename, 'public');
                 $data['proses_bisnis_file'] = $path;
             }

@@ -285,10 +285,12 @@ class DataRequestAdminController extends Controller
             if ($request->hasFile('berkas')) {
                 $file = $request->file('berkas');
                 $token->nama_berkas = $file->getClientOriginalName();
+                // Audit A-03: berkas data (memuat NIK) disimpan privat dengan nama acak, tidak di disk publik.
+                $ekstensi = \App\Support\SafeUpload::extension($file, ['xlsx', 'xls', 'csv', 'zip', '7z', 'pdf'], 'bin');
                 $token->file_path = $file->storeAs(
                     'dtsen-data',
-                    'DATA_' . $item->ticket_no . '_' . time() . '.' . $file->extension(),
-                    'public'
+                    'DATA_' . $item->ticket_no . '_' . \Illuminate\Support\Str::random(32) . '.' . $ekstensi,
+                    'local'
                 );
             }
 

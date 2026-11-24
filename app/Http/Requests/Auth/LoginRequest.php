@@ -43,6 +43,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Akun yang diblokir admin tidak boleh masuk, walau kata sandinya benar.
+        if (Auth::user()->isBlocked()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda dinonaktifkan. Hubungi admin E-Layanan.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
         RateLimiter::clear($this->ipThrottleKey());
     }

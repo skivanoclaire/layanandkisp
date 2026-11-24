@@ -98,8 +98,10 @@ class GoogleAsetTikController extends Controller
         }
 
         // Sort
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortDir = $request->get('sort_dir', 'desc');
+        // Audit A-24: kolom sort hanya dari daftar yang diizinkan.
+        $kolomSort = ['created_at', 'updated_at', 'nama_opd', 'nama_aset', 'tahun', 'status']; // kolom yang ada di hardware & software
+        $sortBy = in_array($request->get('sort_by'), $kolomSort, true) ? $request->get('sort_by') : 'created_at';
+        $sortDir = $request->get('sort_dir') === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortBy, $sortDir);
 
         return $query;

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
+use App\Services\Sso\AkunSsoMatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
@@ -60,6 +61,10 @@ class SsoController extends Controller
             }
 
             $user = $this->resolveSsoUser($nip, $email, $name, $nik, $phone);
+
+            if (! $user) {
+                return redirect()->route('login')->with('error', 'Akun Anda dinonaktifkan. Hubungi admin E-Layanan.');
+            }
 
             if ($user->wasRecentlyCreated) {
                 // Assign default role: User
@@ -148,6 +153,10 @@ class SsoController extends Controller
 
       $user = $this->resolveSsoUser($nip, $email, $name, $nik, $phone);
 
+      if (! $user) {
+          return $this->fail($request, 'Akun dinonaktifkan.', 403);
+      }
+
       // Mapping role dari token -> role lokal
       $roleCode = $decoded->role->code ?? null;
       $roleMap = [
@@ -195,24 +204,17 @@ class SsoController extends Controller
    * masuk ke akun itu walaupun email di SSO berbeda. Email akun yang sudah ada
    * tidak ditimpa — email adalah kredensial login lokal dan kolomnya unik.
    */
-  protected function resolveSsoUser(string $nip, string $email, ?string $name, ?string $nik, ?string $phone): User
+  protected function resolveSsoUser(string $nip, string $email, ?string $name, ?string $nik, ?string $phone): ?User
   {
       $nip = preg_replace('/\s+/', '', $nip);
-      $nikHash = User::hashNik($nik);
 
-      // Urutan prioritas: NIP, lalu NIK, lalu email. Bila NIP terlanjur ganda,
-      // pilih akun lama (bukan buatan SSO) supaya riwayat layanan tetap menyatu.
-      $user = User::where('nip', $nip)->orderBy('is_sso_user')->orderBy('id')->first();
-      $matchedBy = 'nip';
+      // Urutan NIP, NIK, lalu email hanya untuk akun terpercaya (lihat AkunSsoMatcher).
+      ['user' => $user, 'matched_by' => $matchedBy] = app(AkunSsoMatcher::class)->cari($nip, $nik, $email, true);
 
-      if (! $user && $nikHash) {
-          $user = User::where('nik_hash', $nikHash)->orderBy('is_sso_user')->orderBy('id')->first();
-          $matchedBy = 'nik';
-      }
+      if ($user && $user->isBlocked()) {
+          Log::warning('Login SSO ditolak: akun diblokir', ['user_id' => $user->id]);
 
-      if (! $user) {
-          $user = User::where('email', $email)->first();
-          $matchedBy = 'email';
+          return null;
       }
 
       if (! $user) {
@@ -235,7 +237,10 @@ class SsoController extends Controller
       }
 
       // Aman menimpa NIP: pencarian NIP di atas memastikan belum ada akun lain yang memakainya.
-      $updateData = ['nip' => $nip];
+      $updateData = [];
+      if (! User::where('nip', $nip)->where('id', '!=', $user->id)->exists()) {
+          $updateData['nip'] = $nip;
+      }
 
       // Nama akun yang sudah ada tidak ditimpa: nama di SSO bisa tidak lengkap,
       // sedangkan nama lokal sudah dipakai di dokumen layanan.
@@ -243,7 +248,8 @@ class SsoController extends Controller
           $updateData['name'] = $name;
       }
 
-      if ($nik) {
+      // NIK hanya diisi bila belum dipakai akun lain (kolom nik_hash bersifat unik).
+      if ($nik && ! User::where('nik_hash', User::hashNik($nik))->where('id', '!=', $user->id)->exists()) {
           $updateData['nik'] = $nik;
       }
 

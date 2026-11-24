@@ -264,6 +264,26 @@
                                     Edit
                                 </a>
 
+                                @if($user->isBlocked())
+                                    <form method="POST" action="{{ route('admin.users.unblock', $user->id) }}">
+                                        @csrf
+                                        <button type="submit" title="Diblokir: {{ $user->blocked_reason }}"
+                                            class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs font-medium">
+                                            Buka blokir
+                                        </button>
+                                    </form>
+                                @else
+                                    <form method="POST" action="{{ route('admin.users.block', $user->id) }}"
+                                        onsubmit="const r = prompt('Alasan pemblokiran (opsional):', ''); if (r === null) return false; this.querySelector('[name=reason]').value = r; return true;">
+                                        @csrf
+                                        <input type="hidden" name="reason" value="">
+                                        <button type="submit"
+                                            class="bg-gray-700 hover:bg-gray-800 text-white px-2 py-1 rounded text-xs font-medium">
+                                            Blokir
+                                        </button>
+                                    </form>
+                                @endif
+
                                 <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}"
                                     onsubmit="return confirm('Yakin ingin menghapus user ini?');">
                                     @csrf

@@ -35,7 +35,7 @@ class ProfileController extends Controller
     /**
      * Simpan perubahan data pengguna, termasuk password (jika diisi).
      */
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request, SimpegClient $client): RedirectResponse
     {
         $user = $request->user();
 
@@ -61,16 +61,25 @@ class ProfileController extends Controller
             'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
         ]);
 
-        // NIP dan NIK hanya bisa diupdate jika:
-        // 1. User belum terverifikasi, ATAU
-        // 2. User adalah Admin
+        // NIP dan NIK (audit A-05):
+        // - Admin: boleh diubah manual.
+        // - Belum terverifikasi: NIP/NIK baru hanya diterima bila SIMPEG membenarkannya dan belum dipakai akun lain.
+        // - Sudah terverifikasi: terkunci; perubahan lewat "Sinkron SIMPEG" atau admin.
         $isAdmin = $user->hasRole('Admin');
         $isVerified = $user->is_verified;
 
-        if (!$isVerified || $isAdmin) {
-            // Boleh update NIP, NIK, dan Unit Kerja
+        if ($isAdmin) {
             $user->nip = $validated['nip'] ?? null;
             $user->nik = ($validated['nik'] ?? '') !== '' ? $validated['nik'] : null;
+            $user->unit_kerja_id = $validated['unit_kerja_id'] ?? null;
+        } elseif (!$isVerified) {
+            $galat = $this->cekIdentitasKeSimpeg($user, $validated, $client);
+            if ($galat) {
+                return back()->withInput()->withErrors($galat);
+            }
+
+            $user->nip = $this->digit($validated['nip'] ?? null) ?: null;
+            $user->nik = $this->digit($validated['nik'] ?? null) ?: null;
             $user->unit_kerja_id = $validated['unit_kerja_id'] ?? null;
         }
         // Else: NIP, NIK, dan Unit Kerja tidak diupdate (tetap menggunakan nilai lama)
@@ -96,6 +105,56 @@ class ProfileController extends Controller
      * Mengembalikan JSON berisi data SIMPEG + nilai profil sekarang +
      * daftar field yang boleh diupdate (tergantung status verifikasi user).
      */
+    /**
+     * NIP/NIK baru dari pendaftar belum terverifikasi: wajib dibenarkan SIMPEG dan belum dipakai akun lain.
+     * Mengembalikan daftar galat per kolom (kosong bila lolos).
+     */
+    private function cekIdentitasKeSimpeg(\App\Models\User $user, array $data, SimpegClient $client): array
+    {
+        $galat = [];
+        $nipBaru = $this->digit($data['nip'] ?? null);
+        $nikBaru = $this->digit($data['nik'] ?? null);
+
+        if ($nipBaru !== '' && $nipBaru !== $this->digit($user->nip)) {
+            if (strlen($nipBaru) !== 18) {
+                $galat['nip'] = 'NIP harus 18 digit angka.';
+            } elseif (\App\Models\User::where('nip', $nipBaru)->where('id', '!=', $user->id)->exists()) {
+                $galat['nip'] = 'NIP ini sudah terdaftar pada akun lain. Hubungi admin.';
+            } else {
+                try {
+                    if (empty($client->byNip($nipBaru)['valid'])) {
+                        $galat['nip'] = 'NIP tidak ditemukan di SIMPEG. Periksa kembali NIP Anda.';
+                    }
+                } catch (\App\Exceptions\SimpegException $e) {
+                    $galat['nip'] = 'Verifikasi NIP ke SIMPEG sedang tidak tersedia. Coba beberapa saat lagi.';
+                }
+            }
+        }
+
+        if ($nikBaru !== '' && $nikBaru !== $this->digit($user->nik)) {
+            if (strlen($nikBaru) !== 16) {
+                $galat['nik'] = 'NIK harus 16 digit angka.';
+            } elseif (\App\Models\User::where('nik_hash', \App\Models\User::hashNik($nikBaru))->where('id', '!=', $user->id)->exists()) {
+                $galat['nik'] = 'NIK ini sudah terdaftar pada akun lain. Hubungi admin.';
+            } else {
+                try {
+                    if (empty($client->byNik($nikBaru)['valid'])) {
+                        $galat['nik'] = 'NIK tidak ditemukan di SIMPEG. Periksa kembali NIK Anda.';
+                    }
+                } catch (\App\Exceptions\SimpegException $e) {
+                    $galat['nik'] = 'Verifikasi NIK ke SIMPEG sedang tidak tersedia. Coba beberapa saat lagi.';
+                }
+            }
+        }
+
+        return $galat;
+    }
+
+    private function digit(?string $nilai): string
+    {
+        return preg_replace('/\D+/', '', (string) $nilai);
+    }
+
     public function simpegCheck(Request $request, SimpegClient $client): JsonResponse
     {
         $user = $request->user()->load('jabatan.unitKerja', 'unitKerja');

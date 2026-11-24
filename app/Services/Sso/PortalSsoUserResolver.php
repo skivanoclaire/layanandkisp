@@ -13,12 +13,15 @@ use Kaltaraprov\SsoPortal\SsoUser;
 /**
  * Mencocokkan pengguna dari Portal SSO ke akun lokal E-Layanan.
  *
- * Urutan pencocokan sama dengan aturan lama (SsoController::resolveSsoUser):
- * NIP, lalu NIK (hash), lalu email. Email hanya dipakai untuk realm ASN karena
- * email akun masyarakat belum diverifikasi portal.
+ * Urutan pencocokan: NIP, lalu NIK (hash), lalu email (khusus ASN). Hanya akun terpercaya
+ * yang dicocokkan dan akun yang diblokir ditolak; detail aturannya ada di AkunSsoMatcher.
  */
 class PortalSsoUserResolver implements UserResolver
 {
+    public function __construct(private AkunSsoMatcher $matcher)
+    {
+    }
+
     public function resolve(SsoUser $sso): ?Authenticatable
     {
         $nip = preg_replace('/\s+/', '', (string) $sso->nip);
@@ -26,74 +29,64 @@ class PortalSsoUserResolver implements UserResolver
         $email = $sso->email ? (string) $sso->email : null;
         $name = $sso->full_name ?: null;
 
-        $user = null;
-        $matchedBy = null;
+        ['user' => $user, 'matched_by' => $matchedBy] = $this->matcher->cari($nip, $nik, $email, $sso->isAsn());
 
-        if ($nip !== '') {
-            $user = User::where('nip', $nip)->orderBy('is_sso_user')->orderBy('id')->first();
-            $matchedBy = 'nip';
-        }
+        if ($user) {
+            if ($user->isBlocked()) {
+                Log::warning('Login SSO ditolak: akun diblokir', ['user_id' => $user->id]);
 
-        if (! $user && $nik) {
-            $nikHash = User::hashNik($nik);
-            if ($nikHash) {
-                $user = User::where('nik_hash', $nikHash)->orderBy('is_sso_user')->orderBy('id')->first();
-                $matchedBy = 'nik';
-            }
-        }
-
-        if (! $user && $email && $sso->isAsn()) {
-            $user = User::where('email', $email)->first();
-            $matchedBy = 'email';
-        }
-
-        if (! $user) {
-            if ($nip === '' && ! $email) {
                 return null;
             }
 
-            $user = User::create([
-                'nip' => $nip !== '' ? $nip : null,
-                'nik' => $nik,
-                'phone' => '-',
-                'email' => $this->emailUnik($email, $nip),
-                'name' => $name,
-                'password' => bcrypt(Str::random(32)),
-                'is_verified' => true,
-                'is_sso_user' => true,
-                'verified_at' => now(),
-                'verified_by' => 'SSO System',
+            // Kolom yang sudah terisi tidak ditimpa; hanya melengkapi yang kosong.
+            $update = [];
+            if ($nip !== '' && $user->nip !== $nip && ! $this->dipakaiAkunLain('nip', $nip, $user->id)) {
+                $update['nip'] = $nip;
+            }
+            if ($nik) {
+                $nikHash = User::hashNik($nik);
+                if ($nikHash && ! $this->dipakaiAkunLain('nik_hash', $nikHash, $user->id)) {
+                    $update['nik'] = $nik;
+                }
+            }
+            if ($name && blank($user->name)) {
+                $update['name'] = $name;
+            }
+            if ($update) {
+                $user->update($update);
+            }
+
+            $this->attachRole($user, $sso, false);
+
+            Log::info('User logged in via SSO Portal', [
+                'user_id' => $user->id,
+                'matched_by' => $matchedBy,
+                'email_differs' => $email !== null && strcasecmp((string) $user->email, $email) !== 0,
             ]);
-
-            $this->attachRole($user, $sso, true);
-
-            Log::info('New user created via SSO Portal', ['user_id' => $user->id, 'nip' => $nip]);
 
             return $user;
         }
 
-        // Kolom yang sudah terisi tidak ditimpa; hanya melengkapi yang kosong.
-        $update = [];
-        if ($nip !== '' && $user->nip !== $nip && ! $this->nipDipakaiAkunLain($nip, $user->id)) {
-            $update['nip'] = $nip;
-        }
-        if ($nik) {
-            $update['nik'] = $nik;
-        }
-        if ($name && blank($user->name)) {
-            $update['name'] = $name;
-        }
-        if ($update) {
-            $user->update($update);
+        if ($nip === '' && ! $email) {
+            return null;
         }
 
-        $this->attachRole($user, $sso, false);
-
-        Log::info('User logged in via SSO Portal', [
-            'user_id' => $user->id,
-            'matched_by' => $matchedBy,
-            'email_differs' => $email !== null && strcasecmp((string) $user->email, $email) !== 0,
+        $user = User::create([
+            'nip' => $nip !== '' ? $nip : null,
+            'nik' => $nik,
+            'phone' => '-',
+            'email' => $this->emailUnik($email, $nip),
+            'name' => $name,
+            'password' => bcrypt(Str::random(32)),
+            'is_verified' => true,
+            'is_sso_user' => true,
+            'verified_at' => now(),
+            'verified_by' => 'SSO System',
         ]);
+
+        $this->attachRole($user, $sso, true);
+
+        Log::info('New user created via SSO Portal', ['user_id' => $user->id, 'nip' => $nip]);
 
         return $user;
     }
@@ -110,9 +103,9 @@ class PortalSsoUserResolver implements UserResolver
         return 'sso-'.($nip !== '' ? $nip : Str::random(8)).'@sso.invalid';
     }
 
-    protected function nipDipakaiAkunLain(string $nip, int $userId): bool
+    private function dipakaiAkunLain(string $kolom, string $nilai, int $userId): bool
     {
-        return User::where('nip', $nip)->where('id', '!=', $userId)->exists();
+        return User::where($kolom, $nilai)->where('id', '!=', $userId)->exists();
     }
 
     /**

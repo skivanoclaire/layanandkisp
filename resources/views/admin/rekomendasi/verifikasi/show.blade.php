@@ -369,17 +369,17 @@
 
                     <div class="col-span-2">
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Deskripsi</h3>
-                        <div class="text-gray-900 prose max-w-none">{!! $proposal->deskripsi !!}</div>
+                        <div class="text-gray-900 prose max-w-none">{!! \App\Support\SanitasiHtml::bersihkan($proposal->deskripsi) !!}</div>
                     </div>
 
                     <div class="col-span-2">
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Tujuan</h3>
-                        <div class="text-gray-900 prose max-w-none">{!! $proposal->tujuan !!}</div>
+                        <div class="text-gray-900 prose max-w-none">{!! \App\Support\SanitasiHtml::bersihkan($proposal->tujuan) !!}</div>
                     </div>
 
                     <div class="col-span-2">
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Manfaat</h3>
-                        <div class="text-gray-900 prose max-w-none">{!! $proposal->manfaat !!}</div>
+                        <div class="text-gray-900 prose max-w-none">{!! \App\Support\SanitasiHtml::bersihkan($proposal->manfaat) !!}</div>
                     </div>
 
                     <div>
@@ -452,21 +452,21 @@
                     @if($proposal->integrasi_sistem_lain === 'ya' && $proposal->detail_integrasi)
                         <div class="col-span-2">
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Detail Integrasi</h3>
-                            <div class="text-gray-900 prose max-w-none">{!! $proposal->detail_integrasi !!}</div>
+                            <div class="text-gray-900 prose max-w-none">{!! \App\Support\SanitasiHtml::bersihkan($proposal->detail_integrasi) !!}</div>
                         </div>
                     @endif
 
                     @if($proposal->kebutuhan_khusus)
                         <div class="col-span-2">
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Kebutuhan Khusus</h3>
-                            <div class="text-gray-900 prose max-w-none">{!! $proposal->kebutuhan_khusus !!}</div>
+                            <div class="text-gray-900 prose max-w-none">{!! \App\Support\SanitasiHtml::bersihkan($proposal->kebutuhan_khusus) !!}</div>
                         </div>
                     @endif
 
                     @if($proposal->dampak_tidak_dibangun)
                         <div class="col-span-2">
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Dampak Jika Tidak Dibangun</h3>
-                            <div class="text-gray-900 prose max-w-none">{!! $proposal->dampak_tidak_dibangun !!}</div>
+                            <div class="text-gray-900 prose max-w-none">{!! \App\Support\SanitasiHtml::bersihkan($proposal->dampak_tidak_dibangun) !!}</div>
                         </div>
                     @endif
                 </div>
@@ -484,7 +484,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Dasar Hukum</h3>
                         <div class="text-gray-900 prose max-w-none">
                             @if($proposal->dasar_hukum)
-                                {!! $proposal->dasar_hukum !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->dasar_hukum) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -495,7 +495,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Uraian Permasalahan</h3>
                         <div class="text-gray-900 prose max-w-none">
                             @if($proposal->uraian_permasalahan)
-                                {!! $proposal->uraian_permasalahan !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->uraian_permasalahan) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -506,7 +506,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Pihak Terkait</h3>
                         <div class="text-gray-900 prose max-w-none">
                             @if($proposal->pihak_terkait)
-                                {!! $proposal->pihak_terkait !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->pihak_terkait) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -517,7 +517,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Ruang Lingkup</h3>
                         <div class="text-gray-900 prose max-w-none">
                             @if($proposal->ruang_lingkup)
-                                {!! $proposal->ruang_lingkup !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->ruang_lingkup) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -528,7 +528,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Analisis Biaya Manfaat</h3>
                         <div class="text-gray-900 prose max-w-none">
                             @if($proposal->analisis_biaya_manfaat)
-                                {!! $proposal->analisis_biaya_manfaat !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->analisis_biaya_manfaat) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -539,7 +539,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Lokasi Implementasi</h3>
                         <div class="text-gray-900 prose max-w-none">
                             @if($proposal->lokasi_implementasi)
-                                {!! $proposal->lokasi_implementasi !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->lokasi_implementasi) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -560,7 +560,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Uraian Ruang Lingkup</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->uraian_ruang_lingkup)
-                                {!! $proposal->uraian_ruang_lingkup !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->uraian_ruang_lingkup) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -571,7 +571,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Proses Bisnis</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->proses_bisnis)
-                                {!! $proposal->proses_bisnis !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->proses_bisnis) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -605,7 +605,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Kerangka Kerja</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->kerangka_kerja)
-                                {!! $proposal->kerangka_kerja !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->kerangka_kerja) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -634,7 +634,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Peran Tanggung Jawab</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->peran_tanggung_jawab)
-                                {!! $proposal->peran_tanggung_jawab !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->peran_tanggung_jawab) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -645,7 +645,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Jadwal Pelaksanaan</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->jadwal_pelaksanaan)
-                                {!! $proposal->jadwal_pelaksanaan !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->jadwal_pelaksanaan) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -656,7 +656,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Rencana Aksi</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->rencana_aksi)
-                                {!! $proposal->rencana_aksi !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->rencana_aksi) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -667,7 +667,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Keamanan Informasi</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->keamanan_informasi)
-                                {!! $proposal->keamanan_informasi !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->keamanan_informasi) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -678,7 +678,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Sumber Daya Manusia</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->sumber_daya_manusia)
-                                {!! $proposal->sumber_daya_manusia !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->sumber_daya_manusia) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -689,7 +689,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Sumber Daya Anggaran</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->sumber_daya_anggaran)
-                                {!! $proposal->sumber_daya_anggaran !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->sumber_daya_anggaran) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -700,7 +700,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Sumber Daya Sarana</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->sumber_daya_sarana)
-                                {!! $proposal->sumber_daya_sarana !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->sumber_daya_sarana) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -711,7 +711,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Indikator Keberhasilan</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->indikator_keberhasilan)
-                                {!! $proposal->indikator_keberhasilan !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->indikator_keberhasilan) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -722,7 +722,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Alih Pengetahuan</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->alih_pengetahuan)
-                                {!! $proposal->alih_pengetahuan !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->alih_pengetahuan) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -733,7 +733,7 @@
                         <h3 class="text-sm font-medium text-gray-500 mb-1">Pemantauan Pelaporan</h3>
                         <div class="text-gray-900 prose max-w-none whitespace-pre-line">
                             @if($proposal->pemantauan_pelaporan)
-                                {!! $proposal->pemantauan_pelaporan !!}
+                                {!! \App\Support\SanitasiHtml::bersihkan($proposal->pemantauan_pelaporan) !!}
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif

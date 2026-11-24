@@ -22,7 +22,7 @@ class PemohonNipTest extends TestCase
     {
         $user = User::factory()->create(['is_verified' => true, 'nik' => self::NIK, 'nip' => self::NIP]);
 
-        $roleId = DB::table('roles')->insertGetId(['name' => 'Uji NIP', 'created_at' => now(), 'updated_at' => now()]);
+        $roleId = DB::table('roles')->insertGetId(['name' => 'Uji NIP', 'display_name' => 'Uji NIP', 'created_at' => now(), 'updated_at' => now()]);
         foreach ($permissions as $name) {
             $permId = DB::table('permissions')->where('name', $name)->value('id')
                 ?? DB::table('permissions')->insertGetId(['name' => $name, 'created_at' => now(), 'updated_at' => now()]);

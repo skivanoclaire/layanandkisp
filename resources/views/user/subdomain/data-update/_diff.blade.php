@@ -39,7 +39,7 @@
             'fw'  => e(optional($fwMap->get($value))->name ?? $value),
             'db'  => e(optional($dbMap->get($value))->name ?? $value),
             'loc' => e(optional($locMap->get($value))->name ?? $value),
-            'html' => $value, // konten CKEditor (model trust sama dgn form subdomain)
+            'html' => \App\Support\SanitasiHtml::bersihkan($value), // audit A-06: konten CKEditor dibersihkan
             default => e($value),
         };
     };

@@ -74,6 +74,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'verified_at'       => 'datetime',
         'is_verified'       => 'boolean',
+        'blocked_at'        => 'datetime',
         'is_sso_user'       => 'boolean',
         'password'          => 'hashed',
         'nik'               => 'encrypted',
@@ -86,6 +87,21 @@ class User extends Authenticatable
             'verified_at' => now(),
             'verified_by' => $adminIdOrEmail,
         ])->save();
+    }
+
+    /** Akun diblokir admin: tidak boleh login (lokal maupun SSO) dan sesi aktifnya dihentikan. */
+    public function isBlocked(): bool
+    {
+        return $this->blocked_at !== null;
+    }
+
+    /**
+     * Akun yang boleh dicocokkan dengan identitas SSO: sudah diverifikasi admin atau berasal dari SSO.
+     * Pendaftar mandiri yang belum diverifikasi TIDAK boleh mengambil alih identitas ASN.
+     */
+    public function scopeTerpercaya($query)
+    {
+        return $query->where(fn ($q) => $q->where('is_sso_user', true)->orWhere('is_verified', true));
     }
 
     public function requests()

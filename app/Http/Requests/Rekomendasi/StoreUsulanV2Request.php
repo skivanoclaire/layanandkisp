@@ -128,7 +128,7 @@ class StoreUsulanV2Request extends FormRequest
             // Permenkomdigi No. 6 Tahun 2025 - Perencanaan
             'uraian_ruang_lingkup' => 'nullable|string',
             'proses_bisnis' => 'nullable|string',
-            'proses_bisnis_file' => 'nullable|file|mimes:pdf,doc,docx,png,jpg,jpeg,svg,zip,rar,7z,vsdx,vsd,drawio,bpmn|max:10240',
+            'proses_bisnis_file' => 'nullable|file|mimes:pdf,doc,docx,png,jpg,jpeg,zip,rar,7z,vsdx,vsd,drawio,bpmn|max:10240',
             'kerangka_kerja' => 'nullable|string',
             'pelaksana_pembangunan' => 'nullable|in:menteri,swakelola,pihak_ketiga',
             'peran_tanggung_jawab' => 'nullable|string',
@@ -192,7 +192,7 @@ class StoreUsulanV2Request extends FormRequest
             'lokasi_implementasi' => 'nullable|string|max:255',
             'uraian_ruang_lingkup' => 'nullable|string',
             'proses_bisnis' => 'nullable|string',
-            'proses_bisnis_file' => 'nullable|file|mimes:pdf,doc,docx,png,jpg,jpeg,svg,zip,rar,7z,vsdx,vsd,drawio,bpmn|max:10240',
+            'proses_bisnis_file' => 'nullable|file|mimes:pdf,doc,docx,png,jpg,jpeg,zip,rar,7z,vsdx,vsd,drawio,bpmn|max:10240',
             'kerangka_kerja' => 'nullable|string',
             'pelaksana_pembangunan' => 'nullable|in:menteri,swakelola,pihak_ketiga',
             'peran_tanggung_jawab' => 'nullable|string',

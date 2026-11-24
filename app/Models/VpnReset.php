@@ -32,6 +32,7 @@ class VpnReset extends Model
     ];
 
     protected $casts = [
+        'password_vpn_baru' => 'encrypted', // audit A-15
         'is_kabupaten_kota' => 'boolean',
         'processing_at' => 'datetime',
         'completed_at' => 'datetime',
