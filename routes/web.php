@@ -335,6 +335,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             Route::post('/{id}/approve', [RekomendasiVerifikasiController::class, 'approve'])->name('approve');
             Route::post('/{id}/reject', [RekomendasiVerifikasiController::class, 'reject'])->name('reject');
             Route::post('/{id}/revision', [RekomendasiVerifikasiController::class, 'requestRevision'])->name('revision');
+            Route::post('/{id}/koreksi-status', [RekomendasiVerifikasiController::class, 'koreksiStatus'])
+                ->middleware('permission:admin.rekomendasi.verifikasi.approve')
+                ->name('koreksi-status');
             Route::post('/{id}/notify-revisi', [RekomendasiVerifikasiController::class, 'notifyRevisi'])->name('notify-revisi');
             Route::get('/{id}/dokumen/{dokumenId}', [RekomendasiVerifikasiController::class, 'downloadDokumen'])->name('dokumen.download');
             Route::get('/{id}/kajian', [RekomendasiVerifikasiController::class, 'downloadKajian'])->name('kajian.download');

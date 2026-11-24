@@ -337,6 +337,18 @@ class RekomendasiVerifikasiController extends Controller
     /**
      * Request revision.
      */
+    /**
+     * Koreksi status oleh admin dari halaman verifikasi (mis. pemohon tidak merevisi usulan).
+     * Logika dan aturan transisi mengikuti RekomendasiAplikasiController::koreksiStatus;
+     * hanya tujuan kembali yang diarahkan ke halaman verifikasi.
+     */
+    public function koreksiStatus(Request $request, $id)
+    {
+        $response = app(\App\Http\Controllers\Admin\RekomendasiAplikasiController::class)->koreksiStatus($request, $id);
+
+        return $response->setTargetUrl(route('admin.rekomendasi.verifikasi.show', $id));
+    }
+
     public function requestRevision(Request $request, $id)
     {
         $request->validate([

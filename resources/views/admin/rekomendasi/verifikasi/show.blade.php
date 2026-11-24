@@ -139,6 +139,12 @@
                             <p class="text-sm text-orange-700 mt-1">
                                 Kirim pengingat WhatsApp ke pemohon agar segera memperbarui usulannya.
                             </p>
+                            @if($proposal->revision_requested_at)
+                                <p class="text-xs text-orange-700 mt-1">
+                                    Revisi diminta sejak {{ $proposal->revision_requested_at->format('d/m/Y H:i') }}
+                                    ({{ $proposal->revision_requested_at->diffForHumans() }}).
+                                </p>
+                            @endif
                             <p class="text-xs text-orange-600 mt-1">
                                 Nomor tujuan:
                                 <span class="font-medium">{{ $proposal->user?->phone ?: 'Tidak tersedia' }}</span>
@@ -158,6 +164,52 @@
                             </button>
                         </form>
                     @endif
+                </div>
+            </div>
+        @endif
+
+        {{-- Ubah status oleh admin: pemohon tidak merevisi, atau usulan perlu dikembalikan ke antrean --}}
+        @if(isset(\App\Http\Controllers\Admin\RekomendasiAplikasiController::KOREKSI_STATUS[$proposal->status]))
+            <div class="bg-white border border-orange-200 rounded-lg p-4 mb-6 flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">Ubah Status Usulan</p>
+                    <p class="text-xs text-gray-600">
+                        Status saat ini: <strong>{{ strtoupper($proposal->status) }}</strong>.
+                        Gunakan bila pemohon tidak melakukan revisi atau usulan perlu dikembalikan ke antrean verifikasi.
+                    </p>
+                </div>
+                <button type="button" onclick="document.getElementById('koreksiStatusModal').classList.remove('hidden')"
+                    class="bg-orange-600 text-white px-4 py-2 rounded text-sm hover:bg-orange-700">
+                    Ubah Status
+                </button>
+            </div>
+
+            <div id="koreksiStatusModal" class="{{ $errors->has('catatan') || $errors->has('new_status') ? '' : 'hidden' }} fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div class="bg-white p-6 rounded-lg w-full max-w-md">
+                    <h3 class="text-lg font-bold mb-1">Ubah Status Usulan</h3>
+                    <p class="text-sm text-gray-600 mb-4">Status saat ini: <strong>{{ strtoupper($proposal->status) }}</strong></p>
+                    <form action="{{ route('admin.rekomendasi.verifikasi.koreksi-status', $proposal->id) }}" method="POST">
+                        @csrf
+                        <div class="mb-4">
+                            <label class="block font-semibold mb-1">Ubah menjadi <span class="text-red-500">*</span></label>
+                            <select name="new_status" class="w-full border rounded p-2" required>
+                                @foreach(\App\Http\Controllers\Admin\RekomendasiAplikasiController::KOREKSI_STATUS[$proposal->status] as $tujuan)
+                                    <option value="{{ $tujuan }}" @selected(old('new_status') === $tujuan)>{{ \App\Http\Controllers\Admin\RekomendasiAplikasiController::LABEL_STATUS[$tujuan] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block font-semibold mb-1">Catatan <span class="text-red-500">*</span></label>
+                            <textarea name="catatan" rows="3" class="w-full border rounded p-2" required maxlength="1000"
+                                placeholder="Alasan perubahan status / hal yang perlu diperbaiki pemohon">{{ old('catatan') }}</textarea>
+                            <p class="text-xs text-gray-500 mt-1">Catatan ini ditampilkan kepada pemohon dan dicatat pada riwayat usulan.</p>
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button type="button" onclick="document.getElementById('koreksiStatusModal').classList.add('hidden')"
+                                class="bg-gray-500 text-white px-4 py-2 rounded">Batal</button>
+                            <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded">Simpan</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         @endif
