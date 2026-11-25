@@ -158,6 +158,7 @@ return [
             'IP' => ['admin.web-monitor.check-ip-publik'],
             'Vidcon' => ['admin.vidcon.data'],
             'Aset TIK' => ['admin.google-aset-tik'],
+            'Presensi Kegiatan' => ['Kelola Presensi Kegiatan'],
             'Integrasi (SPLP)' => ['admin.splp.services', 'admin.splp.consumers', 'admin.splp.audit'],
             'Berbagi Pakai Data (DTSEN)' => [
                 'admin.dtsen.dashboard',

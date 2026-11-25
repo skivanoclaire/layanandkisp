@@ -75,6 +75,17 @@ class RolePermissionAccessTest extends TestCase
         $this->actingAs($this->operator)->get(route('admin.email.index'))->assertForbidden();
     }
 
+    public function test_presensi_kegiatan_mengikuti_centang_kewenangan(): void
+    {
+        $this->actingAs($this->operator)->get(route('admin.presensi-kegiatan.index'))->assertForbidden();
+
+        $this->grant('Kelola Presensi Kegiatan');
+
+        // Muat ulang user: relasi permissions sudah ter-cache dari request sebelum centang.
+        $this->actingAs(User::find($this->operator->id))->get(route('admin.presensi-kegiatan.index'))->assertOk();
+        $this->actingAs($this->admin())->get(route('admin.presensi-kegiatan.index'))->assertOk();
+    }
+
     public function test_halaman_inti_tetap_khusus_admin_walau_dicentang(): void
     {
         $this->grant('admin.users', 'admin.roles.index', 'admin.role-permissions');

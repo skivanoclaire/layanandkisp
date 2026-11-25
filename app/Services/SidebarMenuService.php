@@ -481,6 +481,8 @@ class SidebarMenuService
         }
         if ($isAdmin) {
             $items[] = $this->link('Arsitektur', 'building', 'admin.master-arsitektur.index', ['admin.master-arsitektur.*']);
+        }
+        if ($isAdmin || $user->hasPermission('Kelola Presensi Kegiatan')) {
             $items[] = $this->link('Presensi Kegiatan', 'calendar', 'admin.presensi-kegiatan.index', ['admin.presensi-kegiatan.*']);
         }
         if ($user->hasPermission('admin.web-monitor')) {

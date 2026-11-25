@@ -1149,7 +1149,7 @@ Route::middleware(['auth', 'permission:Kelola Kuesioner Portal'])
     });
 
 // ===== PRESENSI KEGIATAN (Master Data, khusus Admin) =====
-Route::middleware(['auth', 'role:Admin'])
+Route::middleware(['auth', 'permission:Kelola Presensi Kegiatan'])
     ->prefix('admin/presensi-kegiatan')
     ->name('admin.presensi-kegiatan.')
     ->controller(\App\Http\Controllers\Admin\PresensiKegiatanController::class)
