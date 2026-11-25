@@ -17,10 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Trust reverse proxy (Docker/Nginx) supaya request()->ip()
-        // membaca IP klien asli dari X-Forwarded-* alih-alih IP container.
+        // Trust hanya proxy yang didaftarkan di TRUSTED_PROXIES (koma-separated),
+        // mis. IP WAF Safeline dan HAProxy. Jangan pakai '*' karena header
+        // X-Forwarded-For bisa dipalsukan klien dan merusak audit log & whitelist API.
         $middleware->trustProxies(
-            at: '*',
+            at: array_values(array_filter(array_map('trim', explode(',', (string) env('TRUSTED_PROXIES', ''))))),
             headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR
                 | \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST
                 | \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT
