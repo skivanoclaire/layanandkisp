@@ -66,3 +66,6 @@ index.nginx-debian.html
 
 # Folder dump database lokal (jangan pernah commit)
 /db-backup/
+
+# Dokumen SOP internal (jangan masuk repo)
+/SOP Web Server di Belakang SafeLine WAF.docx
