@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
 use App\Services\Sso\AkunSsoMatcher;
+use App\Services\Sso\VerifikasiPegawaiSimpeg;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Kaltaraprov\SsoPortal\SsoPortalException;
 
 class SsoController extends Controller
 {
@@ -94,6 +96,9 @@ class SsoController extends Controller
                 return redirect('/dashboard');
             }
 
+        } catch (SsoPortalException $e) {
+            // Penolakan pendaftaran (NIP tidak ada di SIMPEG, atau SIMPEG tidak tersedia).
+            return redirect()->route('login')->with('error', $e->userMessage());
         } catch (\Exception $e) {
             Log::error('SSO Login Error', [
                 'message' => $e->getMessage(),
@@ -151,7 +156,11 @@ class SsoController extends Controller
           return $this->fail($request, 'Data token tidak lengkap (nip/email).', 401);
       }
 
-      $user = $this->resolveSsoUser($nip, $email, $name, $nik, $phone);
+      try {
+          $user = $this->resolveSsoUser($nip, $email, $name, $nik, $phone);
+      } catch (SsoPortalException $e) {
+          return $this->fail($request, $e->userMessage(), 403);
+      }
 
       if (! $user) {
           return $this->fail($request, 'Akun dinonaktifkan.', 403);
@@ -218,6 +227,9 @@ class SsoController extends Controller
       }
 
       if (! $user) {
+          // Pendaftaran baru hanya untuk NIP yang terdaftar di SIMPEG (pegawai Pemprov Kaltara).
+          app(VerifikasiPegawaiSimpeg::class)->pastikanBolehDaftar($nip);
+
           $user = User::create([
               'nip' => $nip,
               'nik' => $nik,

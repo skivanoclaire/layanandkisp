@@ -18,8 +18,10 @@ use Kaltaraprov\SsoPortal\SsoUser;
  */
 class PortalSsoUserResolver implements UserResolver
 {
-    public function __construct(private AkunSsoMatcher $matcher)
-    {
+    public function __construct(
+        private AkunSsoMatcher $matcher,
+        private VerifikasiPegawaiSimpeg $verifikasi,
+    ) {
     }
 
     public function resolve(SsoUser $sso): ?Authenticatable
@@ -70,6 +72,9 @@ class PortalSsoUserResolver implements UserResolver
         if ($nip === '' && ! $email) {
             return null;
         }
+
+        // Pendaftaran baru hanya untuk NIP yang terdaftar di SIMPEG (pegawai Pemprov Kaltara).
+        $this->verifikasi->pastikanBolehDaftar($nip);
 
         $user = User::create([
             'nip' => $nip !== '' ? $nip : null,
