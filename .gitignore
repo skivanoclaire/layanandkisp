@@ -63,3 +63,6 @@ index.nginx-debian.html
 # Dokumen lokal (rahasia / desain), jangan masuk repositori
 /audit/
 /desain/
+
+# Folder dump database lokal (jangan pernah commit)
+/db-backup/
